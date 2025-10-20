@@ -1,0 +1,37 @@
+{
+  "name": "automatedtesting",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "ts-node ./e2e/tests/index.ts",
+    "dev": "ts-node --watch ./e2e/tests/index.ts",
+    "check": "tsc --noEmit",
+    "clean": "rimraf dist",
+    "prepare": "husky install",
+  "lint": "eslint . --ext .ts --format stylish",
+  "fmt": "prettier --write ."
+},
+"lint-staged": {
+  "*.{js,ts,json,md}": ["eslint --fix", "prettier --write"]
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@eslint/js": "^9.38.0",
+    "@types/node": "^24.8.1",
+    "@typescript-eslint/eslint-plugin": "^8.46.1",
+    "@typescript-eslint/parser": "^8.46.1",
+    "eslint": "^9.38.0",
+    "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.4",
+    "prettier": "^3.6.2",
+    "rimraf": "^6.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
