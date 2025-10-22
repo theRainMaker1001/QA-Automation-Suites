@@ -15,7 +15,10 @@
     "fmt": "prettier --write ."
   },
   "lint-staged": {
-    "*.{js,ts,json,md}": ["eslint --fix", "prettier --write"]
+    "*.{js,ts,json,md}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   },
   "keywords": [],
   "author": "",
