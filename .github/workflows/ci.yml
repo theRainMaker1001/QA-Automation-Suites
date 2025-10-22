@@ -1,35 +1,32 @@
-
-name: CI (typecheck + eslint)
+name: CI (TypeCheck + Lint + Prettier)
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
-
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+    branches: [main]
 
 jobs:
-  lint-and-typecheck:
+  validate:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: 🛎️ Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: 🧰 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
 
-      - name: Install dependencies
+      - name: 📦 Install dependencies
         run: npm ci
 
-      - name: TypeScript typecheck
+      - name: 🔍 Type check (TypeScript)
         run: npm run typecheck
 
-      - name: ESLint
+      - name: 🧹 Lint (ESLint)
         run: npm run lint
+
+      - name: 💅 Prettier format check
+        run: npx prettier --check .
