@@ -1,4 +1,5 @@
 🎯 QA-Automation-Suites
+[![CI (typecheck + eslint)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml/badge.svg)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml)
 
 Playwright and JavaScript-based automation suites with linting, formatting, and CI/CD integration.
 This project demonstrates scalable automation architecture designed for end-to-end (E2E), API, and BDD testing using modern QA engineering standards (and solid ISTQB fundamentals).
@@ -91,7 +92,7 @@ npm run fmt
 🏗️ Roadmap
 General
 
-<ul> <li>✅ <b>TypeScript and Playwright base setup</b></li> <li>✅ ESLint, Prettier, Husky configuration (pre-commit auto-fix)</li> <li>⬜ GitHub Actions CI/CD (lint + tests on push/PR)</li> <li>⬜ API test suite scaffolding (JavaScript, no extra libs)</li> <li>⬜ BDD test suite scaffolding (Cucumber)</li> <li>⬜ Enhanced HTML/Allure reporting</li> </ul>
+<ul> <li>✅ <b>TypeScript and Playwright base setup</b></li> <li>✅ ESLint, Prettier, Husky configuration (pre-commit auto-fix)</li> <li>✅ GitHub Actions CI/CD (lint + tests on push/PR)</li> <li>⬜ API test suite scaffolding (JavaScript, no extra libs)</li> <li>⬜ BDD test suite scaffolding (Cucumber)</li> <li>⬜ Enhanced HTML/Allure reporting</li> </ul>
 Playwright Testing Milestones
 <ul> <li>⬜ Establish <b>Page Object Model (POM)</b> baseline (pages/, components/)</li> <li>⬜ Configure <b>env-specific</b> base URLs and timeouts (config/environments)</li> <li>⬜ Define <b>tags & suites</b>: <code>@smoke</code> (PR), <code>@regression</code> (scheduled), <code>@critical</code> (must-pass)</li> <li>⬜ Set up <b>cross-browser matrix</b>: Chromium, Firefox, WebKit</li> <li>⬜ Enable <b>artifacts</b>: traces, screenshots, videos on failure</li> <li>⬜ Add <b>auth/session fixtures</b> (logged-in state reuse)</li> <li>⬜ Implement <b>parallelisation & sharding</b> for faster builds</li> <li>⬜ Add <b>retries & flake detection</b> (CI-only)</li> <li>⬜ Introduce <b>network stubbing/mocking</b> for deterministic API interactions</li> <li>⬜ Integrate <b>accessibility checks</b> (axe or similar)</li> <li>⬜ Add <b>performance tracing & timing metrics</b></li> <li>⬜ Use <b>Playwright Test UI</b> for local triage</li> <li>⬜ Publish <b>HTML/Allure reports</b> as CI artifacts</li> </ul>
 ⬅️ Shift-Left & Quality Gates (where it lives in this repo)
