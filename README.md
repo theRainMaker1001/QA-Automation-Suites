@@ -40,7 +40,8 @@ Equivalence Partitioning (EP), Boundary Value Analysis (BVA), Decision Tables, S
 
 See the Roadmap below for exactly where each of these show up (folders, tags, and workflows).
 
-🧩 Project Structure
+## 🧩 Project Structure
+
 qa-automation-suites/
 ├─ e2e/ # Playwright UI/E2E tests
 ├─ api/ # Plain JavaScript API tests
@@ -96,7 +97,7 @@ General
 Playwright Testing Milestones
 <ul> <li>⬜ Establish <b>Page Object Model (POM)</b> baseline (pages/, components/)</li> <li>⬜ Configure <b>env-specific</b> base URLs and timeouts (config/environments)</li> <li>⬜ Define <b>tags & suites</b>: <code>@smoke</code> (PR), <code>@regression</code> (scheduled), <code>@critical</code> (must-pass)</li> <li>⬜ Set up <b>cross-browser matrix</b>: Chromium, Firefox, WebKit</li> <li>⬜ Enable <b>artifacts</b>: traces, screenshots, videos on failure</li> <li>⬜ Add <b>auth/session fixtures</b> (logged-in state reuse)</li> <li>⬜ Implement <b>parallelisation & sharding</b> for faster builds</li> <li>⬜ Add <b>retries & flake detection</b> (CI-only)</li> <li>⬜ Introduce <b>network stubbing/mocking</b> for deterministic API interactions</li> <li>⬜ Integrate <b>accessibility checks</b> (axe or similar)</li> <li>⬜ Add <b>performance tracing & timing metrics</b></li> <li>⬜ Use <b>Playwright Test UI</b> for local triage</li> <li>⬜ Publish <b>HTML/Allure reports</b> as CI artifacts</li> </ul>
 ⬅️ Shift-Left & Quality Gates (where it lives in this repo)
-<ul> <li>✅ <b>Static checks locally</b>: TypeScript types, ESLint rules, Prettier formatting via Husky pre-commit</li> <li>⬜ <b>Static checks in CI</b>: <code>tsc --noEmit</code>, <code>eslint</code>, <code>prettier --check</code> before any tests run</li> <li>⬜ <b>PR fast feedback</b>: run <code>@smoke</code> subset + changed-area tests on every pull request</li> </ul>
+<ul> <li>✅ <b>Static checks locally</b>: TypeScript types, ESLint rules, Prettier formatting via Husky pre-commit</li> <li>✅ <b>Static checks in CI</b>: <code>tsc --noEmit</code>, <code>eslint</code>, <code>prettier --check</code> before any tests run</li> <li>⬜ <b>PR fast feedback</b>: run <code>@smoke</code> subset + changed-area tests on every pull request</li> </ul>
 🧪 Regression Strategy (exactly where it’s demonstrated here)
 <ul> <li>⬜ <b>Tagging</b>: mark business-critical flows with <code>@regression</code> inside <code>e2e/tests/</code> and <code>api/tests/</code></li> <li>⬜ <b>Nightly job</b>: add <code>.github/workflows/regression.yml</code> to run full <code>@regression</code> across browsers and upload HTML/Allure reports</li> <li>⬜ <b>PR job</b>: keep <code>ci.yml</code> lean — run <code>@smoke</code> + artifacts (trace/video) for quick triage</li> <li>⬜ <b>Confirmation → targeted regression</b>: script a <code>test:confirm</code> task to rerun the failing spec(s) and nearby tagged tests after a fix</li> <li>⬜ <b>Flake controls</b>: enable CI-only retries and record flaky test list in report summary</li> </ul>
 ⚖️ Risk-Based Suite Design (Agile fit)
