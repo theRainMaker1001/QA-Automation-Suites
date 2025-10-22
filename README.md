@@ -42,13 +42,15 @@ See the Roadmap below for exactly where each of these show up (folders, tags, an
 
 ## 🧩 Project Structure
 
+```bash
 qa-automation-suites/
-├─ e2e/ # Playwright UI/E2E tests
-├─ api/ # Plain JavaScript API tests
-├─ bdd/ # Cucumber BDD tests (future integration)
-├─ config/ # Centralized config and environment files
-├─ resources/ # Test data, fixtures, and private assets (gitignored)
-└─ .github/ # CI/CD workflows
+├─ e2e/         # Playwright UI/E2E tests
+├─ api/         # Plain JavaScript API tests
+├─ bdd/         # Cucumber BDD tests (future integration)
+├─ config/      # Centralized config and environment files
+├─ resources/   # Test data, fixtures, and private assets (gitignored)
+└─ .github/     # CI/CD workflows
+```
 
 🧰 Tech Stack
 Category Tools & Frameworks
