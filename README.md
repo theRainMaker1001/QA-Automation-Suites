@@ -50,7 +50,7 @@ qa-automation-suites/
 ├─ config/      # Centralized config and environment files
 ├─ resources/   # Test data, fixtures, and private assets (gitignored)
 └─ .github/     # CI/CD workflows
-```
+
 
 🧰 Tech Stack
 Category Tools & Frameworks
@@ -60,6 +60,8 @@ BDD 🧩 Cucumber (planned)
 Language 🦸‍♂️ TypeScript
 Code Quality 🧹 ESLint + Prettier + Husky
 CI/CD ⚙️ GitHub Actions
+```
+
 🧪 Quick Start
 
 # install dependencies
