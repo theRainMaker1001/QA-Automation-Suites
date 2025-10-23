@@ -40,4 +40,5 @@ jobs:
 
       # Run API-level tests via ts-node using ESM loader
       - name: 🧪 Run API tests
-        run: npx ts-node --esm api/tests/healthcheck.test.ts
+        run: npx ts-node --esm ./api/tests/healthcheck.test.ts
+        working-directory: ${{ github.workspace }}
