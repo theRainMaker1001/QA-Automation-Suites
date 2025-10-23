@@ -32,4 +32,4 @@ jobs:
         run: npx prettier --check .
 
       - name: 🧪 Run API tests
-        run: npm run test:api
+        run: node --loader ts-node/esm api/tests/healthcheck.test.ts

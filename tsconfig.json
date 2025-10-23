@@ -1,15 +1,14 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "CommonJS",
-    "rootDir": "./",
-    "outDir": "dist",
+    "target": "ES2020",
+    "module": "ESNext",
     "moduleResolution": "Node",
+    "outDir": "dist",
     "esModuleInterop": true,
     "strict": true,
-    "skipLibCheck": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "skipLibCheck": true
   },
-  "include": ["e2e/**/*.ts", "config/**/*.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["**/*.ts"]
 }
+
