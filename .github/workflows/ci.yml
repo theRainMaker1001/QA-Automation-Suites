@@ -30,3 +30,6 @@ jobs:
 
       - name: 💅 Prettier format check
         run: npx prettier --check .
+
+      - name: 🧪 Run API tests
+        run: npm run test:api

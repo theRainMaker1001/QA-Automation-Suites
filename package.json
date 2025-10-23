@@ -4,6 +4,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "test:api": "ts-node ./api/tests/**/*.ts",
     "build": "tsc",
     "start": "ts-node ./e2e/tests/index.ts",
     "dev": "ts-node --watch ./e2e/tests/index.ts",
