@@ -36,9 +36,13 @@ jobs:
 
       # Verify code formatting (don’t auto-fix in CI)
       - name: 💅 Prettier format check
-        run: npx prettier --check .
+        run:
+          npx prettier --check .
 
-      # Run API-level tests via ts-node using ESM loader
+          # Build TypeScript -> JavaScript
+      - name: 🏗️ Build API
+        run: npm run build:api
+
+      # Run API-level tests from compiled output
       - name: 🧪 Run API tests
-        run: npx ts-node --esm ./api/tests/healthcheck.test.ts
-        working-directory: ${{ github.workspace }}
+        run: node dist/tests/healthcheck.test.js
