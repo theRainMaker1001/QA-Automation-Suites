@@ -1,4 +1,4 @@
-name: CI (TypeCheck + Lint + Prettier)
+name: CI (TypeCheck + Lint + Prettier + API Tests)
 
 on:
   push:
@@ -11,25 +11,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout the repo
       - name: 🛎️ Checkout repository
         uses: actions/checkout@v4
 
-      - name: 🧰 Setup Node.js
+      # Use the Node version from .nvmrc to keep CI in sync with local dev
+      - name: 🧰 Setup Node.js (read from .nvmrc)
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: '.nvmrc'
+          cache: 'npm'
 
+      # Clean install using the exact dependency tree from package-lock.json
       - name: 📦 Install dependencies
         run: npm ci
 
-      - name: 🔍 Type check (TypeScript)
+      # Run a type check to ensure TS definitions are solid
+      - name: 🔍 Type check
         run: npm run typecheck
 
-      - name: 🧹 Lint (ESLint)
+      # Lint the codebase for consistency and potential issues
+      - name: 🧹 Lint
         run: npm run lint
 
+      # Verify code formatting (don’t auto-fix in CI)
       - name: 💅 Prettier format check
         run: npx prettier --check .
 
+      # Run API-level tests via ts-node using ESM loader
       - name: 🧪 Run API tests
-        run: node --loader ts-node/esm api/tests/healthcheck.test.ts
+        run: npx ts-node --esm api/tests/healthcheck.test.ts
