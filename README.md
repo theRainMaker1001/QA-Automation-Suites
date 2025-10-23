@@ -44,22 +44,33 @@ See the Roadmap below for exactly where each of these show up (folders, tags, an
 
 ```bash
 qa-automation-suites/
-├─ e2e/         # Playwright UI/E2E tests
-├─ api/         # Plain JavaScript API tests
-├─ bdd/         # Cucumber BDD tests (future integration)
-├─ config/      # Centralized config and environment files
-├─ resources/   # Test data, fixtures, and private assets (gitignored)
-└─ .github/     # CI/CD workflows
+├─ api/
+│  ├─ src/                  # TypeScript API tests (tool-agnostic)
+│  │  └─ tests/
+│  │     └─ healthcheck.test.ts
+│  └─ dist/                 # Compiled JS output (build:api)
+├─ e2e/                     # Playwright UI/E2E tests (scaffold)
+├─ bdd/                     # Cucumber BDD tests (future integration)
+├─ config/                  # Centralised config and environment files
+├─ resources/               # Test data/fixtures/private assets (gitignored)
+├─ .github/                 # CI/CD workflows (GitHub Actions)
+├─ package.json
+├─ tsconfig.json            # root TS config
+└─ api/tsconfig.json        # API-specific TS config (src → dist)
+
 
 
 🧰 Tech Stack
-Category Tools & Frameworks
-E2E/UI Testing 🎭 Playwright
-API Testing 🌐 JavaScript (Fetch/Axios)
-BDD 🧩 Cucumber (planned)
-Language 🦸‍♂️ TypeScript
-Code Quality 🧹 ESLint + Prettier + Husky
-CI/CD ⚙️ GitHub Actions
+🧰 Tech Stack
+Category | Tools & Notes
+-- | --
+E2E/UI Testing | 🎭 Playwright (scaffolded)
+API Testing | 🌐 TypeScript + **fetch** (Node 18+) / **node-fetch** fallback for CI
+BDD | 🧩 Cucumber (planned)
+Language | 🦸‍♂️ TypeScript
+Code Quality | 🧹 ESLint (flat config v9) + Prettier + Husky + lint-staged
+CI/CD | ⚙️ GitHub Actions (typecheck, lint, API health check)
+
 ```
 
 🧪 Quick Start
@@ -68,36 +79,25 @@ CI/CD ⚙️ GitHub Actions
 
 npm install
 
-# run lint checks
+# static checks
 
+npm run typecheck
 npm run lint
-
-# run prettier
-
 npm run fmt
 
-# run all tests (Playwright)
+# API suite (tool-agnostic, TS)
 
-npx playwright test
+npm run build:api # compile TS → JS into api/dist
+node api/dist/tests/healthcheck.test.js
 
-🧱 Linting & Formatting
+# or run the API health check directly in TS (no build)
 
-ESLint (flat config, v9) for code quality and best practices
-
-Prettier for consistent formatting
-
-Husky + lint-staged to auto-run fixes on commit
-
-Run manually:
-
-npx eslint . --ext .ts --format stylish
-npx prettier --check .
-npm run fmt
+npm run test:api
 
 🏗️ Roadmap
 General
 
-<ul> <li>✅ <b>TypeScript and Playwright base setup</b></li> <li>✅ ESLint, Prettier, Husky configuration (pre-commit auto-fix)</li> <li>✅ GitHub Actions CI/CD (lint + tests on push/PR)</li> <li>⬜ API test suite scaffolding (JavaScript, no extra libs)</li> <li>⬜ BDD test suite scaffolding (Cucumber)</li> <li>⬜ Enhanced HTML/Allure reporting</li> </ul>
+<ul> <li>✅ <b>TypeScript and Playwright base setup</b></li> <li>✅ ESLint, Prettier, Husky configuration (pre-commit auto-fix)</li> <li>✅ GitHub Actions CI/CD (lint + tests on push/PR)</li> <li>✅ API test suite scaffolding (JavaScript, no extra libs)</li> <li>⬜ BDD test suite scaffolding (Cucumber)</li> <li>⬜ Enhanced HTML/Allure reporting</li> </ul>
 Playwright Testing Milestones
 <ul> <li>⬜ Establish <b>Page Object Model (POM)</b> baseline (pages/, components/)</li> <li>⬜ Configure <b>env-specific</b> base URLs and timeouts (config/environments)</li> <li>⬜ Define <b>tags & suites</b>: <code>@smoke</code> (PR), <code>@regression</code> (scheduled), <code>@critical</code> (must-pass)</li> <li>⬜ Set up <b>cross-browser matrix</b>: Chromium, Firefox, WebKit</li> <li>⬜ Enable <b>artifacts</b>: traces, screenshots, videos on failure</li> <li>⬜ Add <b>auth/session fixtures</b> (logged-in state reuse)</li> <li>⬜ Implement <b>parallelisation & sharding</b> for faster builds</li> <li>⬜ Add <b>retries & flake detection</b> (CI-only)</li> <li>⬜ Introduce <b>network stubbing/mocking</b> for deterministic API interactions</li> <li>⬜ Integrate <b>accessibility checks</b> (axe or similar)</li> <li>⬜ Add <b>performance tracing & timing metrics</b></li> <li>⬜ Use <b>Playwright Test UI</b> for local triage</li> <li>⬜ Publish <b>HTML/Allure reports</b> as CI artifacts</li> </ul>
 ⬅️ Shift-Left & Quality Gates (where it lives in this repo)
@@ -114,9 +114,19 @@ Playwright Testing Milestones
 <ul> <li>✅ <b>TypeScript</b> for early type errors and API/contract clarity</li> <li>✅ <b>ESLint</b> (flat config) to enforce consistent, safe patterns</li> <li>✅ <b>Prettier</b> for formatting; all run pre-commit via Husky</li> <li>⬜ Mirror the same gates in CI before running any Playwright or API tests</li> </ul>
 🔐 Environments & Resources
 
+🧩 Environment & Configuration Management
+
 config/ holds environment JSON and shared settings
 
 resources/ is gitignored for local data, screenshots, and private assets
+
+In line with ISTQB 4.0 principles on Configuration Management and Test Environment Consistency, this project has been updated to ensure version alignment across all stages of delivery.
+
+💡 Node.js versioning is now controlled via NVM, guaranteeing that local and CI environments run identical runtime configurations — eliminating environment drift and supporting reproducible test outcomes.
+
+⚙️ CI pipelines are synchronised to the same Node version declared locally, maintaining traceability and configuration integrity throughout the test process.
+
+“Consistent environments are essential for reliable test results and controlled change management.” — ISTQB Foundation v4.0, Section 6.2.1
 
 💬 Contact
 
