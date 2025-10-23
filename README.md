@@ -59,8 +59,6 @@ qa-automation-suites/
 └─ api/tsconfig.json        # API-specific TS config (src → dist)
 
 
-
-🧰 Tech Stack
 🧰 Tech Stack
 Category | Tools & Notes
 -- | --
@@ -112,17 +110,18 @@ Playwright Testing Milestones
 <ul> <li>⬜ <b>Developer view</b>: per-test pass/fail + traces/videos in CI artifacts</li> <li>⬜ <b>Team view</b>: trend of failures/flake rate + slowest specs; short summary in PR comment</li> <li>⬜ <b>Stakeholder view</b>: release readiness summary (risks covered, critical paths green)</li> </ul> <p><i>Reference on thinking in levels of detail:</i> <a href="https://www.linkedin.com/feed/update/urn:li:activity:7379430666712555520/">Granularity in test reporting (LinkedIn)</a></p>
 🔒 Static Testing & Code Health (demonstrated here)
 <ul> <li>✅ <b>TypeScript</b> for early type errors and API/contract clarity</li> <li>✅ <b>ESLint</b> (flat config) to enforce consistent, safe patterns</li> <li>✅ <b>Prettier</b> for formatting; all run pre-commit via Husky</li> <li>⬜ Mirror the same gates in CI before running any Playwright or API tests</li> </ul>
-🔐 Environments & Resources
 
-🧩 Environment & Configuration Management
+🔐 Environments & Resources
 
 config/ holds environment JSON and shared settings
 
 resources/ is gitignored for local data, screenshots, and private assets
 
+🧩 Configuration Management
+
 In line with ISTQB 4.0 principles on Configuration Management and Test Environment Consistency, this project has been updated to ensure version alignment across all stages of delivery.
 
-💡 Node.js versioning is now controlled via NVM, guaranteeing that local and CI environments run identical runtime configurations — eliminating environment drift and supporting reproducible test outcomes.
+💡 Node.js versioning is now controlled via NVM, guaranteeing that local and CI environments run identical runtime configurations: eliminating environment drift and supporting reproducible test outcomes.
 
 ⚙️ CI pipelines are synchronised to the same Node version declared locally, maintaining traceability and configuration integrity throughout the test process.
 
