@@ -45,4 +45,4 @@ jobs:
 
       # Run API-level tests from compiled output
       - name: 🧪 Run API tests
-        run: node dist/src/tests/healthcheck.test.js
+        run: node api/dist/tests/healthcheck.test.js
