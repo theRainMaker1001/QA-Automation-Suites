@@ -1,6 +1,7 @@
 // basic health check
 
 import assert from 'assert';
+import fetch from 'node-fetch';
 
 // ask gitHUB api for data
 async function runHealthCheck() {
