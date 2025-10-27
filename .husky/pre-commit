@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Run ESLint + Prettier on staged files (configured in package.json -> "lint-staged")
+npx lint-staged
+
+# Block the commit if any staged text file still contains CRLF
+CR=$(printf "\r")
+if git grep -I -n --cached "$CR" -- . >/dev/null; then
+  echo "✖ CRLF line endings found in staged files."
+  echo "  Run: npx prettier --write .   (or re-stage after formatting)"
+  exit 1
+fi
+
+echo "✓ ALL Pre-commit checks passed (ESLint,Prettier,Line endings)."
