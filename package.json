@@ -4,11 +4,11 @@
   "description": "Professional QA automation suite with TypeScript, linting, formatting, and CI integration.",
   "main": "index.js",
   "type": "module",
+  "ts-node": { "esm": true },
   "scripts": {
     "build:api": "tsc -p api/tsconfig.json",
     "test:api": "node --loader ts-node/esm api/src/tests/healthcheck.test.ts",
     "clean": "rimraf dist api/dist",
-    "check": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext .ts --format stylish",
     "fmt": "prettier --write .",
@@ -17,9 +17,9 @@
     "dev": "ts-node --watch ./e2e/tests/index.ts"
   },
   "lint-staged": {
-    "*.{js,ts,json,md}": [
+    "*.{js,ts,json,md,css,html,yml,yaml,sh}": [
       "eslint --fix",
-      "prettier --write"
+      "prettier --write --end-of-line=lf"
     ]
   },
   "keywords": [
@@ -30,7 +30,7 @@
     "ci-cd",
     "playwright"
   ],
-  "author": "",
+  "author": "Tom Cunningham",
   "license": "ISC",
   "devDependencies": {
     "@eslint/js": "^9.38.0",
