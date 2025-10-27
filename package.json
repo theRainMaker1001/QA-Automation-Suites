@@ -4,7 +4,9 @@
   "description": "Professional QA automation suite with TypeScript, linting, formatting, and CI integration.",
   "main": "index.js",
   "type": "module",
-  "ts-node": { "esm": true },
+  "ts-node": {
+    "esm": true
+  },
   "scripts": {
     "build:api": "tsc -p api/tsconfig.json",
     "test:api": "node --loader ts-node/esm api/src/tests/healthcheck.test.ts",
