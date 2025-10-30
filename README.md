@@ -1,20 +1,20 @@
 🎯 QA-Automation-Suites
-[![CI (typecheck + eslint)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml/badge.svg)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml)
+[![CI (typecheck + eslint + Prettier + API)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml/badge.svg)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml)
 
-Playwright and JavaScript-based automation suites with linting, formatting, and CI/CD integration.
-This project demonstrates scalable automation architecture designed for end-to-end (E2E), API, and BDD testing using modern QA engineering standards (and solid ISTQB fundamentals).
+Playwright and TypeScript / JavaScript-based automation suites with linting, formatting, and CI/CD integration.
+This project demonstrates scalable automation architecture designed for end-to-end (E2E), API, and BDD testing using modern QA engineering standards (including solid ISTQB fundamentals).
 
 🚀 Overview
 
-QA-Automation-Suites is a professional testing portfolio showcasing multiple test suites built with:
+QA-Automation-Suites is a testing portfolio showcasing multiple test suites built with:
 
 🎭 Playwright for E2E and UI testing
 
 🌐 JavaScript / TypeScript for API and integration tests
 
-🧩 Cucumber (BDD) ready for behavior-driven testing
+🧩 Cucumber (BDD) placeholder, ready for behavior-driven testing
 
-⚙️ ESLint, Prettier, and Husky for code quality and pre-commit enforcement
+⚙️ ESLint, Prettier, and Husky hooks for code quality and pre-commit enforcement
 
 🧱 GitHub Actions for continuous integration and delivery (CI/CD)
 
@@ -22,52 +22,85 @@ Each suite follows modular, maintainable patterns with separate configurations a
 
 🧠 ISTQB-Aligned Strategy (best-practice, demonstrated here)
 
-This repo demonstrates ISTQB best-practice testing in a practical, engineer-friendly way:
+This repo demonstrates ISTQB best-practice testing in a practical and engineer-friendly way, including but not limited to:
 
 ⬅️ Shift-left & test-first: review requirements and test ideas early, run static checks in CI, and give fast feedback on every PR to cut rework.
 
 ⚖️ Risk-based focus: prioritise by likelihood × impact. Use tags to target effort: @smoke (fast checks on PRs), @critical (must-pass before release), @regression (broader scheduled runs).
 
-🎯 Core test-design techniques (used where they add value):
+🎯 Core test-design techniques (used only where they add value):
 Equivalence Partitioning (EP), Boundary Value Analysis (BVA), Decision Tables, State Transitions, plus pairwise/combinatorial selection when options explode.
 
-📊 Reporting granularity: present the right info for the right audience — developer (per-test + traces), team (trends/flake), stakeholder (release readiness). See this post for context:
+📊 Reporting granularity: presenting the right info for the right audience — developer (per-test + traces), team (trends/flake), stakeholder (release readiness). See this post for context on granularity as a paradigm:
 <a href="https://www.linkedin.com/feed/update/urn:li:activity:7379430666712555520/">Granularity in test reporting (LinkedIn)</a>
 
 🔁 After a fix: run confirmation tests first, then a targeted regression subset to protect nearby risk areas.
 
 🔒 Static testing & code health: TypeScript types, ESLint rules, Prettier formatting, and Husky pre-commit hooks locally; the same gates enforced in CI.
 
-See the Roadmap below for exactly where each of these show up (folders, tags, and workflows).
+See the Roadmap below for specifics (folders, tags, and workflows).
 
 ## 🧩 Project Structure
 
 ```bash
 qa-automation-suites/
-├─ api/
-│  ├─ src/                  # TypeScript API tests (tool-agnostic)
+├─ README.md                      # High-level repo overview (what this project is)
+├─ package.json                   # Workspace-level scripts (lint, build, etc)
+├─ package-lock.json              # Locked dependency graph for CI reproducibility
+├─ tsconfig.json                  # Root TS config (shared compiler rules)
+├─ eslint.config.js               # ESLint + Prettier config for consistent style
+├─ resources/                     # Supporting assets / docs (not executable code)
+│  ├─ ISTQB_CTFL_Syllabus_v4.0.1.pdf
+│
+│
+├─ .github/
+│  └─ workflows/
+│     └─ ci.yml                   # GitHub Actions pipeline (lint, typecheck, build, test)
+│
+├─ config/                        # Centralised config for each testing layer
+│  ├─ api/                        # API test config (e.g. base URLs, tokens, headers)
+│  ├─ bdd/                        # BDD/Cucumber config scaffolding
+│  ├─ environments/               # Env profiles (dev/stage/prod-style separation)
+│  ├─ playwright/                 # Playwright/browser/runtime config
+│  └─ testdata/                   # Shared test data definitions / fixtures
+│
+├─ api/                           # API testing layer (TypeScript-first, tool-agnostic)
+│  ├─ README.md                   # What the API test suite does and how to run it
+│  ├─ tsconfig.json               # TS config for this package (src -> dist)
+│  ├─ data/                       # Static payloads, request bodies, mock responses
+│  ├─ helpers/                    # Reusable utilities for API tests
+│  │  └─ fetchClient.ts           # Wrapper around fetch (adds base URL, headers, etc)
+│  ├─ src/                        # Source .ts files
 │  │  └─ tests/
-│  │     └─ healthcheck.test.ts
-│  └─ dist/                 # Compiled JS output (build:api)
-├─ e2e/                     # Playwright UI/E2E tests (scaffold)
-├─ bdd/                     # Cucumber BDD tests (future integration)
-├─ config/                  # Centralised config and environment files
-├─ resources/               # Test data/fixtures/private assets (gitignored)
-├─ .github/                 # CI/CD workflows (GitHub Actions)
-├─ package.json
-├─ tsconfig.json            # root TS config
-└─ api/tsconfig.json        # API-specific TS config (src → dist)
+│  │     └─ healthcheck.test.ts   # Example health check test
+│  └─ dist/                       # (Generated) Compiled JS output after build:api
+│                                 # CI runs tests from here using plain node
+│
+├─ e2e/                           # Playwright UI / end-to-end layer
+│  ├─ fixtures/                   # Test fixtures / test context setup
+│  │  └─ README.md
+│  ├─ pages/                      # Page objects / app model abstraction
+│  │  └─ README.md
+│  ├─ tests/                      # Actual UI/E2E tests
+│  │  ├─ README.md
+│  │  └─ index.ts                 # (placeholder entry point / demo)
+│  └─ utils/                      # Shared helpers for E2E tests
+│     └─ README.md
+│
+├─ bdd/                           # Placeholder for BDD/Cucumber-style specs
 
 
-🧰 Tech Stack
-Category | Tools & Notes
--- | --
-E2E/UI Testing | 🎭 Playwright (scaffolded)
-API Testing | 🌐 TypeScript + **fetch** (Node 18+) / **node-fetch** fallback for CI
-BDD | 🧩 Cucumber (planned)
-Language | 🦸‍♂️ TypeScript
-Code Quality | 🧹 ESLint (flat config v9) + Prettier + Husky + lint-staged
-CI/CD | ⚙️ GitHub Actions (typecheck, lint, API health check)
+## 🧰 Tech Stack
+
+Category            | Tools & Notes
+--                  | --
+E2E/UI Testing      | 🎭 Playwright (scaffolded in `e2e/`)
+API Testing         | 🌐 TypeScript + node-fetch (simple no-framework API check)
+BDD                 | 🧩 Cucumber / BDD layer planned (`bdd/` placeholder ready)
+Language            | 🦸‍♂️ TypeScript everywhere (strict, typed, modular)
+Code Quality        | 🧹 ESLint (flat config v9) + Prettier + Husky + lint-staged + enforced on commit and in CI
+CI/CD               | ⚙️ GitHub Actions (typecheck, lint, Prettier check, build, API healthcheck test)
+
 
 ```
 
@@ -109,7 +142,7 @@ Playwright Testing Milestones
 📊 Reporting Granularity (audience-aware)
 <ul> <li>⬜ <b>Developer view</b>: per-test pass/fail + traces/videos in CI artifacts</li> <li>⬜ <b>Team view</b>: trend of failures/flake rate + slowest specs; short summary in PR comment</li> <li>⬜ <b>Stakeholder view</b>: release readiness summary (risks covered, critical paths green)</li> </ul> <p><i>Reference on thinking in levels of detail:</i> <a href="https://www.linkedin.com/feed/update/urn:li:activity:7379430666712555520/">Granularity in test reporting (LinkedIn)</a></p>
 🔒 Static Testing & Code Health (demonstrated here)
-<ul> <li>✅ <b>TypeScript</b> for early type errors and API/contract clarity</li> <li>✅ <b>ESLint</b> (flat config) to enforce consistent, safe patterns</li> <li>✅ <b>Prettier</b> for formatting; all run pre-commit via Husky</li> <li>⬜ Mirror the same gates in CI before running any Playwright or API tests</li> </ul>
+<ul> <li>✅ <b>TypeScript</b> for early type errors and API/contract clarity</li> <li>✅ <b>ESLint</b> (flat config) to enforce consistent, safe patterns</li> <li>✅ <b>Prettier</b> for formatting; all run pre-commit via Husky</li> <li>✅ Mirror the same gates in CI before running any Playwright or API tests</li> </ul>
 
 🔐 Environments & Resources
 
