@@ -104,31 +104,108 @@ CI/CD               | ⚙️ GitHub Actions (typecheck, lint, Prettier check, bu
 
 ```
 
-🧪 Quick Start
+⚡ Quick Start – Local Setup
+1️⃣ Node.js & npm (required)
 
-# install dependencies
+This project uses the Node.js version defined in .nvmrc (currently 20.11.0). Everyone should use that version so local runs match CI.
 
-npm install
+# Show the Node version this project expects (from .nvmrc)
 
-# static checks
+cat .nvmrc
+
+# Check your current Node version
+
+node -v
+
+# (Optional, if you use nvm / nvm-windows) install the required Node version
+
+nvm install 20.11.0
+
+# (Optional, if you use nvm / nvm-windows) switch this shell to that version
+
+nvm use 20.11.0
+
+# Confirm Node is now on the expected version
+
+node -v
+
+_If you don’t use nvm, just install Node.js 20.11.0 from the official Node.js website or your OS package manager, then re-run node -v to confirm._
+
+2️⃣ Install dependencies (required, lockfile-based)
+
+From the repo root, use npm ci so you get the exact same dependency tree as CI (from package-lock.json):
+
+# Install exact dependency versions from package-lock.json (matches CI)
+
+npm ci
+
+3️⃣ Husky pre-commit hooks (run once per clone)
+
+Husky is already configured to run ESLint + Prettier on staged files and block CRLF line endings on every commit.
+
+On a fresh clone, run this once from the repo root:
+
+# Install Husky git hooks for this repository
+
+npm run prepare
+
+After that, every git commit will automatically run the pre-commit checks; commits will fail if linting/formatting/line-endings don’t pass.
+
+4️⃣ Static checks (run locally before pushing)
+
+These are the core static gates you should run locally and that CI also enforces:
+
+# Run TypeScript type checks (no files emitted)
 
 npm run typecheck
+
+# Run ESLint over the codebase
+
 npm run lint
+
+# Auto-format the codebase with Prettier (writes changes)
+
 npm run fmt
 
-# API suite (tool-agnostic, TS)
+5️⃣ API healthcheck suite (mirrors current CI)
 
-npm run build:api # compile TS → JS into api/dist
+CI builds the API test bundle and runs the compiled healthcheck from api/dist. To do the same locally:
+
+# Build API tests: compile TypeScript (api/src) to JavaScript (api/dist)
+
+npm run build:api
+
+# Run the compiled API healthcheck test (this is what CI runs)
+
 node api/dist/tests/healthcheck.test.js
 
-# or run the API health check directly in TS (no build)
+Or, if you want to run the healthcheck directly in TypeScript (no build step):
+
+# Run the API healthcheck test directly in TypeScript
 
 npm run test:api
+
+✨ Nice-to-have: stay perfectly in sync with CI
+
+On any new machine or after big changes:
+
+# See the required Node version for this repo
+
+cat .nvmrc
+
+# (Optional, with nvm) install & select that Node version
+
+nvm install 20.11.0
+nvm use 20.11.0
+
+# Reinstall exact deps after dependency updates (uses package-lock.json)
+
+npm ci
 
 🏗️ Roadmap
 General
 
-<ul> <li>✅ <b>TypeScript and Playwright base setup</b></li> <li>✅ ESLint, Prettier, Husky configuration (pre-commit auto-fix)</li> <li>✅ GitHub Actions CI/CD (lint + tests on push/PR)</li> <li>✅ API test suite scaffolding (JavaScript, no extra libs)</li> <li>⬜ BDD test suite scaffolding (Cucumber)</li> <li>⬜ Enhanced HTML/Allure reporting</li> </ul>
+<ul> <li>✅ TypeScript and Playwright base setup</li> <li>✅ ESLint, Prettier, Husky configuration (pre-commit auto-fix)</li> <li>✅ GitHub Actions CI/CD (lint + tests on push/PR)</li> <li>✅ API test suite scaffolding (JavaScript, no extra libs)</li> <li>⬜ BDD test suite scaffolding (Cucumber)</li> <li>⬜ Enhanced HTML/Allure reporting</li> </ul>
 Playwright Testing Milestones
 <ul> <li>⬜ Establish <b>Page Object Model (POM)</b> baseline (pages/, components/)</li> <li>⬜ Configure <b>env-specific</b> base URLs and timeouts (config/environments)</li> <li>⬜ Define <b>tags & suites</b>: <code>@smoke</code> (PR), <code>@regression</code> (scheduled), <code>@critical</code> (must-pass)</li> <li>⬜ Set up <b>cross-browser matrix</b>: Chromium, Firefox, WebKit</li> <li>⬜ Enable <b>artifacts</b>: traces, screenshots, videos on failure</li> <li>⬜ Add <b>auth/session fixtures</b> (logged-in state reuse)</li> <li>⬜ Implement <b>parallelisation & sharding</b> for faster builds</li> <li>⬜ Add <b>retries & flake detection</b> (CI-only)</li> <li>⬜ Introduce <b>network stubbing/mocking</b> for deterministic API interactions</li> <li>⬜ Integrate <b>accessibility checks</b> (axe or similar)</li> <li>⬜ Add <b>performance tracing & timing metrics</b></li> <li>⬜ Use <b>Playwright Test UI</b> for local triage</li> <li>⬜ Publish <b>HTML/Allure reports</b> as CI artifacts</li> </ul>
 ⬅️ Shift-Left & Quality Gates (where it lives in this repo)
