@@ -170,6 +170,8 @@ npm run lint            # catch style issues early while you work
 npm run fmt             # keep formatting consistent before you commit
 Using the same default Node version, regularly re-running npm ci, and keeping lint/format clean while you work makes CI failures rare and keeps everyone’s environment aligned with GitHub Actions.
 
+```
+
 🏗️ Roadmap
 General
 
@@ -212,4 +214,7 @@ In line with ISTQB 4.0 principles on Configuration Management and Test Environme
 💻 GitHub: https://github.com/theRainMaker1001
 
 ⭐ If you find this repo useful or inspiring, consider giving it a star!
+
+```
+
 ```
