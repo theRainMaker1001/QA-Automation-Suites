@@ -104,103 +104,65 @@ CI/CD               | ⚙️ GitHub Actions (typecheck, lint, Prettier check, bu
 
 ```
 
-⚡ Quick Start – Local Setup
+🧪 Quick Start – Local Setup
+
 1️⃣ Node.js & npm (required)
 
 This project uses the Node.js version defined in .nvmrc (currently 20.11.0). Everyone should use that version so local runs match CI.
 
-# Show the Node version this project expects (from .nvmrc)
+cat .nvmrc # show the Node.js version this project expects (e.g. 20.11.0)
+node -v # show your current Node.js version
 
-cat .nvmrc
+nvm install 20.11.0 # (optional, with nvm) install Node.js 20.11.0 on your machine
+nvm use 20.11.0 # (optional, with nvm) switch your shell to Node.js 20.11.0
 
-# Check your current Node version
+node -v # confirm Node.js now matches the version from .nvmrc
 
-node -v
+If you don’t use nvm, install Node.js 20.11.0 via your usual installer and rerun node -v until it matches .nvmrc.
 
-# (Optional, if you use nvm / nvm-windows) install the required Node version
+2️⃣ Install dependencies (exact versions from lockfile)
+npm ci # install dependencies exactly as pinned in package-lock.json (same as CI)
 
-nvm install 20.11.0
-
-# (Optional, if you use nvm / nvm-windows) switch this shell to that version
-
-nvm use 20.11.0
-
-# Confirm Node is now on the expected version
-
-node -v
-
-_If you don’t use nvm, just install Node.js 20.11.0 from the official Node.js website or your OS package manager, then re-run node -v to confirm._
-
-2️⃣ Install dependencies (required, lockfile-based)
-
-From the repo root, use npm ci so you get the exact same dependency tree as CI (from package-lock.json):
-
-# Install exact dependency versions from package-lock.json (matches CI)
-
-npm ci
+Using npm ci ensures your local dependency tree is identical to GitHub Actions CI.
 
 3️⃣ Husky pre-commit hooks (run once per clone)
 
-Husky is already configured to run ESLint + Prettier on staged files and block CRLF line endings on every commit.
+Husky is configured to run ESLint + Prettier on staged files and enforce line-ending rules on every commit.
 
-On a fresh clone, run this once from the repo root:
+npm run prepare # install Husky git hooks so pre-commit checks run automatically
 
-# Install Husky git hooks for this repository
-
-npm run prepare
-
-After that, every git commit will automatically run the pre-commit checks; commits will fail if linting/formatting/line-endings don’t pass.
+After this, every git commit will automatically run the same formatting and linting checks for everyone.
 
 4️⃣ Static checks (run locally before pushing)
 
-These are the core static gates you should run locally and that CI also enforces:
+npm run typecheck # run TypeScript type checks (no files emitted)
+npm run lint # run ESLint across the project
+npm run fmt # run Prettier to auto-format files in-place
 
-# Run TypeScript type checks (no files emitted)
+If these pass locally, they should also pass in CI.
 
-npm run typecheck
+5️⃣ API healthcheck suite (matches CI pipeline)
 
-# Run ESLint over the codebase
+npm run build:api # compile API tests from TypeScript to JavaScript into api/dist
+node api/dist/tests/healthcheck.test.js # run the compiled API healthcheck test (same command CI uses)
 
-npm run lint
+Or run the API healthcheck directly in TypeScript:
 
-# Auto-format the codebase with Prettier (writes changes)
+npm run test:api # run the API healthcheck test directly in TS (no build step)
 
-npm run fmt
+Running these commands locally mirrors the behaviour of the GitHub Actions workflow.
 
-5️⃣ API healthcheck suite (mirrors current CI)
+✨ Nice to haves
 
-CI builds the API test bundle and runs the compiled healthcheck from api/dist. To do the same locally:
+These aren’t strictly required to run the tests, but they keep everyone’s setup identical to CI and to each other.
 
-# Build API tests: compile TypeScript (api/src) to JavaScript (api/dist)
+cat .nvmrc # quickly see the required Node.js version for this repo
+nvm alias default 20.11.0 # (if using nvm) make 20.11.0 your default Node version
+npm ci # re-install exact deps after pulling big changes or lockfile updates
+npm run lint # spot style issues early while you work
+npm run fmt # keep formatting consistent before you commit
 
-npm run build:api
-
-# Run the compiled API healthcheck test (this is what CI runs)
-
-node api/dist/tests/healthcheck.test.js
-
-Or, if you want to run the healthcheck directly in TypeScript (no build step):
-
-# Run the API healthcheck test directly in TypeScript
-
-npm run test:api
-
-✨ Nice-to-have: stay perfectly in sync with CI
-
-On any new machine or after big changes:
-
-# See the required Node version for this repo
-
-cat .nvmrc
-
-# (Optional, with nvm) install & select that Node version
-
-nvm install 20.11.0
-nvm use 20.11.0
-
-# Reinstall exact deps after dependency updates (uses package-lock.json)
-
-npm ci
+Using the same default Node version, regularly re-running npm ci, and keeping lint/format clean while you work will make CI failures much rarer and code reviews smoother.
 
 🏗️ Roadmap
 General
