@@ -104,65 +104,71 @@ CI/CD               | ⚙️ GitHub Actions (typecheck, lint, Prettier check, bu
 
 ```
 
-🧪 Quick Start – Local Setup
+## 🧪 Quick Start – Local Setup
 
-1️⃣ Node.js & npm (required)
+### 1️⃣ Node.js & npm (required)
 
-This project uses the Node.js version defined in .nvmrc (currently 20.11.0). Everyone should use that version so local runs match CI.
+This project uses the Node.js version defined in `.nvmrc` (currently **20.11.0**). Everyone should use this version so local runs match CI.
 
-cat .nvmrc # show the Node.js version this project expects (e.g. 20.11.0)
-node -v # show your current Node.js version
+```bash
 
-nvm install 20.11.0 # (optional, with nvm) install Node.js 20.11.0 on your machine
-nvm use 20.11.0 # (optional, with nvm) switch your shell to Node.js 20.11.0
+bash
+cat .nvmrc              # show the Node.js version this project expects (e.g. 20.11.0)
+node -v                 # show your current / local Node.js version
 
-node -v # confirm Node.js now matches the version from .nvmrc
+nvm install 20.11.0     # (optional, with nvm/nvm-windows) install Node.js 20.11.0 on this machine
+nvm use 20.11.0         # (optional, with nvm/nvm-windows) switch this shell to Node.js 20.11.0
 
-If you don’t use nvm, install Node.js 20.11.0 via your usual installer and rerun node -v until it matches .nvmrc.
+node -v                 # confirm Node.js now matches the version from .nvmrc
+
+If you don’t use nvm, just install Node.js 20.11.0 via your usual installer (Windows, macOS, Linux), then re-run node -v and it should match .nvmrc.
 
 2️⃣ Install dependencies (exact versions from lockfile)
-npm ci # install dependencies exactly as pinned in package-lock.json (same as CI)
 
-Using npm ci ensures your local dependency tree is identical to GitHub Actions CI.
+bash
+npm ci                  # install dependencies exactly as pinned in package-lock.json (same as CI)
+Using npm ci ensures your local dependency tree is identical to the GitHub Actions CI.
 
 3️⃣ Husky pre-commit hooks (run once per clone)
 
 Husky is configured to run ESLint + Prettier on staged files and enforce line-ending rules on every commit.
 
-npm run prepare # install Husky git hooks so pre-commit checks run automatically
-
-After this, every git commit will automatically run the same formatting and linting checks for everyone.
+bash
+npm run prepare         # install Husky git hooks so pre-commit checks run automatically
+After this, every git commit will run the same formatting and linting checks for everyone, before the commit is created.
 
 4️⃣ Static checks (run locally before pushing)
 
-npm run typecheck # run TypeScript type checks (no files emitted)
-npm run lint # run ESLint across the project
-npm run fmt # run Prettier to auto-format files in-place
-
-If these pass locally, they should also pass in CI.
+bash
+npm run typecheck       # run TypeScript type checks (no files emitted)
+npm run lint            # run ESLint across the project
+npm run fmt             # run Prettier to auto-format files in-place
+If these pass locally, they should also pass in CI, because CI runs the same scripts plus a Prettier --check pass.
 
 5️⃣ API healthcheck suite (matches CI pipeline)
 
-npm run build:api # compile API tests from TypeScript to JavaScript into api/dist
+bash
+npm run build:api                       # compile API tests from TypeScript to JavaScript into api/dist
 node api/dist/tests/healthcheck.test.js # run the compiled API healthcheck test (same command CI uses)
 
 Or run the API healthcheck directly in TypeScript:
 
-npm run test:api # run the API healthcheck test directly in TS (no build step)
+bash
 
-Running these commands locally mirrors the behaviour of the GitHub Actions workflow.
+npm run test:api                        # run the API healthcheck test directly in TS (no build step)
+Running the build + compiled test combo above mirrors exactly what the GitHub Actions workflow does for API tests.
+
 
 ✨ Nice to haves
 
-These aren’t strictly required to run the tests, but they keep everyone’s setup identical to CI and to each other.
+bash
 
-cat .nvmrc # quickly see the required Node.js version for this repo
-nvm alias default 20.11.0 # (if using nvm) make 20.11.0 your default Node version
-npm ci # re-install exact deps after pulling big changes or lockfile updates
-npm run lint # spot style issues early while you work
-npm run fmt # keep formatting consistent before you commit
-
-Using the same default Node version, regularly re-running npm ci, and keeping lint/format clean while you work will make CI failures much rarer and code reviews smoother.
+cat .nvmrc              # quickly see the required Node.js version for this repo
+nvm alias default 20.11.0  # (with nvm) make 20.11.0 your default Node version for all new shells
+npm ci                  # re-install exact deps after big pulls or lockfile updates
+npm run lint            # catch style issues early while you work
+npm run fmt             # keep formatting consistent before you commit
+Using the same default Node version, regularly re-running npm ci, and keeping lint/format clean while you work makes CI failures rare and keeps everyone’s environment aligned with GitHub Actions.
 
 🏗️ Roadmap
 General
@@ -206,3 +212,4 @@ In line with ISTQB 4.0 principles on Configuration Management and Test Environme
 💻 GitHub: https://github.com/theRainMaker1001
 
 ⭐ If you find this repo useful or inspiring, consider giving it a star!
+```
