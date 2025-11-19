@@ -165,6 +165,50 @@ npm run test:api                        # run the API healthcheck test directly 
 
 _Running the build + compiled test combo above mirrors what the GitHub Actions workflow does for API tests._
 
+#### 6️⃣ Local smoke debugging, explicitly force fails (with error messages)
+
+Use the below BASH commands to intentionally trigger each smoke check failure(and be given the exact error message).
+
+⚠️ Do not add to / use in CI. This uses || true so that the script doesn’t stop on failures! ⚠️
+
+```bash
+
+# Run failure scenarios sequentially
+
+(
+  echo "=== FAIL: Non-200 Status (404) ==="
+  HEALTH_URL=https://api.github.com/does-not-exist npm run test:api || true
+  echo
+
+  echo "=== FAIL: Wrong JSON Field ==="
+  EXPECT_FIELD=definitely_not_here npm run test:api || true
+  echo
+
+  echo "=== FAIL: Timeout (abort quickly) ==="
+  TIMEOUT_MS=1 npm run test:api || true
+  echo
+
+  echo "=== FAIL: Latency Budget (too slow) ==="
+  MAX_LATENCY_MS=1 npm run test:api || true
+  echo
+
+  echo "=== FAIL: Wrong Content-Type (HTML, not JSON) ==="
+  HEALTH_URL=https://example.com npm run test:api || true
+  echo
+
+  echo "=== FAIL: Auth Happy Path (invalid token) ==="
+  CHECK_AUTH=true AUTH_URL=https://api.github.com/user AUTH_TOKEN=invalid npm run test:api || true
+  echo
+
+  echo "=== ALL FAILURE SCENARIOS COMPLETE ==="
+)
+
+```
+
+Covers: non-200 status, missing JSON field, timeout error, latency error, wrong content-type, and auth (happy path) with a bad token.
+
+💡 If you want to stop on the first failure, remove every || true 💡
+
 #### ✨ Nice to haves / Reusable commands
 
 ```bash
@@ -180,7 +224,7 @@ _Using the same default Node version, regularly re-running `npm ci`, and keeping
 🏗️ Roadmap
 General
 
-<ul> <li>✅ TypeScript and Playwright base setup</li> <li>✅ ESLint, Prettier, Husky configuration (pre-commit auto-fix)</li> <li>✅ GitHub Actions CI/CD (lint + tests on push/PR)</li> <li>✅ API test suite scaffolding (JavaScript, no extra libs)</li> <li>⬜ BDD test suite scaffolding (Cucumber)</li> <li>⬜ Enhanced HTML/Allure reporting</li> </ul>
+<ul> <li>✅ TypeScript and Playwright base setup</li> <li>✅ ESLint, Prettier, Husky configuration (pre-commit auto-fix)</li> <li>✅ GitHub Actions CI/CD (lint + tests on push/PR)</li> <li>✅ API test suite scaffolding (JavaScript, no extra libs)</li> <li>✅ Create API smoke test (checks) and add them to CI </li> <li>⬜ BDD test suite scaffolding (Cucumber)</li> <li>⬜ Enhanced HTML/Allure reporting</li> </ul>
 Playwright Testing Milestones
 <ul> <li>⬜ Establish <b>Page Object Model (POM)</b> baseline (pages/, components/)</li> <li>⬜ Configure <b>env-specific</b> base URLs and timeouts (config/environments)</li> <li>⬜ Define <b>tags & suites</b>: <code>@smoke</code> (PR), <code>@regression</code> (scheduled), <code>@critical</code> (must-pass)</li> <li>⬜ Set up <b>cross-browser matrix</b>: Chromium, Firefox, WebKit</li> <li>⬜ Enable <b>artifacts</b>: traces, screenshots, videos on failure</li> <li>⬜ Add <b>auth/session fixtures</b> (logged-in state reuse)</li> <li>⬜ Implement <b>parallelisation & sharding</b> for faster builds</li> <li>⬜ Add <b>retries & flake detection</b> (CI-only)</li> <li>⬜ Introduce <b>network stubbing/mocking</b> for deterministic API interactions</li> <li>⬜ Integrate <b>accessibility checks</b> (axe or similar)</li> <li>⬜ Add <b>performance tracing & timing metrics</b></li> <li>⬜ Use <b>Playwright Test UI</b> for local triage</li> <li>⬜ Publish <b>HTML/Allure reports</b> as CI artifacts</li> </ul>
 ⬅️ Shift-Left & Quality Gates (where it lives in this repo)
