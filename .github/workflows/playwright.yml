@@ -40,3 +40,6 @@ jobs:
           name: playwright-report
           path: e2e/playwright-report/
           retention-days: 30
+
+      - name: Typecheck E2E
+        run: npm run typecheck
