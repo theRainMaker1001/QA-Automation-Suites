@@ -10,7 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
-    # execute all run steps in e2e/
+    # All run steps that execute in e2e/
+
     defaults:
       run:
         working-directory: e2e
@@ -20,12 +21,15 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version-file: .nvmrc # keep CI in sync with repo
+          node-version-file: .nvmrc
           cache: 'npm'
           cache-dependency-path: e2e/package-lock.json
 
-      - name: Install deps
+      - name: Install deps (e2e)
         run: npm ci
+
+      - name: Typecheck (e2e)
+        run: npm run typecheck
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
@@ -40,6 +44,3 @@ jobs:
           name: playwright-report
           path: e2e/playwright-report/
           retention-days: 30
-
-      - name: Typecheck E2E
-        run: npm run typecheck

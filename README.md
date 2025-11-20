@@ -1,5 +1,6 @@
 🎯 QA-Automation-Suites
 [![CI (typecheck + eslint + Prettier + API)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml/badge.svg)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml)
+[![Playwright E2E](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/playwright.yml/badge.svg)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/playwright.yml)
 
 Playwright and TypeScript / JavaScript-based automation suites with linting, formatting, and CI/CD integration.
 This project demonstrates scalable automation architecture designed for end-to-end (E2E), API, and BDD testing using modern QA engineering standards (including solid ISTQB fundamentals).
