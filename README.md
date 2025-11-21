@@ -1,4 +1,3 @@
-````md
 # 🎯 QA-Automation-Suites
 
 [![CI](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml/badge.svg?branch=main&cacheBust=1)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml)
@@ -78,6 +77,7 @@ QA-Automation-Suites/
 ├─ tsconfig.json
 └─ README.md
 ```
+
 ````
 
 > **Note:** Banking tests are intentionally small and tagged to keep PRs fast while providing continuous uptime signals.
@@ -169,7 +169,7 @@ npm run test:api
 
 ### Local smoke debugging (intentional failures)
 
-Use this **local-only** script to intentionally trigger common failure modes and see clear error messages.  
+Use this **local-only** script to intentionally trigger common failure modes and see clear error messages.
 ⚠️ **Do not** add to CI — it uses `|| true` so the script doesn’t stop on failures! ⚠️
 
 ```bash
@@ -288,3 +288,4 @@ We apply ISTQB principles for configuration management and stable environments: 
 ```
 
 ```
+````
