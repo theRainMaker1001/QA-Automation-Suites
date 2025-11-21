@@ -1,3 +1,4 @@
+import 'dotenv/config'; // load e2e/.env automatically (BANK_BASE_URL, etc.)
 import { defineConfig, devices } from '@playwright/test';
 
 /**
@@ -31,6 +32,7 @@ export default defineConfig({
   /* Shared settings for all projects */
   use: {
     // baseURL: 'http://localhost:3000',  // set if your app runs locally
+    baseURL: process.env.BANK_BASE_URL ?? 'https://parabank.parasoft.com/parabank', // ← points tests at your target
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: process.env.CI ? 'retain-on-failure' : 'off',

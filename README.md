@@ -1,176 +1,176 @@
-🎯 QA-Automation-Suites
+````md
+# 🎯 QA-Automation-Suites
+
 [![CI](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml/badge.svg?branch=main&cacheBust=1)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml)
 [![Playwright E2E](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/playwright.yml/badge.svg?branch=main&cacheBust=1)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/playwright.yml)
+[![Bank Critical Smoke](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/bank-critical-smoke.yml/badge.svg?branch=main&cacheBust=1)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/bank-critical-smoke.yml)
 
-Playwright and TypeScript / JavaScript-based automation suites with linting, formatting, and CI/CD integration.
-This project demonstrates scalable automation architecture designed for end-to-end (E2E), API, and BDD testing using modern QA engineering standards (including solid ISTQB fundamentals).
+Playwright + TypeScript / JavaScript automation suites with linting, formatting, and CI/CD.  
+Design goal: **clean, scalable suites** for E2E, API, and BDD that apply modern QA engineering principles alongside **ISTQB-aligned** best practice.
 
-🚀 Overview
+---
 
-QA-Automation-Suites is a testing portfolio showcasing multiple test suites built with:
+## 🚀 Overview
 
-🎭 Playwright for E2E and UI testing
+This repo showcases multiple suites built with:
 
-🌐 JavaScript / TypeScript for API and integration tests
+- 🎭 **Playwright** for E2E/UI
+- 🌐 **TypeScript/JavaScript** for API & integration
+- 🧩 **BDD (Cucumber)**
+- 🧹 **ESLint + Prettier + Husky** for code health (local & CI)
+- ⚙️ **GitHub Actions** for CI/CD
 
-🧩 Cucumber (BDD) placeholder, ready for behavior-driven testing
+Each suite follows modular patterns with clear separation of concerns and reproducible CI.
 
-⚙️ ESLint, Prettier, and Husky hooks for code quality and pre-commit enforcement
+---
 
-🧱 GitHub Actions for continuous integration and delivery (CI/CD)
+## 🧠 ISTQB-aligned testing (practical, lean)
 
-Each suite follows modular, maintainable patterns with separate configurations and resources for clarity and scalability.
+- **Shift-left & test-first**: static checks (TS/ESLint/Prettier) run locally and in CI; fast feedback on every PR.
+- **Risk-based focus**: prioritize by _likelihood and impact_; use tags:
+  - `@smoke` (fast PR checks)
+  - `@critical` (must-pass uptime/entry checks; continuous)
+  - `@regression` (broader scheduled runs)
+- **Core test techniques** (where they add value): EP, BVA, Decision Tables, State-Transition.
+- **Reporting granularity**: developer (traces), team (trends/flake), stakeholder (readiness). See:  
+  _Granularity in test reporting_ → <a href="https://www.linkedin.com/feed/update/urn:li:activity:7379430666712555520/">LinkedIn post</a>
+- **After a fix**: confirmation → targeted regression to protect nearby risk.
 
-🧠 ISTQB-Aligned Strategy (best-practice, demonstrated here)
+---
 
-This repo demonstrates ISTQB best-practice testing in a practical and engineer-friendly way, including but not limited to:
-
-⬅️ Shift-left & test-first: review requirements and test ideas early, run static checks in CI, and give fast feedback on every PR to cut rework.
-
-⚖️ Risk-based focus: prioritise by likelihood × impact. Use tags to target effort: @smoke (fast checks on PRs), @critical (must-pass before release), @regression (broader scheduled runs).
-
-🎯 Core test-design techniques (used only where they add value):
-Equivalence Partitioning (EP), Boundary Value Analysis (BVA), Decision Tables, State Transitions, plus pairwise/combinatorial selection when options explode.
-
-📊 Reporting granularity: presenting the right info for the right audience — developer (per-test + traces), team (trends/flake), stakeholder (release readiness). See this post for context on granularity as a paradigm:
-<a href="https://www.linkedin.com/feed/update/urn:li:activity:7379430666712555520/">Granularity in test reporting (LinkedIn)</a>
-
-🔁 After a fix: run confirmation tests first, then a targeted regression subset to protect nearby risk areas.
-
-🔒 Static testing & code health: TypeScript types, ESLint rules, Prettier formatting, and Husky pre-commit hooks locally; the same gates enforced in CI.
-
-See the Roadmap below for specifics (folders, tags, and workflows).
-
-## 🧩 Project Structure
+## 🧩 Current Project Structure
 
 ```bash
-qa-automation-suites/
-├─ README.md                      # High-level repo overview (what this project is)
-├─ package.json                   # Workspace-level scripts (lint, build, etc)
-├─ package-lock.json              # Locked dependency graph for CI reproducibility
-├─ tsconfig.json                  # Root TS config (shared compiler rules)
-├─ eslint.config.js               # ESLint + Prettier config for consistent style
-├─ resources/                     # Supporting assets / docs (not executable code)
-│  ├─ ISTQB_CTFL_Syllabus_v4.0.1.pdf
-│
-│
+QA-Automation-Suites/
 ├─ .github/
 │  └─ workflows/
-│     └─ ci.yml                   # GitHub Actions pipeline (lint, typecheck, build, test)
-│
-├─ config/                        # Centralised config for each testing layer
-│  ├─ api/                        # API test config (e.g. base URLs, tokens, headers)
-│  ├─ bdd/                        # BDD/Cucumber config scaffolding
-│  ├─ environments/               # Env profiles (dev/stage/prod-style separation)
-│  ├─ playwright/                 # Playwright/browser/runtime config
-│  └─ testdata/                   # Shared test data definitions / fixtures
-│
-├─ api/                           # API testing layer (TypeScript-first, tool-agnostic)
-│  ├─ README.md                   # What the API test suite does and how to run it
-│  ├─ tsconfig.json               # TS config for this package (src -> dist)
-│  ├─ data/                       # Static payloads, request bodies, mock responses
-│  ├─ helpers/                    # Reusable utilities for API tests
-│  │  └─ fetchClient.ts           # Wrapper around fetch (adds base URL, headers, etc)
-│  ├─ src/                        # Source .ts files
+│     ├─ ci.yml                      # typecheck/lint/build + API check(s)
+│     ├─ playwright.yml              # Playwright E2E workflow
+│     └─ bank-critical-smoke.yml     # (new) lightweight uptime/entry checks
+├─ .husky/                           # pre-commit hooks
+├─ api/
+│  ├─ src/
 │  │  └─ tests/
-│  │     └─ healthcheck.test.ts   # Example health check test
-│  └─ dist/                       # (Generated) Compiled JS output after build:api
-│                                 # CI runs tests from here using plain node
-│
-├─ e2e/                           # Playwright UI / end-to-end layer
-│  ├─ fixtures/                   # Test fixtures / test context setup
-│  │  └─ README.md
-│  ├─ pages/                      # Page objects / app model abstraction
-│  │  └─ README.md
-│  ├─ tests/                      # Actual UI/E2E tests
-│  │  ├─ README.md
-│  │  └─ index.ts                 # (placeholder entry point / demo)
-│  └─ utils/                      # Shared helpers for E2E tests
-│     └─ README.md
-│
-├─ bdd/                           # Placeholder for BDD/Cucumber-style specs
+│  │     └─ healthcheck.test.ts
+│  ├─ helpers/                       # e.g., fetchClient.ts
+│  ├─ data/                          # payloads, mocks
+│  ├─ tsconfig.json
+│  └─ dist/                          # built JS (CI can run from here)
+├─ config/                           # env/config scaffolding (api/bdd/playwright/testdata)
+├─ e2e/
+│  ├─ tests/
+│  │  ├─ index.ts                    # placeholder / demo
+│  │  └─ bank/                       # (new) banking mini-project specs
+│  │     ├─ smoke.header.spec.ts
+│  │     ├─ critical.availability.spec.ts
+│  │     └─ critical.login.spec.ts
+│  ├─ fixtures/
+│  ├─ pages/
+│  ├─ utils/
+│  └─ playwright.config.ts           # reads BANK_BASE_URL from e2e/.env
+├─ .gitattributes
+├─ .gitignore
+├─ .nvmrc
+├─ .prettierrc
+├─ eslint.config.js
+├─ package.json
+├─ package-lock.json
+├─ tsconfig.json
+└─ README.md
+```
+````
 
+> **Note:** Banking tests are intentionally small and tagged to keep PRs fast while providing continuous uptime signals.
+
+---
+
+## 🏦 Banking mini-project (ParaBank) — @critical uptime & entry checks
+
+**Scenario:** We simulate a new client with intermittent **server issues**. We add a tiny `@critical` smoke lane that runs continuously to provide **granular failure signals** (infra vs backend vs UI).
+
+### Why this matters (ISTQB)
+
+- **Risk-based**: highest-impact failures first (availability + basic entry to the app).
+- **Monitoring & reporting**: clear signals support triage/decision-making (CTFL “test monitoring & reporting”).
+- **Granularity**: different failure labels → faster diagnosis (see granularity post above).
+
+### What the `@critical` lane checks (fast, read-only)
+
+- `NETWORK_DOWN` — DNS/connectivity outage (cannot reach `/`)
+- `SERVER_5XX` — server responds with 5xx
+- `APP_BROKEN_UI` — page renders but essential login elements missing
+
+### Run locally
+
+Create `e2e/.env`:
+
+```env
+BANK_BASE_URL=https://parabank.parasoft.com/parabank
+```
+
+Then:
+
+```bash
+cd e2e
+npx playwright test --project=chromium --grep @critical
+```
+
+> **Docker (optional)**: run `parasoft/parabank` on port 8080 and flip
+> `BANK_BASE_URL=http://localhost:8080/parabank` — no test code changes needed.
+
+### CI (continuous heartbeat)
+
+A small workflow (scheduled + on push to `main`) runs only the `@critical` suite in Chromium and uploads the HTML report artifact.
+Badge at the top of this README reflects the job status.
+
+---
+
+## 🧪 E2E quick start (smoke)
+
+1. Ensure `e2e/.env` has `BANK_BASE_URL=...`
+2. Run:
+
+```bash
+cd e2e
+npx playwright test --grep @smoke
+```
+
+Headed / debug:
+
+```bash
+npx playwright test --project=chromium --headed --grep @smoke
+PWDEBUG=1 npx playwright test --project=chromium --grep @smoke
+npx playwright show-report
+```
+
+---
 
 ## 🧰 Tech Stack
 
-Category            | Tools & Notes
---                  | --
-E2E/UI Testing      | 🎭 Playwright (scaffolded in `e2e/`)
-API Testing         | 🌐 TypeScript + node-fetch (simple no-framework API check)
-BDD                 | 🧩 Cucumber / BDD layer planned (`bdd/` placeholder ready)
-Language            | 🦸‍♂️ TypeScript everywhere (strict, typed, modular)
-Code Quality        | 🧹 ESLint (flat config v9) + Prettier + Husky + lint-staged + enforced on commit and in CI
-CI/CD               | ⚙️ GitHub Actions (typecheck, lint, Prettier check, build, API healthcheck test)
+| Category     | Tools & Notes                                  |
+| ------------ | ---------------------------------------------- |
+| E2E/UI       | Playwright (scaffolded in `e2e/`)              |
+| API          | TypeScript + light util (no heavy framework)   |
+| BDD          | Cucumber placeholder (`bdd/`)                  |
+| Language     | TypeScript (strict)                            |
+| Code Quality | ESLint (flat v9), Prettier, Husky (pre-commit) |
+| CI/CD        | GitHub Actions (static gates + E2E + API)      |
 
+---
 
-```
-
-## 🧪 Quick Start – Local Setup
-
-#### 1️⃣ Node.js & npm (required)
-
-This project uses the Node.js version defined in `.nvmrc` (currently **20.11.0**). Everyone should use this version so that local runs match CI.
+## 🧪 API Healthcheck (matches CI)
 
 ```bash
-cat .nvmrc              # show the Node.js version this project expects (e.g. 20.11.0)
-node -v                 # show your current / local Node.js version
-
-nvm install 20.11.0     # (optional, with nvm / nvm-windows) install Node.js 20.11.0 on your current machine
-nvm use 20.11.0         # (optional, with nvm / nvm-windows) switch your shell to Node.js 20.11.0
-
-node -v                 # confirm Node.js now matches the version the project expects
+npm run build:api
+node api/dist/tests/healthcheck.test.js
+# or
+npm run test:api
 ```
 
-_If you don’t use `nvm`, install Node.js **20.11.0** via your usual installer (Windows/macOS/Linux), then re-run `node -v`_
+### Local smoke debugging (intentional failures)
 
-#### 2️⃣ Install dependencies (exact versions from lockfile)
-
-```bash
-npm ci                  # install dependencies exactly as pinned in package-lock.json (same as CI)
-```
-
-_`npm ci` gives you the same dependency tree that GitHub Actions CI uses._
-
-#### 3️⃣ Husky pre-commit hooks (run once per clone)
-
-Husky is configured to run ESLint + Prettier on staged files and enforce line-ending rules on every commit.
-
-```bash
-npm run prepare         # install Husky git hooks so pre-commit checks run automatically
-```
-
-_After this, every `git commit` will automatically run the same formatting and linting checks before the commit is created._
-
-#### 4️⃣ Static checks (you can run locally before pushing)
-
-```bash
-npm run typecheck       # run TypeScript type checks (no files emitted)
-npm run lint            # run ESLint across the project
-npm run fmt             # run Prettier to auto-format files in-place
-```
-
-_These are the same static gates that run in CI (aside from a `prettier --check` that only runs in GitHub Actions)._
-
-#### 5️⃣ API healthcheck suite (matches CI pipeline)
-
-```bash
-npm run build:api                       # compile API tests from TypeScript to JavaScript into api/dist
-node api/dist/tests/healthcheck.test.js # run the compiled API healthcheck test (same command CI uses)
-```
-
-Or run the API healthcheck directly in TypeScript:
-
-```bash
-npm run test:api                        # run the API healthcheck test directly in TS (no build step)
-```
-
-_Running the build + compiled test combo above mirrors what the GitHub Actions workflow does for API tests._
-
-#### 6️⃣ Local smoke debugging, explicitly force fails (with error messages)
-
-Use the below BASH commands to intentionally trigger each smoke check failure(and be given the exact error message).
-
-⚠️ Do not add to / use in CI. This uses || true so that the script doesn’t stop on failures! ⚠️
+Use this **local-only** script to intentionally trigger common failure modes and see clear error messages.  
+⚠️ **Do not** add to CI — it uses `|| true` so the script doesn’t stop on failures! ⚠️
 
 ```bash
 
@@ -206,64 +206,84 @@ Use the below BASH commands to intentionally trigger each smoke check failure(an
 
 ```
 
-Covers: non-200 status, missing JSON field, timeout error, latency error, wrong content-type, and auth (happy path) with a bad token.
+Covers: non-200 status, missing JSON field, timeout, latency budget, wrong content-type, and invalid-auth “happy path”.
+💡 To stop on the first failure, remove each || true.
 
-💡 If you want to stop on the first failure, remove every || true 💡
+Windows tip: run this in Git Bash or WSL; PowerShell syntax differs.
 
-#### ✨ Nice to haves / Reusable commands
+---
 
-```bash
-cat .nvmrc                 # quickly see the required Node.js version for this repo
-nvm alias default 20.11.0  # (with nvm) make 20.11.0 your default Node version for all new shells
-npm ci                     # re-install exact deps after big pulls or lockfile updates
-npm run lint               # catch style issues early while you work
-npm run fmt                # keep formatting consistent before you commit
-```
+## 🧭 Environments
 
-_Using the same default Node version, regularly re-running `npm ci`, and keeping lint/format clean while you work keeps your repo aligned with others / GitHub Actions._
+- **Local/UI**: `e2e/.env` → `BANK_BASE_URL=...`
+- **CI/UI**: set `BANK_BASE_URL` in repo **Variables/Secrets**; the E2E job passes it to Playwright.
+- Node version: `.nvmrc` (keep local == CI)
 
-🏗️ Roadmap
-General
+---
 
-<ul> <li>✅ TypeScript and Playwright base setup</li> <li>✅ ESLint, Prettier, Husky configuration (pre-commit auto-fix)</li> <li>✅ GitHub Actions CI/CD (lint + tests on push/PR)</li> <li>✅ API test suite scaffolding (JavaScript, no extra libs)</li> <li>✅ Create API smoke test (checks) and add them to CI </li> <li>⬜ BDD test suite scaffolding (Cucumber)</li> <li>⬜ Enhanced HTML/Allure reporting</li> </ul>
-Playwright Testing Milestones
-<ul> <li>⬜ Establish <b>Page Object Model (POM)</b> baseline (pages/, components/)</li> <li>⬜ Configure <b>env-specific</b> base URLs and timeouts (config/environments)</li> <li>⬜ Define <b>tags & suites</b>: <code>@smoke</code> (PR), <code>@regression</code> (scheduled), <code>@critical</code> (must-pass)</li> <li>⬜ Set up <b>cross-browser matrix</b>: Chromium, Firefox, WebKit</li> <li>⬜ Enable <b>artifacts</b>: traces, screenshots, videos on failure</li> <li>⬜ Add <b>auth/session fixtures</b> (logged-in state reuse)</li> <li>⬜ Implement <b>parallelisation & sharding</b> for faster builds</li> <li>⬜ Add <b>retries & flake detection</b> (CI-only)</li> <li>⬜ Introduce <b>network stubbing/mocking</b> for deterministic API interactions</li> <li>⬜ Integrate <b>accessibility checks</b> (axe or similar)</li> <li>⬜ Add <b>performance tracing & timing metrics</b></li> <li>⬜ Use <b>Playwright Test UI</b> for local triage</li> <li>⬜ Publish <b>HTML/Allure reports</b> as CI artifacts</li> </ul>
-⬅️ Shift-Left & Quality Gates (where it lives in this repo)
-<ul> <li>✅ <b>Static checks locally</b>: TypeScript types, ESLint rules, Prettier formatting via Husky pre-commit</li> <li>✅ <b>Static checks in CI</b>: <code>tsc --noEmit</code>, <code>eslint</code>, <code>prettier --check</code> before any tests run</li> <li>⬜ <b>PR fast feedback</b>: run <code>@smoke</code> subset + changed-area tests on every pull request</li> </ul>
-🧪 Regression Strategy (exactly where it’s demonstrated here)
-<ul> <li>⬜ <b>Tagging</b>: mark business-critical flows with <code>@regression</code> inside <code>e2e/tests/</code> and <code>api/tests/</code></li> <li>⬜ <b>Nightly job</b>: add <code>.github/workflows/regression.yml</code> to run full <code>@regression</code> across browsers and upload HTML/Allure reports</li> <li>⬜ <b>PR job</b>: keep <code>ci.yml</code> lean — run <code>@smoke</code> + artifacts (trace/video) for quick triage</li> <li>⬜ <b>Confirmation → targeted regression</b>: script a <code>test:confirm</code> task to rerun the failing spec(s) and nearby tagged tests after a fix</li> <li>⬜ <b>Flake controls</b>: enable CI-only retries and record flaky test list in report summary</li> </ul>
-⚖️ Risk-Based Suite Design (Agile fit)
-<ul> <li>⬜ Create <code>docs/risk-catalog.md</code> mapping features to risk (likelihood × impact) and to tags (<code>@smoke</code>, <code>@critical</code>, <code>@regression</code>)</li> <li>⬜ Align suites to SDLC moments: <b>@smoke</b> per PR, <b>@critical</b> on release candidates, <b>@regression</b> nightly or pre-release</li> <li>⬜ Keep suites small, focused, and maintainable so Agile iterations stay fast</li> </ul>
-🧮 Test-Design Techniques (used where appropriate & effective)
-<ul> <li>⬜ Add design notes/examples for <b>Equivalence Partitioning</b> and <b>Boundary Value Analysis</b> alongside form/input tests</li> <li>⬜ Use <b>Decision Tables</b> for permission/flag rules; attach the table snapshot in test docs</li> <li>⬜ Model critical flows with <b>State Transitions</b> (happy/invalid transitions) for login, checkout, session timeouts</li> <li>⬜ Apply <b>pairwise/combinatorial selection</b> when options explode to keep suites lean but high-coverage</li> </ul>
-📊 Reporting Granularity (audience-aware)
-<ul> <li>⬜ <b>Developer view</b>: per-test pass/fail + traces/videos in CI artifacts</li> <li>⬜ <b>Team view</b>: trend of failures/flake rate + slowest specs; short summary in PR comment</li> <li>⬜ <b>Stakeholder view</b>: release readiness summary (risks covered, critical paths green)</li> </ul> <p><i>Reference on thinking in levels of detail:</i> <a href="https://www.linkedin.com/feed/update/urn:li:activity:7379430666712555520/">Granularity in test reporting (LinkedIn)</a></p>
-🔒 Static Testing & Code Health (demonstrated here)
-<ul> <li>✅ <b>TypeScript</b> for early type errors and API/contract clarity</li> <li>✅ <b>ESLint</b> (flat config) to enforce consistent, safe patterns</li> <li>✅ <b>Prettier</b> for formatting; all run pre-commit via Husky</li> <li>✅ Mirror the same gates in CI before running any Playwright or API tests</li> </ul>
+## 🗺️ Full Roadmap
 
-🔐 Environments & Resources
+**General**
 
-config/ holds environment JSON and shared settings
+- ✅ TypeScript + Playwright base
+- ✅ ESLint, Prettier, Husky (pre-commit auto-fix)
+- ✅ GitHub Actions CI/CD (static gates + tests)
+- ✅ API suite scaffold + healthcheck in CI
+- ⬜ BDD suite scaffold (Cucumber)
+- ⬜ Enhanced HTML/Allure reporting
 
-resources/ is gitignored for local data, screenshots, and private assets
+**Playwright milestones**
 
-🧩 Configuration Management
+- ✅ Env-specific baseURL via `.env` (public demo or Docker)
+- ✅ Tags & lanes: `@smoke` (PR), `@critical` (continuous), `@regression` (scheduled)
+- ✅ Artifacts on failure (trace, screenshots, videos in CI)
+- ⬜ Page Object Model baseline (`e2e/pages/`, components as needed)
+- ⬜ Cross-browser matrix (Chromium/Firefox/WebKit) on nightly
+- ⬜ Auth/session fixtures (reuse storage state)
+- ⬜ Parallelisation & sharding (CI speed)
+- ⬜ Network stubbing/mocking for deterministic interactions
+- ⬜ Accessibility checks (axe)
+- ⬜ Perf smoke (basic timing budgets)
 
-In line with ISTQB 4.0 principles on Configuration Management and Test Environment Consistency, this project has been updated to ensure version alignment across all stages of delivery.
+**Shift-left & Quality gates**
 
-💡 Node.js versioning is now controlled via NVM, guaranteeing that local and CI environments run identical runtime configurations: eliminating environment drift and supporting reproducible test outcomes.
+- ✅ Local static checks (TS/ESLint/Prettier) with Husky
+- ✅ CI static gates before any tests
+- ⬜ PR fast feedback: run `@smoke` subset + changed-area tests
 
-⚙️ CI pipelines are synchronised to the same Node version declared locally, maintaining traceability and configuration integrity throughout the test process.
+**Regression strategy**
 
-“Consistent environments are essential for reliable test results and controlled change management.” — ISTQB Foundation v4.0, Section 6.2.1
+- ⬜ Tag business-critical flows `@regression`
+- ⬜ Nightly job: full `@regression` across browsers; publish HTML/Allure
+- ⬜ PR job: `@smoke` only + artifacts
+- ⬜ Confirmation → targeted regression
+- ⬜ Flake controls (CI retries + flaky list)
 
-💬 Contact
+**Risk-based design**
 
-📫 LinkedIn: https://www.linkedin.com/in/tom-cunningham-5a1869297/
+- ⬜ `docs/risk-catalog.md` mapping features → risk → tags
+- ⬜ Align lanes to SDLC moments (`@smoke` PR, `@critical` heartbeat/release, `@regression` nightly)
 
-💻 GitHub: https://github.com/theRainMaker1001
+**Test Technique Library **
 
-⭐ If you find this repo useful or inspiring, consider giving it a star!
+- ⬜ EP/BVA examples alongside form/input specs
+- ⬜ Decision Tables for rules/permissions
+- ⬜ State-Transition for auth/session/flows
+
+---
+
+## 🔒 Configuration & Environment Consistency
+
+We apply ISTQB principles for configuration management and stable environments: same Node version via `.nvmrc`, same static gates locally and in CI, and environment-driven URLs for UI tests. Consistency → reproducibility → reliable results.
+
+---
+
+## 💬 Contact
+
+- LinkedIn: [https://www.linkedin.com/in/tom-cunningham-5a1869297/](https://www.linkedin.com/in/tom-cunningham-5a1869297/)
+- GitHub: [https://github.com/theRainMaker1001](https://github.com/theRainMaker1001)
+
+⭐ If this repo helps you, please star it.
 
 ```
 

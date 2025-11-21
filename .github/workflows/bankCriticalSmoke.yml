@@ -1,0 +1,39 @@
+name: Bank Critical Smoke
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '*/30 * * * *' # every 30 minutes
+  workflow_dispatch:
+
+jobs:
+  critical-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+
+      - name: Install deps (e2e)
+        working-directory: e2e
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: e2e
+        run: npx playwright install --with-deps
+
+      - name: Run @critical smoke (Chromium only, fast)
+        working-directory: e2e
+        env:
+          BANK_BASE_URL: ${{ vars.BANK_BASE_URL }} # set in Repo dotENV Settings / Variables
+        run: npx playwright test --project=chromium --grep @critical --reporter=list,html
+
+      - if: always()
+        name: Upload HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: bank-critical-smoke-report
+          path: e2e/playwright-report
