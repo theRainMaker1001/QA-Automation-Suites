@@ -272,7 +272,7 @@ Windows tip: run this in Git Bash or WSL; PowerShell syntax differs.
 
 ## 🔒 Configuration & Environment Consistency
 
-We apply ISTQB principles for configuration management and stable environments: same Node version via `.nvmrc`, same static gates locally and in CI, and environment-driven URLs for UI tests. Consistency → reproducibility → reliable results.
+I apply ISTQB principles including configuration management and stable environments: same Node version via `.nvmrc`, same static gates locally and in CI, and environment-driven URLs for UI tests. Consistency → reproducibility → reliable results.
 
 ---
 
