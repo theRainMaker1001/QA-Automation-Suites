@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml/badge.svg?branch=main&cacheBust=1)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml)
 [![Playwright E2E](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/playwright.yml/badge.svg?branch=main&cacheBust=1)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/playwright.yml)
-[![Bank Critical Smoke](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/bank-critical-smoke.yml/badge.svg?branch=main&cacheBust=1)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/bank-critical-smoke.yml)
+[![Bank Critical Smoke](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/bank-critical-smoke.yml/badge.svg?branch=main)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/bank-critical-smoke.yml)
 
 Playwright + TypeScript / JavaScript automation suites with linting, formatting, and CI/CD.  
 Design goal: **clean, scalable suites** for E2E, API, and BDD that apply modern QA engineering principles alongside **ISTQB-aligned** best practice.
@@ -77,8 +77,6 @@ QA-Automation-Suites/
 ├─ tsconfig.json
 └─ README.md
 ```
-
-````
 
 > **Note:** Banking tests are intentionally small and tagged to keep PRs fast while providing continuous uptime signals.
 
@@ -283,9 +281,8 @@ We apply ISTQB principles for configuration management and stable environments: 
 - LinkedIn: [https://www.linkedin.com/in/tom-cunningham-5a1869297/](https://www.linkedin.com/in/tom-cunningham-5a1869297/)
 - GitHub: [https://github.com/theRainMaker1001](https://github.com/theRainMaker1001)
 
-⭐ If this repo helps you, please star it.
+⭐ If you find this Repo interesting or helpful, consider giving it a star! ⭐
 
 ```
 
 ```
-````
