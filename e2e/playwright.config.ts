@@ -31,8 +31,8 @@ export default defineConfig({
 
   /* Shared settings for all projects */
   use: {
-    // baseURL: 'http://localhost:3000',  // set if your app runs locally
-    baseURL: process.env.BANK_BASE_URL ?? 'https://parabank.parasoft.com/parabank', // ← points tests at your target
+    // baseURL: 'http://localhost:3000',  // set if app runs locally
+    baseURL: process.env.BANK_BASE_URL ?? 'https://parabank.parasoft.com/parabank', // ← points tests at target (fallback keeps CI sane)
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: process.env.CI ? 'retain-on-failure' : 'off',
@@ -54,7 +54,7 @@ export default defineConfig({
     // { name: 'Google Chrome',  use: { ...devices['Desktop Chrome'], channel: 'chrome' } },
   ],
 
-  /* Run your local dev server before starting the tests */
+  /* Run local dev server before starting the tests */
   // webServer: {
   //   command: 'npm run start',
   //   url: 'http://localhost:3000',

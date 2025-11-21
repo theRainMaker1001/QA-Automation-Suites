@@ -5,7 +5,7 @@
 [![Bank Critical Smoke](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/bank-critical-smoke.yml/badge.svg?branch=main)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/bank-critical-smoke.yml)
 
 Playwright + TypeScript / JavaScript automation suites with linting, formatting, and CI/CD.  
-Design goal: **clean, scalable suites** for E2E, API, and BDD that apply modern QA engineering principles alongside **ISTQB-aligned** best practice.
+Repo Aim: **clean, scalable suites** for E2E, API, and BDD that apply modern QA engineering principles alongside **ISTQB-aligned** best practice.
 
 ---
 
@@ -282,7 +282,3 @@ We apply ISTQB principles for configuration management and stable environments: 
 - GitHub: [https://github.com/theRainMaker1001](https://github.com/theRainMaker1001)
 
 ⭐ If you find this Repo interesting or helpful, consider giving it a star! ⭐
-
-```
-
-```
