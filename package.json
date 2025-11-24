@@ -18,11 +18,11 @@
     "start": "ts-node ./e2e/tests/index.ts",
     "dev": "ts-node --watch ./e2e/tests/index.ts"
   },
-"lint-staged": {
-  "*.{js,jsx,ts,tsx}": [
-    "eslint --fix"
-  ]
-},
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix"
+    ]
+  },
   "keywords": [
     "qa",
     "automation",

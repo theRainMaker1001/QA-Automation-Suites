@@ -18,8 +18,6 @@
 [![Playwright E2E](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/playwright.yml/badge.svg?branch=main&cacheBust=1)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/playwright.yml)
 [![Critical Heartbeat](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/bank-critical-heartbeat.yml/badge.svg?branch=main)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/bank-critical-heartbeat.yml)
 
-
-
 > The primary case-study system under test is the **ParaBank** banking demo application, providing realistic fintech workflows (accounts, transfers, loans, statements, auth). ParaBank is the flagship project, but much of the repo structure is domain agonstic and could be useful in a variety of contexts.
 
 ---

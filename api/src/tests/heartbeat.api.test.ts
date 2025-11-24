@@ -57,7 +57,7 @@ async function getDiag(path: string) {
   // Console line (handy in CI output)
   console.log(`[HB] GET ${path} -> ${status} in ${res.latencyMs ?? -1}ms :: ${snippet}`);
   return res;
-};
+}
 
 describe('@critical API heartbeat', () => {
   it('Public-safe data: GET /customer (fallback to /accounts) within budget; minimally validate JSON when JSON', async () => {
@@ -127,7 +127,9 @@ afterAll(() => {
   }
   lines.push(`- Wrong request types are blocked: **${okVerbGuard ? 'Works' : 'Failed'}**`);
   if (!okVerbGuard) {
-    lines.push('  - *Implication:* Safety rules at the API boundary may be off; risk of unintended changes.');
+    lines.push(
+      '  - *Implication:* Safety rules at the API boundary may be off; risk of unintended changes.',
+    );
   }
   lines.push('');
   lines.push('**Next steps:** Detailed logs have been shared with Devs.');
