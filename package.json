@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build:api": "tsc -p api/tsconfig.json",
-    "test:api": "node --loader ts-node/esm api/src/tests/healthcheck.test.ts",
+    "test:api": "vitest run api/src/tests/heartbeat.api.test.ts --reporter verbose",
     "clean": "rimraf dist api/dist",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext .ts --format stylish",
@@ -18,12 +18,11 @@
     "start": "ts-node ./e2e/tests/index.ts",
     "dev": "ts-node --watch ./e2e/tests/index.ts"
   },
-  "lint-staged": {
-    "*.{js,ts,json,md,css,html,yml,yaml,sh}": [
-      "eslint --fix",
-      "prettier --write --end-of-line=lf"
-    ]
-  },
+"lint-staged": {
+  "*.{js,jsx,ts,tsx}": [
+    "eslint --fix"
+  ]
+},
   "keywords": [
     "qa",
     "automation",
@@ -36,18 +35,20 @@
   "license": "ISC",
   "devDependencies": {
     "@eslint/js": "^9.38.0",
-    "@types/node": "^24.8.1",
+    "@types/node": "^24.10.1",
     "@types/node-fetch": "^2.6.13",
     "@typescript-eslint/eslint-plugin": "^8.46.1",
     "@typescript-eslint/parser": "^8.46.1",
     "eslint": "^9.38.0",
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
-    "lint-staged": "^16.2.4",
+    "lint-staged": "^16.2.7",
     "prettier": "^3.6.2",
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.13",
+    "zod": "^4.1.13"
   },
   "dependencies": {
     "node-fetch": "^3.3.2"

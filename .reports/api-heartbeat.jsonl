@@ -1,0 +1,16 @@
+{"ts":"2025-11-24T14:41:10.326Z","baseUrl":"https://parabank.parasoft.com/parabank","path":"services/bank/customers/12212","ok":true,"status":200,"latencyMs":544}
+{"ts":"2025-11-24T14:41:10.486Z","baseUrl":"https://parabank.parasoft.com/parabank","path":"services/bank/this-should-404","ok":false,"status":404,"latencyMs":156}
+{"ts":"2025-11-24T14:47:46.541Z","baseUrl":"https://parabank.parasoft.com/parabank","path":"services/bank/customers/12212","ok":true,"status":200,"latencyMs":566}
+{"ts":"2025-11-24T14:47:46.708Z","baseUrl":"https://parabank.parasoft.com/parabank","path":"services/bank/this-should-404","ok":false,"status":404,"latencyMs":163}
+{"ts":"2025-11-24T14:48:18.990Z","baseUrl":"https://parabank.parasoft.com/parabank","path":"services/bank/customers/12212","ok":true,"status":200,"latencyMs":561}
+{"ts":"2025-11-24T14:48:19.158Z","baseUrl":"https://parabank.parasoft.com/parabank","path":"services/bank/this-should-404","ok":false,"status":404,"latencyMs":165}
+{"ts":"2025-11-24T14:49:14.176Z","baseUrl":"https://parabank.parasoft.com/parabank","path":"services/bank/customers/12212","ok":true,"status":200,"latencyMs":273}
+{"ts":"2025-11-24T14:49:14.347Z","baseUrl":"https://parabank.parasoft.com/parabank","path":"services/bank/this-should-404","ok":false,"status":404,"latencyMs":168}
+{"ts":"2025-11-24T14:57:30.124Z","baseUrl":"https://parabank.parasoft.com/parabank","path":"services/bank/customers/12212","ok":true,"status":200,"latencyMs":552}
+{"ts":"2025-11-24T14:57:30.284Z","baseUrl":"https://parabank.parasoft.com/parabank","path":"services/bank/this-should-404","ok":false,"status":404,"latencyMs":156}
+{"ts":"2025-11-24T15:04:27.690Z","baseUrl":"https://parabank.parasoft.com/parabank","path":"services/bank/customers/12212","ok":true,"status":200,"latencyMs":581}
+{"ts":"2025-11-24T15:04:27.860Z","baseUrl":"https://parabank.parasoft.com/parabank","path":"services/bank/this-should-404","ok":false,"status":404,"latencyMs":166}
+{"ts":"2025-11-24T15:50:47.396Z","baseUrl":"https://parabank.parasoft.com/parabank","path":"services/bank/customers/12212","ok":true,"status":200,"latencyMs":618}
+{"ts":"2025-11-24T15:50:47.583Z","baseUrl":"https://parabank.parasoft.com/parabank","path":"services/bank/this-should-404","ok":false,"status":404,"latencyMs":183}
+{"ts":"2025-11-24T15:54:02.137Z","baseUrl":"https://parabank.parasoft.com/parabank","path":"services/bank/customers/12212","ok":true,"status":200,"latencyMs":542}
+{"ts":"2025-11-24T15:54:02.299Z","baseUrl":"https://parabank.parasoft.com/parabank","path":"services/bank/this-should-404","ok":false,"status":404,"latencyMs":158}

@@ -1,23 +1,29 @@
+// eslint.config.js
 import js from '@eslint/js';
-import parser from '@typescript-eslint/parser';
-import plugin from '@typescript-eslint/eslint-plugin';
+import tsParser from '@typescript-eslint/parser';
+import tsPlugin from '@typescript-eslint/eslint-plugin';
 import prettier from 'eslint-config-prettier';
 
 export default [
-  // ✅ Ignore build artifacts and deps
-  { ignores: ['**/dist/**', 'node_modules/**'] },
-
-  // leave the rest of the config as-is below...
+  // Global ignores (replaces .eslintignore)
+  {
+    ignores: [
+      'node_modules/**',
+      '**/dist/**',
+      '.github/**',
+      '.reports/**',
+      '**/*.md',
+      'package-lock.json',
+    ],
+  },
 
   js.configs.recommended,
+
   {
-    files: ['**/*.ts'],
+    files: ['**/*.{ts,tsx}'],
     languageOptions: {
-      parser,
-      parserOptions: {
-        ecmaVersion: 'latest',
-        sourceType: 'module',
-      },
+      parser: tsParser,
+      parserOptions: { ecmaVersion: 'latest', sourceType: 'module' },
       globals: {
         console: 'readonly',
         process: 'readonly',
@@ -33,17 +39,18 @@ export default [
         clearTimeout: 'readonly',
       },
     },
-    plugins: {
-      '@typescript-eslint': plugin,
-    },
+    plugins: { '@typescript-eslint': tsPlugin },
     rules: {
-      // ⬇turn off base no-undef for TS files; TypeScript handles this
+      // Avoid duplicate base checks for TS
       'no-undef': 'off',
+      'no-unused-vars': 'off',
 
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/explicit-function-return-type': 'off',
       'no-console': 'off',
     },
   },
+
+  // Prevent formatting conflicts
   prettier,
 ];
