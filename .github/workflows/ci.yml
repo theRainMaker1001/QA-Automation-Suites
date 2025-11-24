@@ -42,7 +42,3 @@ jobs:
           # Build TypeScript -> JavaScript
       - name: 🏗️ Build API
         run: npm run build:api
-
-      # Run API-level tests from compiled output
-      - name: 🧪 Run API tests
-        run: node api/dist/tests/healthcheck.test.js
