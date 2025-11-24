@@ -1,72 +1,190 @@
-# 🎯 QA-Automation-Suites
+> **Note:** _Work in progress while I restructure the existing repo to focus on the fintech quality-engineering suite. I'm preserving useful history and folding it into the new architecture as I go._
+
+---
+
+<h1 align="center" style="color:#00ff7f; font-weight:800;">
+🏦 QA Automation Suites – <span style="color:#22c55e;">FinTech Quality Engineering 🏦</span>
+</h1>
+
+<p align="center">
+  <em>A modular, multi-layer automation & quality-engineering framework for modern fintech systems.</em>
+</p>
+
+### 🛠 **Tech Stack Highlights (Quick Scan)**
+
+**Playwright • TypeScript (strict) • Node.js • Tool-Agnostic API Layer • Docker • GitHub Actions CI/CD • ESLint • Prettier • Husky • axe-core (a11y) • Performance Budgets • Risk-Based Testing • Algorithmic Oracles • ISTQB Test Design**
 
 [![CI](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml/badge.svg?branch=main&cacheBust=1)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml)
 [![Playwright E2E](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/playwright.yml/badge.svg?branch=main&cacheBust=1)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/playwright.yml)
 [![Bank Critical Smoke](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/bank-critical-smoke.yml/badge.svg?branch=main)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/bank-critical-smoke.yml)
 
-Playwright + TypeScript / JavaScript automation suites with linting, formatting, and CI/CD.  
-Repo Aim: **clean, scalable suites** for E2E, API, and BDD that apply modern QA engineering principles alongside **ISTQB-aligned** best practice.
+> The primary case-study system under test is the **ParaBank** banking demo application, providing realistic fintech workflows (accounts, transfers, loans, statements, auth). ParaBank is the flagship project, but much of the repo structure is domain agonstic and could be useful in a variety of contexts.
 
 ---
 
 ## 🚀 Overview
 
-This repo showcases multiple suites built with:
+This suite demonstrates **enterprise-grade quality engineering**, not just UI tests:
 
-- 🎭 **Playwright** for E2E/UI
-- 🌐 **TypeScript/JavaScript** for API & integration
-- 🧩 **BDD (Cucumber)**
-- 🧹 **ESLint + Prettier + Husky** for code health (local & CI)
-- ⚙️ **GitHub Actions** for CI/CD
-
-Each suite follows modular patterns with clear separation of concerns and reproducible CI.
-
----
-
-## 🧠 ISTQB-aligned testing (practical, lean)
-
-- **Shift-left & test-first**: static checks (TS/ESLint/Prettier) run locally and in CI; fast feedback on every PR.
-- **Risk-based focus**: prioritize by _likelihood and impact_; use tags:
-  - `@smoke` (fast PR checks)
-  - `@critical` (must-pass uptime/entry checks; continuous)
-  - `@regression` (broader scheduled runs)
-- **Core test techniques** (where they add value): EP, BVA, Decision Tables, State-Transition.
-- **Reporting granularity**: developer (traces), team (trends/flake), stakeholder (readiness). See:  
-  _Granularity in test reporting_ → <a href="https://www.linkedin.com/feed/update/urn:li:activity:7379430666712555520/">LinkedIn post</a>
-- **After a fix**: confirmation → targeted regression to protect nearby risk.
+- Clean, maintainable, **scalable architecture**
+- **UI & API** validation with **multi-layer oracles** (UI → API → DB → Algorithms)
+- **ISTQB-aligned test-design** (EP/BVA, Decision Tables, State Models, Pairwise, Exploratory)
+- **Accessibility** and **performance** baked into daily runs (axe, keyboard, focus, contrast, SLA budgets)
+- **Risk-based strategy** and **tagged lanes** for smart CI
+- **Deterministic local** testing (Docker) vs **public** instance for resilience checks
+- **Strict TypeScript**, linting, Husky hooks, **CI parity**, and Node version lock for reproducibility
+- **Traceability & reporting** for developers, teams, and stakeholders
 
 ---
 
-## 🧩 Current Project Structure
+## 🧱 Architecture
+
+| Runner & Gates →                                                                                          | Shared Test Layers →                                                                                                                                                                      | Systems Under Test →                                                                                                     | Reporting & Observability                                                                                                  |
+| --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| **Playwright (UI)**<br>**Node + TypeScript (strict)**<br>Husky / ESLint / Prettier<br>GitHub Actions (CI) | **UI flows** (pages/fixtures)<br>**Tool-agnostic API client** (fetch/RequestInit)<br>**Algorithmic oracles** (sort, search, BFS, greedy, decision tables)<br>**a11y & performance hooks** | **Local (Docker):** App UI • App API • **DB** (_DB assertions enabled_)<br>**Public:** App UI • App API (_no DB access_) | HTML report • Traces • Screenshots • Videos<br>a11y & performance summaries<br>Risk/tag analytics • Failure classification |
+
+**Flow:** `Runner & Gates` → `Shared Test Layers` → `SUT (Local/Public)` → `Reporting`
+
+_Note: Database assertions are available in **Local (Docker)** only; Public runs validate **UI/API** behaviour under real-world conditions._
+
+### Architectural principles
+
+- **Tool-agnostic API layer**: custom `fetch`/`RequestInit` HTTP client, **not tied to Playwright**. Reused in PW, BDD, Node scripts, perf, and seeders.
+- **Oracles-first verification**: correctness checked against algorithms, business rules, API truth, and DB state.
+- **Multi-environment strategy**: deterministic **Docker** vs real-world **public** ParaBank for robustness.
+- **Risk-driven execution**: tags orchestrate PR smoke, continuous heartbeat, and scheduled regression.
+- **Strict engineering discipline**: TS strict, ESLint, Prettier, Husky, `.nvmrc`, CI mirrors local.
+- **Extensible by design**: new fintech features integrate without core refactors.
+
+---
+
+## 🧠 ISTQB-Aligned Test-Design Techniques
+
+- **Equivalence Partitioning & Boundary Values**: numeric inputs (transfers, loan amounts, limits).
+- **Decision Tables**: **loan eligibility rules** and complex multi-criteria decisions.
+- **State-Transition**: login, invalid attempts, lockout behaviours, session resets.
+- **Pairwise/Combinatorial**: account creation and multi-field scenarios.
+- **Exploratory Charters**: a11y tours, error-state discovery, UI ambiguity.
+- **Traceability Matrix**: Requirements → Conditions → Cases → Automation → Results.
+
+---
+
+## 🤖 Algorithmic Oracles
+
+| Algorithm                      | Usage                                      |
+| ------------------------------ | ------------------------------------------ |
+| **Quicksort / Mergesort**      | Oracle for correct transaction sorting     |
+| **Binary Search**              | Fast lookup oracle for statements          |
+| **BFS (Breadth-First Search)** | Validates multi-hop transfer/routing logic |
+| **Greedy Scheduling**          | Bill-pay prioritisation choices            |
+| **Decision Table Engine**      | Loan eligibility oracle                    |
+
+---
+
+## ♿ Accessibility (a11y)
+
+- **axe-core** automated audits
+- **Keyboard navigation** checks
+- **Focus management** and error-focus handling
+- **Contrast ratio** checks
+- **Landmark/semantics** sanity checks
+
+---
+
+## ⚡ Performance (lightweight but meaningful)
+
+- API response-time logging
+- Navigation/page-load timing
+- **Micro-load** (parallel API calls for resilience)
+- SLA budgets (e.g., 500–800ms, configurable)
+- Performance logs exported as CI artifacts
+
+---
+
+## 🌍 Environments
+
+### Local (Docker) ParaBank
+
+Deterministic data, DB assertions, repeatable state, perf baselines → ideal for regression and algorithmic verification.
+
+### Public ParaBank
+
+Real-world volatility, shared data, network variance → ideal for resilience, drift detection, and external dependencies.
+
+**Why both?** Stability + determinism (local) paired with realism + variability (public).
+
+---
+
+## 🧰 Tool-Agnostic API Client
+
+A custom TypeScript HTTP wrapper (fetch/`RequestInit`) provides **shared API power** across runners:
+
+- Playwright tests reuse it for setup/oracles
+- BDD can call it in steps
+- Perf/seed scripts reuse the same client
+- CI heartbeat can run without launching a browser
+
+This avoids Playwright’s `APIRequestContext` lock-in
+
+---
+
+## 🔧 Engineering Quality Gates
+
+- **TypeScript (strict)**
+- **ESLint (flat v9)** + **Prettier**
+- **Husky hooks**
+  - `pre-commit`: typecheck, lint, format
+  - `pre-push`: smoke checks, tag enforcement, schema/oracle checks
+
+- **CI parity**: local gates mirror CI
+- **Node version pinned** via `.nvmrc`
+
+---
+
+## 📊 Reporting & Observability
+
+- Playwright **HTML reports**, screenshots, videos, traces (uploaded in CI)
+- **Performance snapshots** (API + nav timing, budgets)
+- **Accessibility** summaries (axe output, keyboard/focus/contrast)
+- **Failure classification** (infra vs server vs UI)
+- Planned: executive **PDF summaries**, optional **Allure** integration
+
+---
+
+## 🏦 FinTech Case Study: ParaBank (flagship)
+
+ParaBank provides realistic fintech flows (accounts, transfers, statements, loans, auth) with **UI + API + DB** surfaces.
+
+**Continuous `@critical` heartbeat** classifies failures:
+`NETWORK_DOWN`, `SERVER_5XX`, `APP_BROKEN_UI`.
+
+---
+
+## 🧩 Project Structure
 
 ```bash
 QA-Automation-Suites/
 ├─ .github/
 │  └─ workflows/
-│     ├─ ci.yml                      # typecheck/lint/build + API check(s)
-│     ├─ playwright.yml              # Playwright E2E workflow
-│     └─ bank-critical-smoke.yml     # (new) lightweight uptime/entry checks
-├─ .husky/                           # pre-commit hooks
+│     ├─ ci.yml                      # static gates + build + API checks
+│     ├─ playwright.yml              # E2E workflow
+│     └─ bank-critical-smoke.yml     # continuous heartbeat lane
+├─ .husky/                           # pre-commit / pre-push hooks
 ├─ api/
-│  ├─ src/
-│  │  └─ tests/
-│  │     └─ healthcheck.test.ts
-│  ├─ helpers/                       # e.g., fetchClient.ts
-│  ├─ data/                          # payloads, mocks
-│  ├─ tsconfig.json
-│  └─ dist/                          # built JS (CI can run from here)
+│  ├─ helpers/                       # standalone HTTP client (tool-agnostic)
+│  ├─ data/
+│  └─ src/tests/
 ├─ config/                           # env/config scaffolding (api/bdd/playwright/testdata)
 ├─ e2e/
 │  ├─ tests/
-│  │  ├─ index.ts                    # placeholder / demo
-│  │  └─ bank/                       # (new) banking mini-project specs
+│  │  └─ bank/
 │  │     ├─ smoke.header.spec.ts
 │  │     ├─ critical.availability.spec.ts
 │  │     └─ critical.login.spec.ts
 │  ├─ fixtures/
 │  ├─ pages/
 │  ├─ utils/
-│  └─ playwright.config.ts           # reads BANK_BASE_URL from e2e/.env
+│  └─ playwright.config.ts
 ├─ .gitattributes
 ├─ .gitignore
 ├─ .nvmrc
@@ -78,201 +196,132 @@ QA-Automation-Suites/
 └─ README.md
 ```
 
-> **Note:** Banking tests are intentionally small and tagged to keep PRs fast while providing continuous uptime signals.
+---
+
+## 🧰 Tech Stack
+
+| Category     | Tools & Notes                                        |
+| ------------ | ---------------------------------------------------- |
+| UI           | Playwright                                           |
+| API          | **Tool-agnostic TS HTTP client** (fetch/RequestInit) |
+| a11y         | axe-core, keyboard/focus utilities                   |
+| Performance  | timing, budgets, micro-load                          |
+| Test Design  | ISTQB technique library                              |
+| Code Quality | ESLint, Prettier, Husky                              |
+| CI/CD        | GitHub Actions                                       |
+| Environment  | Docker + Public ParaBank                             |
 
 ---
 
-## 🏦 Banking mini-project (ParaBank) — @critical uptime & entry checks
-
-**Scenario:** We simulate a new client with intermittent **server issues**. We add a tiny `@critical` smoke lane that runs continuously to provide **granular failure signals** (infra vs backend vs UI).
-
-### Why this matters (ISTQB)
-
-- **Risk-based**: highest-impact failures first (availability + basic entry to the app).
-- **Monitoring & reporting**: clear signals support triage/decision-making (CTFL “test monitoring & reporting”).
-- **Granularity**: different failure labels → faster diagnosis (see granularity post above).
-
-### What the `@critical` lane checks (fast, read-only)
-
-- `NETWORK_DOWN` — DNS/connectivity outage (cannot reach `/`)
-- `SERVER_5XX` — server responds with 5xx
-- `APP_BROKEN_UI` — page renders but essential login elements missing
-
-### Run locally
-
-Create `e2e/.env`:
-
-```env
-BANK_BASE_URL=https://parabank.parasoft.com/parabank
-```
-
-Then:
+## 🛠 Getting Started
 
 ```bash
-cd e2e
-npx playwright test --project=chromium --grep @critical
+nvm use
+npm install
+npx playwright install
 ```
 
-> **Docker (optional)**: run `parasoft/parabank` on port 8080 and flip
-> `BANK_BASE_URL=http://localhost:8080/parabank` — no test code changes needed.
-
-### CI (continuous heartbeat)
-
-A small workflow (scheduled + on push to `main`) runs only the `@critical` suite in Chromium and uploads the HTML report artifact.
-Badge at the top of this README reflects the job status.
-
----
-
-## 🧪 E2E quick start (smoke)
-
-1. Ensure `e2e/.env` has `BANK_BASE_URL=...`
-2. Run:
+**Run E2E smoke:**
 
 ```bash
 cd e2e
 npx playwright test --grep @smoke
 ```
 
-Headed / debug:
+**Local ParaBank (deterministic):**
 
 ```bash
-npx playwright test --project=chromium --headed --grep @smoke
-PWDEBUG=1 npx playwright test --project=chromium --grep @smoke
-npx playwright show-report
+docker-compose up --build
+# then set
+BANK_BASE_URL=http://localhost:8080/parabank
 ```
 
 ---
 
-## 🧰 Tech Stack
+## 📚 Docs (to be added as we migrate)
 
-| Category     | Tools & Notes                                  |
-| ------------ | ---------------------------------------------- |
-| E2E/UI       | Playwright (scaffolded in `e2e/`)              |
-| API          | TypeScript + light util (no heavy framework)   |
-| BDD          | Cucumber placeholder (`bdd/`)                  |
-| Language     | TypeScript (strict)                            |
-| Code Quality | ESLint (flat v9), Prettier, Husky (pre-commit) |
-| CI/CD        | GitHub Actions (static gates + E2E + API)      |
-
----
-
-## 🧪 API Healthcheck (matches CI)
-
-```bash
-npm run build:api
-node api/dist/tests/healthcheck.test.js
-# or
-npm run test:api
-```
-
-### Local smoke debugging (intentional failures)
-
-Use this **local-only** script to intentionally trigger common failure modes and see clear error messages.
-⚠️ **Do not** add to CI — it uses `|| true` so the script doesn’t stop on failures! ⚠️
-
-```bash
-
-# Run failure scenarios sequentially
-
-(
-  echo "=== FAIL: Non-200 Status (404) ==="
-  HEALTH_URL=https://api.github.com/does-not-exist npm run test:api || true
-  echo
-
-  echo "=== FAIL: Wrong JSON Field ==="
-  EXPECT_FIELD=definitely_not_here npm run test:api || true
-  echo
-
-  echo "=== FAIL: Timeout (abort quickly) ==="
-  TIMEOUT_MS=1 npm run test:api || true
-  echo
-
-  echo "=== FAIL: Latency Budget (too slow) ==="
-  MAX_LATENCY_MS=1 npm run test:api || true
-  echo
-
-  echo "=== FAIL: Wrong Content-Type (HTML, not JSON) ==="
-  HEALTH_URL=https://example.com npm run test:api || true
-  echo
-
-  echo "=== FAIL: Auth Happy Path (invalid token) ==="
-  CHECK_AUTH=true AUTH_URL=https://api.github.com/user AUTH_TOKEN=invalid npm run test:api || true
-  echo
-
-  echo "=== ALL FAILURE SCENARIOS COMPLETE ==="
-)
-
-```
-
-Covers: non-200 status, missing JSON field, timeout, latency budget, wrong content-type, and invalid-auth “happy path”.
-💡 To stop on the first failure, remove each || true.
-
-Windows tip: run this in Git Bash or WSL; PowerShell syntax differs.
+- `docs/risk-catalog.md`
+- `docs/decision-tables-loans.md`
+- `docs/ep-bva-template.md`
+- `docs/algorithmic-oracles.md`
+- `docs/architecture.md`
+- `docs/environment-strategy.md`
+- `docs/coverage-map.md`
 
 ---
 
-## 🧭 Environments
+## 🗺️ Milestones & Roadmap
 
-- **Local/UI**: `e2e/.env` → `BANK_BASE_URL=...`
-- **CI/UI**: set `BANK_BASE_URL` in repo **Variables/Secrets**; the E2E job passes it to Playwright.
-- Node version: `.nvmrc` (keep local == CI)
+> **The below are subject to change as new features are added.**
 
----
+### 🧱 Foundation & Repo Hygiene
 
-## 🗺️ Full Roadmap
-
-**General**
-
-- ✅ TypeScript + Playwright base
-- ✅ ESLint, Prettier, Husky (pre-commit auto-fix)
+- ✅ TypeScript + Playwright base scaffold
+- ✅ ESLint, Prettier, **Husky** pre-commit hooks
 - ✅ GitHub Actions CI/CD (static gates + tests)
 - ✅ API suite scaffold + healthcheck in CI
 - ⬜ BDD suite scaffold (Cucumber)
-- ⬜ Enhanced HTML/Allure reporting
+- ⬜ Enhanced HTML/Allure reporting (optional integration)
 
-**Playwright milestones**
+### 🎭 Playwright Lanes & Features
 
-- ✅ Env-specific baseURL via `.env` (public demo or Docker)
-- ✅ Tags & lanes: `@smoke` (PR), `@critical` (continuous), `@regression` (scheduled)
-- ✅ Artifacts on failure (trace, screenshots, videos in CI)
-- ⬜ Page Object Model baseline (`e2e/pages/`, components as needed)
+- ✅ Env-specific baseURL via `.env` (public or Docker)
+- ✅ Tags & lanes: `@smoke` (PR), `@critical` (heartbeat), `@regression` (scheduled)
+- ✅ Artifacts on failure (traces, screenshots, videos in CI)
+- ⬜ Page Object Model baseline (`e2e/pages/`, components)
 - ⬜ Cross-browser matrix (Chromium/Firefox/WebKit) on nightly
-- ⬜ Auth/session fixtures (reuse storage state)
-- ⬜ Parallelisation & sharding (CI speed)
+- ⬜ Auth/session fixtures (storage state reuse)
+- ⬜ Parallelisation & sharding in CI
 - ⬜ Network stubbing/mocking for deterministic interactions
-- ⬜ Accessibility checks (axe)
-- ⬜ Perf smoke (basic timing budgets)
 
-**Shift-left & Quality gates**
+### 🔐 Tool-Agnostic API Layer
 
-- ✅ Local static checks (TS/ESLint/Prettier) with Husky
-- ✅ CI static gates before any tests
+- ✅ Standalone fetch-based client (not tied to Playwright)
+- ⬜ Typed request/response interfaces
+- ⬜ Retry/timeout & SLA budget helpers
+- ⬜ Contract/schema checks
+
+### 🧠 ISTQB Test-Design Library
+
+- ⬜ EP/BVA examples with data-driven inputs
+- ⬜ Decision Table for loan rules
+- ⬜ State-transition for auth/session flows
+- ⬜ Pairwise/combinatorial suites
+- ⬜ Traceability matrix generator (Req → Case → Test)
+
+### ♿ Accessibility (a11y)
+
+- ⬜ axe-core integration on key screens
+- ⬜ Keyboard navigation coverage
+- ⬜ Focus management checks after validation/errors
+- ⬜ Contrast ratio validations
+
+### ⚡ Performance
+
+- ⬜ API response timing logs
+- ⬜ Navigation & page-load metrics
+- ⬜ Micro-load parallel API calls for resilience
+- ⬜ SLA budgets enforced in CI
+
+### 📊 Reporting & Observability
+
+- ⬜ Performance & a11y outputs in `/reports`
+- ⬜ Risk distribution & failure classification
+- ⬜ Executive PDF summary (stakeholder-friendly)
+- ⬜ Trend charts (pass/fail, flake, latency)
+
+### 🌍 Environments & CI
+
+- ✅ `.nvmrc` Node version alignment (local == CI)
+- ✅ CI static gates before E2E
 - ⬜ PR fast feedback: run `@smoke` subset + changed-area tests
-
-**Regression strategy**
-
-- ⬜ Tag business-critical flows `@regression`
-- ⬜ Nightly job: full `@regression` across browsers; publish HTML/Allure
-- ⬜ PR job: `@smoke` only + artifacts
-- ⬜ Confirmation → targeted regression
-- ⬜ Flake controls (CI retries + flaky list)
-
-**Risk-based design**
-
-- ⬜ `docs/risk-catalog.md` mapping features → risk → tags
-- ⬜ Align lanes to SDLC moments (`@smoke` PR, `@critical` heartbeat/release, `@regression` nightly)
-
-**Test Technique Library **
-
-- ⬜ EP/BVA examples alongside form/input specs
-- ⬜ Decision Tables for rules/permissions
-- ⬜ State-Transition for auth/session/flows
+- ⬜ Nightly: `@regression` across browsers with artifacts
 
 ---
 
 ## 🔒 Configuration & Environment Consistency
 
-I apply ISTQB principles including configuration management and stable environments: same Node version via `.nvmrc`, same static gates locally and in CI, and environment-driven URLs for UI tests. Consistency → reproducibility → reliable results.
+This repo applies configuration management and stable test environments: Node version locked via `.nvmrc`, identical local and CI gates (typecheck/lint/format), environment-driven URLs, deterministic Docker runs for ParaBank.
 
 ---
 
@@ -281,4 +330,6 @@ I apply ISTQB principles including configuration management and stable environme
 - LinkedIn: [https://www.linkedin.com/in/tom-cunningham-5a1869297/](https://www.linkedin.com/in/tom-cunningham-5a1869297/)
 - GitHub: [https://github.com/theRainMaker1001](https://github.com/theRainMaker1001)
 
-⭐ If you find this Repo interesting or helpful, consider giving it a star! ⭐
+⭐ If you found this repo useful or inspiring, please consider giving it a star! ⭐
+
+---
