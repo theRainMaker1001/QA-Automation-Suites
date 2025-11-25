@@ -1,20 +1,20 @@
-import { z } from 'zod';
+// api/src/tests/_env.ts
+import dotenv from 'dotenv';
 
-const EnvSchema = z.object({
-  BANK_BASE_URL: z.string().url(),
-  BANK_CUSTOMER_ID: z.string().default('12212'),
-  API_LATENCY_MS: z.coerce.number().int().positive().default(500),
-  HEARTBEAT_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
-});
+// Explicitly load api/.env first (your real config)
+dotenv.config({ path: 'api/.env' });
 
-export type Env = z.infer<typeof EnvSchema>;
+// Also try root .env (harmless if missing)
+dotenv.config();
 
-export const env: Env = EnvSchema.parse({
-  BANK_BASE_URL: process.env.BANK_BASE_URL,
-  BANK_CUSTOMER_ID: process.env.BANK_CUSTOMER_ID,
-  API_LATENCY_MS: process.env.API_LATENCY_MS,
-  HEARTBEAT_TIMEOUT_MS: process.env.HEARTBEAT_TIMEOUT_MS,
-});
+// Provide safe defaults
+export const env = {
+  BANK_BASE_URL: process.env.BANK_BASE_URL ?? 'https://parabank.parasoft.com/parabank',
+  BANK_CUSTOMER_ID: process.env.BANK_CUSTOMER_ID ?? '12212',
+  API_LATENCY_MS: Number(process.env.API_LATENCY_MS ?? 5000),
+  HEARTBEAT_TIMEOUT_MS: Number(process.env.HEARTBEAT_TIMEOUT_MS ?? 10000),
+};
 
-// small branded helper
-export const ms = (n: number) => n as number & { readonly __brand: 'Ms' };
+export function ms(n: number | string): number {
+  return typeof n === 'string' ? parseInt(n, 10) : n;
+}

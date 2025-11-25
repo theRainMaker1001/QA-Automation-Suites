@@ -1,7 +1,11 @@
 {
   "name": "automatedtesting",
   "version": "1.0.0",
+  "private": true,
   "description": "Professional QA automation suite with TypeScript, linting, formatting, and CI integration.",
+  "engines": {
+    "node": ">=24.11.1 <25"
+  },
   "main": "index.js",
   "type": "module",
   "ts-node": {
@@ -9,14 +13,17 @@
   },
   "scripts": {
     "build:api": "tsc -p api/tsconfig.json",
-    "test:api": "vitest run api/src/tests/heartbeat.api.test.ts --reporter verbose",
+    "test:api": "vitest run",
     "clean": "rimraf dist api/dist",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext .ts --format stylish",
     "fmt": "prettier --write .",
     "prepare": "husky install",
     "start": "ts-node ./e2e/tests/index.ts",
-    "dev": "ts-node --watch ./e2e/tests/index.ts"
+    "dev": "ts-node --watch ./e2e/tests/index.ts",
+    "tooling:summary": "node config/tooling-summary.js",
+    "test": "vitest run",
+    "test:e2e": "playwright test -c e2e/playwright.config.ts"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -36,10 +43,10 @@
   "devDependencies": {
     "@eslint/js": "^9.38.0",
     "@types/node": "^24.10.1",
-    "@types/node-fetch": "^2.6.13",
     "@typescript-eslint/eslint-plugin": "^8.46.1",
     "@typescript-eslint/parser": "^8.46.1",
-    "eslint": "^9.38.0",
+    "dotenv": "^17.2.3",
+    "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
@@ -47,7 +54,7 @@
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.13",
+    "vitest": "^4.0.14",
     "zod": "^4.1.13"
   },
   "dependencies": {

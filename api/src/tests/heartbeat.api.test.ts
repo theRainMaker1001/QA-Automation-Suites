@@ -1,8 +1,8 @@
 import { describe, it, expect, afterAll } from 'vitest';
-import { HttpClient } from '../helpers/http';
-import { env, ms } from './_env';
+import { HttpClient } from '../helpers/http.js';
+import { env, ms } from './_env.js';
 import { z } from 'zod';
-import { logJsonLine, writeSummary } from './_logger';
+import { logJsonLine, writeSummary } from './_logger.js';
 
 // Minimal runtime schemas (catch contract drift when JSON)
 const CustomerSchema = z

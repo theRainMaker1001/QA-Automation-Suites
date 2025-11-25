@@ -21,3 +21,9 @@ resources/
 # IDE junk
 .vscode/
 .idea/
+
+# Ignore report
+
+.reports/
+node_modules/
+
