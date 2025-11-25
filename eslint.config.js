@@ -14,6 +14,8 @@ export default [
       '.reports/**',
       '**/*.md',
       'package-lock.json',
+      '/reports/',
+      '/.reports/',
     ],
   },
 

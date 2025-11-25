@@ -24,6 +24,9 @@ resources/
 
 # Ignore report
 
-.reports/
 node_modules/
+/reports/
+/.reports/
+
+
 

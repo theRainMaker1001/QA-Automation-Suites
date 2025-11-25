@@ -21,12 +21,13 @@
     "prepare": "husky install",
     "start": "ts-node ./e2e/tests/index.ts",
     "dev": "ts-node --watch ./e2e/tests/index.ts",
-    "tooling:summary": "node config/tooling-summary.js",
+    "tooling:summary": "ts-node config/tooling-summary.ts",
     "test": "vitest run",
     "test:e2e": "playwright test -c e2e/playwright.config.ts"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
+      "prettier --write",
       "eslint --fix"
     ]
   },
