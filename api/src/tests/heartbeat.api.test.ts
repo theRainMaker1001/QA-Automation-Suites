@@ -1,6 +1,6 @@
 import { describe, it, expect, afterAll } from 'vitest';
 import { HttpClient } from '../helpers/http.js';
-import { env, ms } from './_env.js';
+import { env } from './_env.js';
 import { z } from 'zod';
 import { logJsonLine, writeSummary } from './_logger.js';
 
@@ -29,7 +29,10 @@ const routes = {
 
 const client = new HttpClient({
   baseUrl: env.BANK_BASE_URL,
-  defaultTimeoutMs: ms(env.HEARTBEAT_TIMEOUT_MS),
+  // Cast to the branded Ms type: (number) & { __brand: "Ms" }
+  defaultTimeoutMs: env.HEARTBEAT_TIMEOUT_MS as unknown as number & {
+    readonly __brand: 'Ms';
+  },
 });
 
 // Flags for Product Owner summary

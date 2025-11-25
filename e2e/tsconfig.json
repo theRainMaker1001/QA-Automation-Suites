@@ -1,8 +1,9 @@
 {
+  "extends": "../tsconfig.json",
   "compilerOptions": {
     "target": "ES2020",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "strict": true,
     "types": ["@playwright/test", "node"],
     "lib": ["ES2020", "DOM"],
