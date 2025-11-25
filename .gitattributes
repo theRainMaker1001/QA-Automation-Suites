@@ -1,5 +1,6 @@
 # Normalize text files to LF in repo & working tree
 * text=auto eol=lf
+*.bat eol=crlf
 
 # Scripts must be LF
 *.sh text eol=lf
