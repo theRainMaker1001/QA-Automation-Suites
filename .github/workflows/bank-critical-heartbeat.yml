@@ -23,12 +23,20 @@ jobs:
       HEARTBEAT_TIMEOUT_MS: ${{ vars.HEARTBEAT_TIMEOUT_MS }}
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node (use .nvmrc)
+        uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           cache: npm
-      - run: npm ci
+
+      - name: Install dependencies (include dev)
+        run: npm ci
+        env:
+          NODE_ENV: ""
+          NPM_CONFIG_PRODUCTION: "false"
 
       - name: Run API heartbeat (vitest)
         run: |
