@@ -16,17 +16,17 @@
     "test:api": "vitest run",
     "clean": "rimraf dist api/dist",
     "typecheck": "tsc --noEmit -p . && tsc --noEmit -p e2e",
-    "lint": "eslint . --ext .ts --format stylish --cache",
+    "lint": "eslint --format stylish --cache --ext .ts --ext .tsx ./api/src ./e2e ./config ./*.ts",
     "fmt": "prettier --write .",
     "prepare": "husky install",
     "start": "tsx ./e2e/tests/index.ts",
     "dev": "tsx watch ./e2e/tests/index.ts",
     "tooling:summary": "tsx config/tooling-summary.ts",
     "test": "vitest run",
-    "test:e2e": "playwright test -c e2e/playwright.config.ts"
+    "test:e2e": "npm --prefix e2e run test"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
+    "*.{ts,tsx}": [
       "prettier --write",
       "eslint --fix"
     ]
@@ -43,7 +43,6 @@
   "license": "ISC",
   "devDependencies": {
     "@eslint/js": "^9.38.0",
-    "@playwright/test": "^1.57.0",
     "@types/node": "^24.10.1",
     "@typescript-eslint/eslint-plugin": "^8.46.1",
     "@typescript-eslint/parser": "^8.46.1",

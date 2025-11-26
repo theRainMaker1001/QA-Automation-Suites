@@ -1,4 +1,3 @@
-// vitest.config.ts (repo root)
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({

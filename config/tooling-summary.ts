@@ -1,4 +1,4 @@
-/* eslint-env node */
+/* Local Versions and Add ons for sanity checks! */
 
 import fsSync from 'node:fs';
 import { promises as fs } from 'node:fs';

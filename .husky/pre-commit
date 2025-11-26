@@ -1,6 +1,6 @@
 # .husky/pre-commit (Husky v9+ compatible)
 
-# Run ESLint + Prettier on staged files (configured in package.json -> "lint-staged")
+# Run ESLint + Prettier on staged files (configured in package.json as "lint-staged")
 npx lint-staged
 
 # Block the commit if any staged text file still contains CRLF

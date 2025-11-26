@@ -4,7 +4,7 @@ import { env } from './_env.js';
 import { z } from 'zod';
 import { logJsonLine, writeSummary } from './_logger.js';
 
-// Minimal runtime schemas (catch contract drift when JSON)
+// Minimal runtime schemas (catch contract drift when JSON / basic confirmation of data shape)
 const CustomerSchema = z
   .object({
     id: z.number(),
@@ -35,7 +35,7 @@ const client = new HttpClient({
   },
 });
 
-// Flags for Product Owner summary
+// Conversion for Product Owner summary
 let okCustomerRead = false;
 let okRouting404 = false;
 let okVerbGuard = false;
@@ -57,7 +57,7 @@ async function getDiag(path: string) {
     latencyMs: res.latencyMs ?? -1,
   });
 
-  // Console line (handy in CI output)
+  // Console line (for CI output)
   console.log(`[HB] GET ${path} -> ${status} in ${res.latencyMs ?? -1}ms :: ${snippet}`);
   return res;
 }
@@ -112,9 +112,28 @@ describe('@critical API heartbeat', () => {
 // Product Owner summary
 afterAll(() => {
   const now = new Date();
+
+  // Overall status header
+  const failures: string[] = [];
+  if (!okCustomerRead) failures.push('Customer read');
+  if (!okRouting404) failures.push('404 routing');
+  if (!okVerbGuard) failures.push('Verb guard');
+
+  const allOk = failures.length === 0;
+  const statusEmoji = allOk ? '✅' : '❌';
+  const statusLine = allOk
+    ? `# # ${statusEmoji} All heartbeat checks passed!`
+    : `# # ${statusEmoji} ${failures.length} Heartbeat failures: ${failures.join(', ')}`;
+  const brief = allOk
+    ? 'API reachable, latency within budget, basic safety gates held.'
+    : 'See failed checks below; service may be degraded or misconfigured.';
+
   const lines: string[] = [];
 
   lines.push('# Daily Heartbeat — Parabank Product Summary');
+  lines.push('');
+  lines.push(`**Status:** ${statusLine}`);
+  lines.push(brief);
   lines.push('');
   lines.push(`**Run time:** ${now.toLocaleString()}  \n**Timestamp (UTC):** ${now.toISOString()}`);
   lines.push(`**Environment:** ${env.BANK_BASE_URL}`);
