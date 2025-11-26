@@ -1,39 +1,41 @@
-name: CI (TypeCheck + Lint + Prettier + API Tests)
+name: CI (TypeCheck + Lint + API Tests)
 
 on:
-  push:
-    branches: [main]
   pull_request:
+    branches: [main]
+  push:
     branches: [main]
 
 jobs:
-  validate:
+  heartbeat:
+    name: Bank Heartbeat (first)
+    uses: ./.github/workflows/bank-critical-heartbeat.yml
+    secrets: inherit
+
+  static-checks:
+    name: TypeCheck + Lint + Prettier
+    needs: [heartbeat]
     runs-on: ubuntu-latest
-
     steps:
-      # Checkout the repo
-      - name: 🛎️ Checkout repository
-        uses: actions/checkout@v4
-
-      # Use the Node version from .nvmrc to keep CI in sync with local dev
-      - name: 🧰 Setup Node.js (read from .nvmrc)
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run format:check
 
-      # Clean install using the exact dependency tree from package-lock.json
-      - name: Install dependencies
-        run: npm ci
-
-      # Run a type check to ensure TS definitions are solid
-      - name: 🔍 Type check
-        run: npm run typecheck
-
-      # Lint the codebase for consistency and potential issues
-      - name: 🧹 Lint
-        run: npm run lint
-
-      # Verify code formatting (don’t auto-fix in CI)
-      - name: 💅 Prettier format check
-        run: npx prettier --check .
+  api-tests:
+    name: API Unit/Integration
+    needs: [heartbeat]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run test:api
