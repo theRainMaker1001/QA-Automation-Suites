@@ -3,17 +3,6 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": "20.x"
-  },
-  "scripts": {
-    "test": "playwright test",
-    "typecheck": "tsc --noEmit",
-    "install:browsers": "playwright install --with-deps"
-  },
-  "devDependencies": {
-    "@playwright/test": "1.56.1",
-    "@types/node": "^20.11.0",
-    "dotenv": "^17.2.3",
-    "typescript": "^5.9.3"
+    "node": ">=24.11.1 <25"
   }
 }

@@ -18,17 +18,20 @@
     "typecheck": "tsc --noEmit -p . && tsc --noEmit -p e2e",
     "lint": "eslint --format stylish --cache --ext .ts --ext .tsx ./api/src ./e2e ./config ./*.ts",
     "fmt": "prettier --write .",
-    "prepare": "husky install",
+    "prepare": "husky",
     "start": "tsx ./e2e/tests/index.ts",
     "dev": "tsx watch ./e2e/tests/index.ts",
     "tooling:summary": "tsx config/tooling-summary.ts",
     "test": "vitest run",
-    "test:e2e": "npm --prefix e2e run test"
+    "test:e2e": "playwright test -c e2e/playwright.config.ts"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
       "prettier --write",
       "eslint --fix"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
     ]
   },
   "keywords": [
@@ -57,7 +60,8 @@
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "vitest": "^4.0.14",
-    "zod": "^4.1.13"
+    "zod": "^4.1.13",
+    "@playwright/test": "^1.57.0"
   },
   "dependencies": {
     "node-fetch": "^3.3.2"
