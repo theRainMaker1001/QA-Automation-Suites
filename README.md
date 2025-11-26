@@ -12,7 +12,7 @@
 
 ### 🛠 **Tech Stack Highlights (Quick Scan)**
 
-**Playwright • TypeScript (strict) • Node.js • Tool-Agnostic API Layer • Docker • GitHub Actions CI/CD • ESLint • Prettier • Husky • axe-core (a11y) • Performance Budgets • Risk-Based Testing • Algorithmic Oracles • ISTQB Test Design**
+**Playwright • TypeScript (strict) • Node.js • Tool-Agnostic API Layer • Docker • GitHub Actions CI/CD • ESLint • Prettier • Husky • axe-core (a11y) • Performance Budgets • Risk-Based Testing • Algorithmic Oracles • ISTQB Savvy Test Design**
 
 [![CI](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml/badge.svg?branch=main&cacheBust=1)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml)
 [![Playwright E2E](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/playwright.yml/badge.svg?branch=main&cacheBust=1)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/playwright.yml)
