@@ -2,20 +2,19 @@ name: Bank Critical Heartbeat
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
   push:
-    branches: ['main']
-    paths:
-      - 'api/**'
-      - '.github/workflows/bank-critical-heartbeat.yml'
+    branches: [main]
   schedule:
-    - cron: '0 6 * * *' # daily 06:00 UTC
+    - cron: '0 6 * * *'
+  workflow_call: {} # <— allows other workflows to "use:" this one
 
 jobs:
   api-heartbeat:
     name: API Heartbeat
     runs-on: ubuntu-latest
     timeout-minutes: 10
-
     env:
       BANK_BASE_URL: ${{ vars.BANK_BASE_URL }}
       BANK_CUSTOMER_ID: ${{ vars.BANK_CUSTOMER_ID }}
@@ -35,10 +34,18 @@ jobs:
       - name: Install dependencies (include dev)
         run: npm ci
 
-      - name: Run API heartbeat (vitest)
+      # Init reports early so upload never misses
+      - name: Init reports dir
         run: |
           mkdir -p .reports
+          printf "## Bank Heartbeat\n\n" > .reports/heartbeat-summary.md
+          echo "_Run started (UTC): $(date -u)_" >> .reports/heartbeat-summary.md
+
+      - name: Run API heartbeat (vitest)
+        run: |
           npm run test:api | tee .reports/api-heartbeat.log
+          echo "" >> .reports/heartbeat-summary.md
+          echo "_Finished (UTC): $(date -u)_" >> .reports/heartbeat-summary.md
 
       - name: Upload dev logs
         if: always()
@@ -53,13 +60,8 @@ jobs:
         with:
           name: api-heartbeat-summary
           path: .reports/heartbeat-summary.md
-          if-no-files-found: warn
+          if-no-files-found: error
 
       - name: Append PO summary to Job Summary
         if: always()
-        run: |
-          if [ -f ".reports/heartbeat-summary.md" ]; then
-            cat .reports/heartbeat-summary.md >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "Heartbeat run completed. See artifacts for details." >> "$GITHUB_STEP_SUMMARY"
-          fi
+        run: cat .reports/heartbeat-summary.md >> "$GITHUB_STEP_SUMMARY"
