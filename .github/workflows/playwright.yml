@@ -25,8 +25,11 @@ jobs:
           cache: 'npm'
           cache-dependency-path: e2e/package-lock.json
 
-      - name: Install deps (e2e)
-        run: npm ci
+      - name: Install dependencies (include dev)
+        run: npm ci --include=dev
+        env:
+          NODE_ENV: ""
+          NPM_CONFIG_PRODUCTION: "false"
 
       - name: Typecheck (e2e)
         run: npm run typecheck
