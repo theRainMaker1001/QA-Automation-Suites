@@ -22,12 +22,7 @@ resources/
 .vscode/
 .idea/
 
-# Ignore report
+# Ignore reports and cache file
 
-node_modules/
 /reports/
-/.reports/
-
-
-
 .eslintcache
