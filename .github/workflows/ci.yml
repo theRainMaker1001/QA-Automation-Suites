@@ -23,11 +23,8 @@ jobs:
           cache: 'npm'
 
       # Clean install using the exact dependency tree from package-lock.json
-      - name: Install dependencies (include dev)
-        run: npm ci --include=dev
-        env:
-          NODE_ENV: ""
-          NPM_CONFIG_PRODUCTION: "false"
+      - name: Install dependencies
+        run: npm ci
 
       # Run a type check to ensure TS definitions are solid
       - name: 🔍 Type check
@@ -39,9 +36,4 @@ jobs:
 
       # Verify code formatting (don’t auto-fix in CI)
       - name: 💅 Prettier format check
-        run:
-          npx prettier --check .
-
-          # Build TypeScript -> JavaScript
-      - name: 🏗️ Build API
-        run: npm run build:api
+        run: npx prettier --check .

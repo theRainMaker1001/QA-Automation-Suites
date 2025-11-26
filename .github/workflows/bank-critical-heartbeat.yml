@@ -34,9 +34,6 @@ jobs:
 
       - name: Install dependencies (include dev)
         run: npm ci
-        env:
-          NODE_ENV: ""
-          NPM_CONFIG_PRODUCTION: "false"
 
       - name: Run API heartbeat (vitest)
         run: |
