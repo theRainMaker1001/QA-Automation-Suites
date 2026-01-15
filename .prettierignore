@@ -1,2 +1,3 @@
 /reports/
-/.reports/*.md
+/.reports
+/*.md
