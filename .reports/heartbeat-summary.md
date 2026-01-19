@@ -1,6 +1,6 @@
 # Daily Heartbeat — Parabank Product Summary
 
-**Status:** # # ✅ All heartbeat checks passed!
+**Status:** ✅ All heartbeat checks passed!
 API reachable, latency within budget, basic safety gates held.
 
 **Run time:** 26/11/2025, 14:32:22  

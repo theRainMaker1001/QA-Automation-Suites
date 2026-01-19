@@ -14,7 +14,7 @@
 [![Playwright E2E](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/playwright.yml/badge.svg?branch=main&cacheBust=1)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/playwright.yml)
 [![Critical Heartbeat](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/bank-critical-heartbeat.yml/badge.svg?branch=main)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/bank-critical-heartbeat.yml)
 
-> The primary system under test is **ParaBank**, a banking demo application providing realistic fintech workflows (accounts, transfers, loans, statements, auth).
+> The primary system under test is **ParaBank**, a banking demo application providing fintech workflows (accounts, transfers, loans, statements, auth).
 
 ---
 
@@ -145,7 +145,7 @@ npm run test:api
 
 ## 🗺️ Roadmap
 
-> Subject to change as the project evolves.
+> *Subject to change as the project evolves.*
 
 ### 🧱 Foundation & Repo Hygiene
 
