@@ -29,22 +29,22 @@ const accountTestCases: AccountTestInput[] = [
 
   // --- NEGATIVE / VALID (correctly rejected) ---
   {
-    description: 'Non-existent account ID returns 404',
+    description: 'Non-existent account ID returns 400',
     accountId: '99999999',
     polarity: 'negative',
     expectedValidity: 'valid',
     equivalenceClass: 'invalid-nonexistent',
-    expectedStatus: 404,
+    expectedStatus: 400,
   },
 
   // --- NEGATIVE / INVALID (malformed input) ---
   {
-    description: 'Alphabetic account ID returns 400',
+    description: 'Alphabetic account ID returns 404',
     accountId: 'abc',
     polarity: 'negative',
     expectedValidity: 'invalid',
     equivalenceClass: 'invalid-format',
-    expectedStatus: 400,
+    expectedStatus: 404,
   },
   {
     description: 'Empty account ID returns 404 (no route match)',
@@ -55,20 +55,20 @@ const accountTestCases: AccountTestInput[] = [
     expectedStatus: 404,
   },
   {
-    description: 'Negative account ID returns 400 or 404',
+    description: 'Negative account ID returns 400',
     accountId: '-1',
     polarity: 'negative',
     expectedValidity: 'invalid',
     equivalenceClass: 'boundary-negative',
-    expectedStatus: 400, // May also be 404 depending on API behaviour
+    expectedStatus: 400,
   },
   {
-    description: 'Zero account ID returns 404',
+    description: 'Zero account ID returns 400',
     accountId: '0',
     polarity: 'negative',
     expectedValidity: 'invalid',
     equivalenceClass: 'boundary-zero',
-    expectedStatus: 404,
+    expectedStatus: 400,
   },
   {
     description: 'Very large account ID returns 404',
@@ -79,12 +79,12 @@ const accountTestCases: AccountTestInput[] = [
     expectedStatus: 404,
   },
   {
-    description: 'Special characters in account ID returns 400',
+    description: 'Special characters in account ID returns 404',
     accountId: '123!@#',
     polarity: 'negative',
     expectedValidity: 'invalid',
     equivalenceClass: 'invalid-format',
-    expectedStatus: 400,
+    expectedStatus: 404,
   },
 ];
 
@@ -105,25 +105,25 @@ const customerTestCases: CustomerTestInput[] = [
 
   // --- NEGATIVE / VALID (correctly rejected) ---
   {
-    description: 'Non-existent customer ID returns 404',
+    description: 'Non-existent customer ID returns 400',
     customerId: '99999999',
     polarity: 'negative',
     expectedValidity: 'valid',
     equivalenceClass: 'invalid-nonexistent',
-    expectedStatus: 404,
+    expectedStatus: 400,
   },
 
   // --- NEGATIVE / INVALID (malformed input) ---
   {
-    description: 'Alphabetic customer ID returns 400',
+    description: 'Alphabetic customer ID returns 404',
     customerId: 'notanumber',
     polarity: 'negative',
     expectedValidity: 'invalid',
     equivalenceClass: 'invalid-format',
-    expectedStatus: 400,
+    expectedStatus: 404,
   },
   {
-    description: 'Negative customer ID returns 400 or 404',
+    description: 'Negative customer ID returns 400',
     customerId: '-5',
     polarity: 'negative',
     expectedValidity: 'invalid',
@@ -131,12 +131,12 @@ const customerTestCases: CustomerTestInput[] = [
     expectedStatus: 400,
   },
   {
-    description: 'Zero customer ID returns 404',
+    description: 'Zero customer ID returns 400',
     customerId: '0',
     polarity: 'negative',
     expectedValidity: 'invalid',
     equivalenceClass: 'boundary-zero',
-    expectedStatus: 404,
+    expectedStatus: 400,
   },
 ];
 

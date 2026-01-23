@@ -91,45 +91,28 @@ describe('@smoke Accounts API', () => {
       };
 
       try {
-        // Use retry for network resilience
         const { result: res } = await withRetry(async () => {
           return client.get<AccountResponse | ErrorResponse>(routes.account(testCase.accountId));
         });
 
         record.actualStatus = res.status ?? 0;
         record.latencyMs = res.latencyMs ?? 0;
-
-        // For accounts, we may get different error codes for invalid input
-        // ParaBank sometimes returns 500 for invalid formats instead of 400
-        const statusMatches = res.status === testCase.expectedStatus;
-        const acceptableNegative =
-          testCase.polarity === 'negative' &&
-          (res.status ?? 0) >= 400 &&
-          testCase.expectedStatus >= 400;
-
-        record.passed = statusMatches || acceptableNegative;
+        record.passed = res.status === testCase.expectedStatus;
 
         if (!record.passed) {
           record.error = `Expected ${testCase.expectedStatus}, got ${res.status}`;
         }
 
-        // Push record before assertion so it's captured either way
         results.push(record);
 
-        // Actual test assertion
-        if (testCase.polarity === 'positive') {
-          expect(res.status).toBe(testCase.expectedStatus);
-        } else {
-          // For negative tests, any 4xx/5xx is acceptable
-          expect(res.status).toBeGreaterThanOrEqual(400);
-        }
+        // Strict assertion: actual must match expected exactly
+        expect(res.status).toBe(testCase.expectedStatus);
       } catch (err) {
-        // Timeout or network error
         record.error = `TIMEOUT: ${err instanceof Error ? err.message : String(err)}`;
         record.passed = false;
         results.push(record);
 
-        throw err; // Re-throw so Vitest marks it failed
+        throw err;
       }
     });
   });
