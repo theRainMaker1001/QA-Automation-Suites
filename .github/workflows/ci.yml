@@ -52,7 +52,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-reports
-          path: .reports/
+          path: |
+            .reports/*.json
+            .reports/*.md
+            .reports/*.jsonl
           if-no-files-found: warn
 
       - name: 📋 Append summary to Job Summary
