@@ -22,5 +22,9 @@ resources/
 .vscode/
 .idea/
 
-# Ignore reports and cache file
+# Ignore cache file
 .eslintcache
+
+# Generated test reports (change every run)
+.reports/*.jsonl
+.reports/*.json
