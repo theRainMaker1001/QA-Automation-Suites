@@ -27,5 +27,3 @@ resources/
 
 # Generated test reports (change every run)
 .reports/
-.reports/*.jsonl
-.reports/*.json
