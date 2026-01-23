@@ -1,0 +1,81 @@
+{
+  "overview": {
+    "totalTests": 7,
+    "passed": 7,
+    "failed": 0,
+    "passRate": "100.0%",
+    "totalDurationMs": 118,
+    "runDate": "2026-01-23T13:23:48.040Z"
+  },
+  "suites": [
+    {
+      "name": "withRetry > successful calls",
+      "tests": 2,
+      "passed": 2,
+      "failed": 0
+    },
+    {
+      "name": "withRetry > exhausted retries",
+      "tests": 2,
+      "passed": 2,
+      "failed": 0
+    },
+    {
+      "name": "withRetry > default config",
+      "tests": 2,
+      "passed": 2,
+      "failed": 0
+    },
+    {
+      "name": "sleep",
+      "tests": 1,
+      "passed": 1,
+      "failed": 0
+    }
+  ],
+  "failures": [],
+  "results": [
+    {
+      "suite": "withRetry > successful calls",
+      "test": "returns result on first attempt",
+      "status": "passed",
+      "durationMs": 1.74
+    },
+    {
+      "suite": "withRetry > successful calls",
+      "test": "returns result after retry",
+      "status": "passed",
+      "durationMs": 17.96
+    },
+    {
+      "suite": "withRetry > exhausted retries",
+      "test": "throws after all attempts exhausted",
+      "status": "passed",
+      "durationMs": 33.68
+    },
+    {
+      "suite": "withRetry > exhausted retries",
+      "test": "includes the last error",
+      "status": "passed",
+      "durationMs": 12.38
+    },
+    {
+      "suite": "withRetry > default config",
+      "test": "uses default maxAttempts of 2",
+      "status": "passed",
+      "durationMs": 0.23
+    },
+    {
+      "suite": "withRetry > default config",
+      "test": "uses default delayMs of 500",
+      "status": "passed",
+      "durationMs": 0.13
+    },
+    {
+      "suite": "sleep",
+      "test": "resolves after specified delay",
+      "status": "passed",
+      "durationMs": 50.63
+    }
+  ]
+}

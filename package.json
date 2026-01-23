@@ -13,7 +13,7 @@
   },
   "scripts": {
     "build:api": "tsc -p api/tsconfig.json",
-    "test:unit": "vitest run --config vitest.unit.config.ts",
+    "test:unit": "vitest run --config vitest.unit.config.ts && tsx api/src/helpers/generate-unit-summary.ts",
     "test:api": "vitest run --config vitest.integration.config.ts",
     "test:api:smoke": "vitest run --config vitest.integration.config.ts --testNamePattern @smoke",
     "test:api:critical": "vitest run --config vitest.integration.config.ts --testNamePattern @critical",
