@@ -13,9 +13,13 @@
   },
   "scripts": {
     "build:api": "tsc -p api/tsconfig.json",
-    "test:api": "vitest run",
-    "test:api:smoke": "vitest run --testNamePattern @smoke",
-    "test:api:critical": "vitest run --testNamePattern @critical",
+    "test:unit": "vitest run --config vitest.unit.config.ts",
+    "test:api": "vitest run --config vitest.integration.config.ts",
+    "test:api:smoke": "vitest run --config vitest.integration.config.ts --testNamePattern @smoke",
+    "test:api:critical": "vitest run --config vitest.integration.config.ts --testNamePattern @critical",
+    "test:all": "npm run test:unit && npm run test:api",
+    "test": "npm run test:all",
+    "test:e2e": "playwright test -c e2e/playwright.config.ts",
     "clean": "rimraf dist api/dist",
     "typecheck": "tsc --noEmit -p . && tsc --noEmit -p e2e",
     "lint": "eslint --format stylish --cache --ext .ts --ext .tsx ./api/src ./e2e ./config ./*.ts",
@@ -23,9 +27,7 @@
     "prepare": "husky",
     "start": "tsx ./e2e/tests/index.ts",
     "dev": "tsx watch ./e2e/tests/index.ts",
-    "tooling:summary": "tsx config/tooling-summary.ts",
-    "test": "vitest run",
-    "test:e2e": "playwright test -c e2e/playwright.config.ts"
+    "tooling:summary": "tsx config/tooling-summary.ts"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
