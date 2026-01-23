@@ -23,6 +23,4 @@ resources/
 .idea/
 
 # Ignore reports and cache file
-
-/reports/
 .eslintcache

@@ -1,4 +1,4 @@
-name: CI (TypeCheck + Lint + Prettier + API Tests)
+name: CI (TypeCheck + Lint + Prettier + API Smoke)
 
 on:
   push:
@@ -9,31 +9,44 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
-
     steps:
-      # Checkout the repo
       - name: 🛎️ Checkout repository
         uses: actions/checkout@v4
 
-      # Use the Node version from .nvmrc to keep CI in sync with local dev
       - name: 🧰 Setup Node.js (read from .nvmrc)
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
 
-      # Clean install using the exact dependency tree from package-lock.json
-      - name: Install dependencies
+      - name: 📦 Install dependencies
         run: npm ci
 
-      # Run a type check to ensure TS definitions are solid
       - name: 🔍 Type check
         run: npm run typecheck
 
-      # Lint the codebase for consistency and potential issues
       - name: 🧹 Lint
         run: npm run lint
 
-      # Verify code formatting (don’t auto-fix in CI)
       - name: 💅 Prettier format check
         run: npx prettier --check .
+
+      - name: 🧪 API Smoke Tests
+        run: |
+          mkdir -p .reports
+          npm run test:api:smoke
+
+      - name: 📊 Upload integration reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-smoke-reports
+          path: .reports/integration-*.md
+          if-no-files-found: warn
+
+      - name: 📋 Append summary to Job Summary
+        if: always()
+        run: |
+          if [ -f ".reports/integration-summary.md" ]; then
+            cat .reports/integration-summary.md >> "$GITHUB_STEP_SUMMARY"
+          fi

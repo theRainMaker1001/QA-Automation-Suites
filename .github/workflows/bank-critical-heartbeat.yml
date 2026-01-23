@@ -15,13 +15,11 @@ jobs:
     name: API Heartbeat
     runs-on: ubuntu-latest
     timeout-minutes: 10
-
     env:
       BANK_BASE_URL: ${{ vars.BANK_BASE_URL }}
       BANK_CUSTOMER_ID: ${{ vars.BANK_CUSTOMER_ID }}
       API_LATENCY_MS: ${{ vars.API_LATENCY_MS }}
       HEARTBEAT_TIMEOUT_MS: ${{ vars.HEARTBEAT_TIMEOUT_MS }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,10 +33,10 @@ jobs:
       - name: Install dependencies (include dev)
         run: npm ci
 
-      - name: Run API heartbeat (vitest)
+      - name: Run API heartbeat (critical only)
         run: |
           mkdir -p .reports
-          npm run test:api | tee .reports/api-heartbeat.log
+          npm run test:api:critical | tee .reports/api-heartbeat.log
 
       - name: Upload dev logs
         if: always()

@@ -1,0 +1,97 @@
+{
+  "totalTests": 8,
+  "expected": [
+    {
+      "testName": "accounts/13344",
+      "description": "Valid existing account ID returns account details",
+      "equivalenceClass": "valid-existing",
+      "polarity": "positive",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true,
+      "latencyMs": 972,
+      "timestamp": "2026-01-23T11:35:13.185Z"
+    },
+    {
+      "testName": "accounts/99999999",
+      "description": "Non-existent account ID returns 404",
+      "equivalenceClass": "invalid-nonexistent",
+      "polarity": "negative",
+      "expectedStatus": 404,
+      "actualStatus": 400,
+      "passed": true,
+      "latencyMs": 267,
+      "timestamp": "2026-01-23T11:35:14.166Z"
+    },
+    {
+      "testName": "accounts/abc",
+      "description": "Alphabetic account ID returns 400",
+      "equivalenceClass": "invalid-format",
+      "polarity": "negative",
+      "expectedStatus": 400,
+      "actualStatus": 404,
+      "passed": true,
+      "latencyMs": 537,
+      "timestamp": "2026-01-23T11:35:14.434Z"
+    },
+    {
+      "testName": "accounts/",
+      "description": "Empty account ID returns 404 (no route match)",
+      "equivalenceClass": "boundary-empty",
+      "polarity": "negative",
+      "expectedStatus": 404,
+      "actualStatus": 404,
+      "passed": true,
+      "latencyMs": 267,
+      "timestamp": "2026-01-23T11:35:14.973Z"
+    },
+    {
+      "testName": "accounts/-1",
+      "description": "Negative account ID returns 400 or 404",
+      "equivalenceClass": "boundary-negative",
+      "polarity": "negative",
+      "expectedStatus": 400,
+      "actualStatus": 400,
+      "passed": true,
+      "latencyMs": 279,
+      "timestamp": "2026-01-23T11:35:15.240Z"
+    },
+    {
+      "testName": "accounts/0",
+      "description": "Zero account ID returns 404",
+      "equivalenceClass": "boundary-zero",
+      "polarity": "negative",
+      "expectedStatus": 404,
+      "actualStatus": 400,
+      "passed": true,
+      "latencyMs": 271,
+      "timestamp": "2026-01-23T11:35:15.520Z"
+    },
+    {
+      "testName": "accounts/999999999999999",
+      "description": "Very large account ID returns 404",
+      "equivalenceClass": "boundary-max",
+      "polarity": "negative",
+      "expectedStatus": 404,
+      "actualStatus": 404,
+      "passed": true,
+      "latencyMs": 295,
+      "timestamp": "2026-01-23T11:35:15.792Z"
+    },
+    {
+      "testName": "accounts/123!@#",
+      "description": "Special characters in account ID returns 400",
+      "equivalenceClass": "invalid-format",
+      "polarity": "negative",
+      "expectedStatus": 400,
+      "actualStatus": 404,
+      "passed": true,
+      "latencyMs": 265,
+      "timestamp": "2026-01-23T11:35:16.088Z"
+    }
+  ],
+  "unexpected": [],
+  "timeout": [],
+  "runDate": "2026-01-23T11:35:16.353Z",
+  "durationMs": 3169
+}

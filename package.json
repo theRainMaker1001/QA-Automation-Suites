@@ -14,6 +14,8 @@
   "scripts": {
     "build:api": "tsc -p api/tsconfig.json",
     "test:api": "vitest run",
+    "test:api:smoke": "vitest run --testNamePattern @smoke",
+    "test:api:critical": "vitest run --testNamePattern @critical",
     "clean": "rimraf dist api/dist",
     "typecheck": "tsc --noEmit -p . && tsc --noEmit -p e2e",
     "lint": "eslint --format stylish --cache --ext .ts --ext .tsx ./api/src ./e2e ./config ./*.ts",
