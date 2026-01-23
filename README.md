@@ -30,6 +30,31 @@ This suite demonstrates practical quality engineering:
 
 ---
 
+---
+
+## 🔺 Test Levels & Automation Pyramid (ISTQB)
+```
+                        /\
+                       /  \
+                      / E2E \              ← Playwright (UI flows)
+                     /------\                Few, slow, high confidence
+                    /        \
+                   /Integration\           ← Vitest + HTTP (API contracts)
+                  /--------------\           Moderate, fast, contract validation
+                 /                \
+                /       Unit       \       ← Vitest (isolated logic)
+               /--------------------\        Many, fastest, granular coverage
+```
+
+| Layer | Tool | Focus | Tags | Trigger |
+|-------|------|-------|------|---------|
+| **Unit** | Vitest | Isolated functions, utilities | — | Push, PR |
+| **Integration** | Vitest + HTTP | API contracts, data flow | `@smoke` | Push, PR |
+| **E2E** | Playwright | User journeys, UI flows | `@smoke`, `@critical` | Push, PR |
+| **Heartbeat** | Vitest | API availability, latency | `@critical` | Daily (06:00 UTC) |
+
+> **ISTQB principle:** More tests at the base (fast, cheap, stable), fewer at the top (slow, expensive, brittle). Each layer catches different defect types.
+
 ## 🧠 ISTQB Test-Design Techniques
 
 Applying formal test-design methods to fintech scenarios:
@@ -190,6 +215,7 @@ npm run test:api:critical
 
 ### 🧠 ISTQB Test-Design
 
+* ✅ Test Levels: Pyramid structure (Unit, Integration, E2E, Heartbeat)
 * ✅ Equivalence Partitioning: Account ID validation tests
 * ⬜ Boundary Value Analysis: Transfer amount limits
 * ⬜ Decision Table: Loan eligibility scenarios

@@ -9,8 +9,8 @@
       "expectedStatus": 200,
       "actualStatus": 200,
       "passed": true,
-      "latencyMs": 1223,
-      "timestamp": "2026-01-23T13:18:31.522Z"
+      "latencyMs": 1210,
+      "timestamp": "2026-01-23T13:24:52.854Z"
     },
     {
       "testName": "accounts/99999999",
@@ -20,8 +20,8 @@
       "expectedStatus": 400,
       "actualStatus": 400,
       "passed": true,
-      "latencyMs": 318,
-      "timestamp": "2026-01-23T13:18:32.753Z"
+      "latencyMs": 325,
+      "timestamp": "2026-01-23T13:24:54.071Z"
     },
     {
       "testName": "accounts/abc",
@@ -31,8 +31,8 @@
       "expectedStatus": 404,
       "actualStatus": 404,
       "passed": true,
-      "latencyMs": 670,
-      "timestamp": "2026-01-23T13:18:33.072Z"
+      "latencyMs": 956,
+      "timestamp": "2026-01-23T13:24:54.396Z"
     },
     {
       "testName": "accounts/",
@@ -43,7 +43,7 @@
       "actualStatus": 404,
       "passed": true,
       "latencyMs": 320,
-      "timestamp": "2026-01-23T13:18:33.742Z"
+      "timestamp": "2026-01-23T13:24:55.353Z"
     },
     {
       "testName": "accounts/-1",
@@ -54,7 +54,7 @@
       "actualStatus": 400,
       "passed": true,
       "latencyMs": 322,
-      "timestamp": "2026-01-23T13:18:34.064Z"
+      "timestamp": "2026-01-23T13:24:55.674Z"
     },
     {
       "testName": "accounts/0",
@@ -64,8 +64,8 @@
       "expectedStatus": 400,
       "actualStatus": 400,
       "passed": true,
-      "latencyMs": 320,
-      "timestamp": "2026-01-23T13:18:34.387Z"
+      "latencyMs": 460,
+      "timestamp": "2026-01-23T13:24:55.997Z"
     },
     {
       "testName": "accounts/999999999999999",
@@ -75,8 +75,8 @@
       "expectedStatus": 404,
       "actualStatus": 404,
       "passed": true,
-      "latencyMs": 327,
-      "timestamp": "2026-01-23T13:18:34.708Z"
+      "latencyMs": 318,
+      "timestamp": "2026-01-23T13:24:56.458Z"
     },
     {
       "testName": "accounts/123!@#",
@@ -86,12 +86,12 @@
       "expectedStatus": 404,
       "actualStatus": 404,
       "passed": true,
-      "latencyMs": 317,
-      "timestamp": "2026-01-23T13:18:35.036Z"
+      "latencyMs": 319,
+      "timestamp": "2026-01-23T13:24:56.777Z"
     }
   ],
   "unexpected": [],
   "timeout": [],
-  "runDate": "2026-01-23T13:18:35.354Z",
-  "durationMs": 3834
+  "runDate": "2026-01-23T13:24:57.097Z",
+  "durationMs": 4244
 }
