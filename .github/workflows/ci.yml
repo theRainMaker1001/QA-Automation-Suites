@@ -33,7 +33,7 @@ jobs:
 
       - name: 🧪 Unit Tests
         run: |
-          mkdir -p .reports
+          mkdir -p reports
           npm run test:unit
 
       - name: 🧪 API Smoke Tests
@@ -41,22 +41,15 @@ jobs:
 
       - name: 📊 Upload test reports
         if: always()
-        run: |
-          echo "=== Before upload ==="
-          ls -la .reports/
-          echo "=== Uploading ==="
-
-      - name: 📊 Actually upload test reports
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-reports
-          path: .reports/
+          path: reports/
           if-no-files-found: error
 
       - name: 📋 Append summary to Job Summary
         if: always()
         run: |
-          if [ -f ".reports/integration-summary.md" ]; then
-            cat .reports/integration-summary.md >> "$GITHUB_STEP_SUMMARY"
+          if [ -f "reports/integration-summary.md" ]; then
+            cat reports/integration-summary.md >> "$GITHUB_STEP_SUMMARY"
           fi

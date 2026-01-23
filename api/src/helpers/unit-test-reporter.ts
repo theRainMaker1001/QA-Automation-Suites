@@ -135,7 +135,7 @@ function transformVitestReport(rawPath: string, outputPath: string): void {
 }
 
 function generateUnitReport(): void {
-  const reportsDir = path.resolve(process.cwd(), '.reports');
+  const reportsDir = path.resolve(process.cwd(), 'reports');
   const rawPath = path.join(reportsDir, 'unit-report.json');
   const devPath = path.join(reportsDir, 'unit-summary.json');
 

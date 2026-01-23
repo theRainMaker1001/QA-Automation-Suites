@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { TestResultRecord, TestRunSummary } from '../../interfaces/responses.js';
 
-const REPORT_DIR = path.resolve(process.cwd(), '.reports');
+const REPORT_DIR = path.resolve(process.cwd(), 'reports');
 const INTEGRATION_REPORT_FILE = path.join(REPORT_DIR, 'integration-report.md');
 const INTEGRATION_SUMMARY_FILE = path.join(REPORT_DIR, 'integration-summary.md');
 const INTEGRATION_JSON_FILE = path.join(REPORT_DIR, 'integration-results.json');

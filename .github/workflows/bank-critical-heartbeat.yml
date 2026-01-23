@@ -8,7 +8,7 @@ on:
       - 'api/**'
       - '.github/workflows/bank-critical-heartbeat.yml'
   schedule:
-    - cron: '0 6 * * *' # daily 06:00 UTC
+    - cron: '0 6 * * *'
 
 jobs:
   api-heartbeat:
@@ -35,22 +35,22 @@ jobs:
 
       - name: Run API heartbeat (critical only)
         run: |
-          mkdir -p .reports
-          npm run test:api:critical | tee .reports/api-heartbeat.log
+          mkdir -p reports
+          npm run test:api:critical | tee reports/api-heartbeat.log
 
       - name: 📊 Upload heartbeat reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: heartbeat-reports
-          path: .reports/
+          path: reports/
           if-no-files-found: warn
 
       - name: Append PO summary to Job Summary
         if: always()
         run: |
-          if [ -f ".reports/heartbeat-summary.md" ]; then
-            cat .reports/heartbeat-summary.md >> "$GITHUB_STEP_SUMMARY"
+          if [ -f "reports/heartbeat-summary.md" ]; then
+            cat reports/heartbeat-summary.md >> "$GITHUB_STEP_SUMMARY"
           else
             echo "Heartbeat run completed. See artifacts for details." >> "$GITHUB_STEP_SUMMARY"
           fi
