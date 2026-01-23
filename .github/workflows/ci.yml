@@ -37,7 +37,7 @@ jobs:
           npm run test:unit
 
       - name: 🧪 API Smoke Tests
-        run: npm run test:api:smoke
+        run: npm run test:api
 
       - name: 📊 Upload test reports
         if: always()

@@ -38,19 +38,12 @@ jobs:
           mkdir -p .reports
           npm run test:api:critical | tee .reports/api-heartbeat.log
 
-      - name: Upload dev logs
+      - name: 📊 Upload heartbeat reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: api-heartbeat-logs
-          path: .reports/api-heartbeat.log
-
-      - name: Upload PO summary
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: api-heartbeat-summary
-          path: .reports/heartbeat-summary.md
+          name: heartbeat-reports
+          path: .reports/
           if-no-files-found: warn
 
       - name: Append PO summary to Job Summary
