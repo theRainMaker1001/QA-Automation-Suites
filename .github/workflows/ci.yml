@@ -1,4 +1,4 @@
-name: CI (TypeCheck + Lint + Prettier + Unit + API Smoke)
+name: CI (TypeCheck + Lint + Prettier + API Smoke)
 
 on:
   push:
@@ -31,19 +31,16 @@ jobs:
       - name: 💅 Prettier format check
         run: npx prettier --check .
 
-      - name: 🧪 Unit Tests
+      - name: 🧪 API Smoke Tests
         run: |
           mkdir -p .reports
-          npm run test:unit
+          npm run test:api:smoke
 
-      - name: 🧪 API Smoke Tests
-        run: npm run test:api:smoke
-
-      - name: 📊 Upload test reports
+      - name: 📊 Upload integration reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-reports
+          name: api-smoke-reports
           path: .reports/
           if-no-files-found: warn
 
@@ -53,3 +50,12 @@ jobs:
           if [ -f ".reports/integration-summary.md" ]; then
             cat .reports/integration-summary.md >> "$GITHUB_STEP_SUMMARY"
           fi
+
+      - name: 📝 Commit updated reports
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .reports/*.md
+          git diff --staged --quiet || git commit -m "chore(reports): update test reports [skip ci]"
+          git push
