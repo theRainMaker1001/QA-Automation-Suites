@@ -135,8 +135,6 @@ function generateStakeholderSummary(summary: TestRunSummary): string {
   const expectedCount = summary.expected.length;
   const unexpectedCount = summary.unexpected.length;
   const timeoutCount = summary.timeout.length;
-  const totalTests = summary.totalTests;
-
   const allPassed = unexpectedCount === 0 && timeoutCount === 0;
   const hasIssues = unexpectedCount > 0;
   const hasTimeouts = timeoutCount > 0;

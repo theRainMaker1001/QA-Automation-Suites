@@ -41,7 +41,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: api-smoke-reports
-          path: .reports/integration-*.md
+          path: .reports/
           if-no-files-found: warn
 
       - name: 📋 Append summary to Job Summary
