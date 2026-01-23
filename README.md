@@ -8,7 +8,7 @@
 
 ### 🛠 Tech Stack
 
-**Playwright • TypeScript • Node.js • GitHub Actions CI/CD • ESLint • Prettier • Husky**
+**Playwright • Vitest • TypeScript • Node.js • GitHub Actions CI/CD • ESLint • Prettier • Husky**
 
 [![CI + API Smoke](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml/badge.svg?branch=main&cacheBust=1)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml)
 [![Playwright E2E](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/playwright.yml/badge.svg?branch=main&cacheBust=1)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/playwright.yml)
@@ -22,7 +22,7 @@
 
 This suite demonstrates practical quality engineering:
 
-- **E2E & API testing** with Playwright
+- **E2E & API testing** with Playwright and Vitest
 - **ISTQB test-design techniques** applied to real scenarios (EP, BVA, Decision Tables)
 - **Accessibility checks** using axe-core
 - **CI/CD integration** with tagged test lanes (@smoke, @critical, @regression)
@@ -36,7 +36,7 @@ Applying formal test-design methods to fintech scenarios:
 
 | Technique | Application |
 |-----------|-------------|
-| **Equivalence Partitioning** | Transfer amounts (valid ranges, invalid inputs, edge cases) |
+| **Equivalence Partitioning** | Account ID validation (valid, invalid, boundary cases) |
 | **Boundary Value Analysis** | Account limits, minimum/maximum transfer values |
 | **Decision Tables** | Loan eligibility rules (income, credit, employment status) |
 | **State-Transition** | Login flows, session timeout, account lockout |
@@ -67,25 +67,38 @@ Basic accessibility coverage using axe-core on key user flows:
 ## 📊 Reporting
 
 - Playwright **HTML reports**
+- API integration reports (technical + stakeholder summaries)
 - Screenshots, videos, traces on failure (uploaded as CI artifacts)
 
 ---
 
 ## 🧩 Project Structure
-
 ```
 QA-Automation-Suites/
 ├─ .github/
 │  └─ workflows/
-│     ├─ ci.yml                      # static gates + build + API checks
+│     ├─ ci.yml                      # typecheck + lint + API smoke tests
 │     ├─ playwright.yml              # E2E workflow
-│     └─ bank-critical-heartbeat.yml # continuous heartbeat lane
+│     └─ bank-critical-heartbeat.yml # daily API heartbeat
 ├─ .husky/                           # pre-commit / pre-push hooks
 ├─ .reports/                         # test output reports
 ├─ api/
-│  ├─ helpers/                       # HTTP client utilities
 │  ├─ data/
-│  └─ src/tests/
+│  │  └─ equivalence-partitions.ts   # EP test data sets
+│  ├─ interfaces/
+│  │  └─ responses.ts                # API response contracts (interfaces out)
+│  ├─ src/
+│  │  ├─ helpers/
+│  │  │  ├─ http.ts                  # HTTP client
+│  │  │  ├─ retry.ts                 # retry utility
+│  │  │  └─ test-reporter.ts         # report generator
+│  │  ├─ types/
+│  │  │  └─ inputs.ts                # test input shapes (types in)
+│  │  └─ tests/
+│  │     ├─ critical/
+│  │     │  └─ heartbeat.api.test.ts # @critical daily heartbeat
+│  │     └─ integration/
+│  │        └─ accounts.api.test.ts  # @smoke integration tests
 ├─ config/                           # env/config scaffolding
 ├─ e2e/
 │  ├─ tests/
@@ -122,7 +135,6 @@ QA-Automation-Suites/
 ---
 
 ## 🛠 Getting Started
-
 ```bash
 nvm use
 npm install
@@ -130,15 +142,23 @@ npx playwright install
 ```
 
 **Run E2E smoke:**
-
 ```bash
 npx playwright test --grep @smoke
 ```
 
-**Run API tests:**
-
+**Run all API tests:**
 ```bash
 npm run test:api
+```
+
+**Run API smoke tests only (integration):**
+```bash
+npm run test:api:smoke
+```
+
+**Run API critical tests only (heartbeat):**
+```bash
+npm run test:api:critical
 ```
 
 ---
@@ -165,12 +185,13 @@ npm run test:api
 ### 🔐 API Layer
 
 * ✅ Standalone fetch-based client
-* ⬜ Typed request/response interfaces
+* ✅ Typed request/response interfaces (types in, interfaces out)
 * ⬜ Loan eligibility API tests
 
 ### 🧠 ISTQB Test-Design
 
-* ⬜ EP/BVA: Transfer amount validation tests
+* ✅ Equivalence Partitioning: Account ID validation tests
+* ⬜ Boundary Value Analysis: Transfer amount limits
 * ⬜ Decision Table: Loan eligibility scenarios
 * ⬜ State-transition: Login/lockout flows
 
@@ -183,7 +204,8 @@ npm run test:api
 
 * ✅ `.nvmrc` Node version alignment
 * ✅ CI static gates before E2E
-* ⬜ PR feedback: `@smoke` subset on push
+* ✅ CI runs typecheck, lint, prettier, and `@smoke` API tests on push/PR
+* ✅ Daily scheduled `@critical` API heartbeat
 * ⬜ Scheduled `@regression` runs
 
 ---

@@ -1,0 +1,2 @@
+{"ts":"2026-01-23T11:53:21.664Z","baseUrl":"https://parabank.parasoft.com/parabank","path":"services/bank/customers/12212","ok":true,"status":200,"latencyMs":4723}
+{"ts":"2026-01-23T11:53:21.999Z","baseUrl":"https://parabank.parasoft.com/parabank","path":"services/bank/this-should-404","ok":false,"status":404,"latencyMs":327}
