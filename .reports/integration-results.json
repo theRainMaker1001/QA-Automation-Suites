@@ -9,8 +9,8 @@
       "expectedStatus": 200,
       "actualStatus": 200,
       "passed": true,
-      "latencyMs": 1210,
-      "timestamp": "2026-01-23T13:24:52.854Z"
+      "latencyMs": 1843,
+      "timestamp": "2026-01-23T13:45:58.234Z"
     },
     {
       "testName": "accounts/99999999",
@@ -20,8 +20,8 @@
       "expectedStatus": 400,
       "actualStatus": 400,
       "passed": true,
-      "latencyMs": 325,
-      "timestamp": "2026-01-23T13:24:54.071Z"
+      "latencyMs": 332,
+      "timestamp": "2026-01-23T13:46:00.086Z"
     },
     {
       "testName": "accounts/abc",
@@ -31,8 +31,8 @@
       "expectedStatus": 404,
       "actualStatus": 404,
       "passed": true,
-      "latencyMs": 956,
-      "timestamp": "2026-01-23T13:24:54.396Z"
+      "latencyMs": 976,
+      "timestamp": "2026-01-23T13:46:00.420Z"
     },
     {
       "testName": "accounts/",
@@ -42,8 +42,8 @@
       "expectedStatus": 404,
       "actualStatus": 404,
       "passed": true,
-      "latencyMs": 320,
-      "timestamp": "2026-01-23T13:24:55.353Z"
+      "latencyMs": 328,
+      "timestamp": "2026-01-23T13:46:01.397Z"
     },
     {
       "testName": "accounts/-1",
@@ -53,8 +53,8 @@
       "expectedStatus": 400,
       "actualStatus": 400,
       "passed": true,
-      "latencyMs": 322,
-      "timestamp": "2026-01-23T13:24:55.674Z"
+      "latencyMs": 329,
+      "timestamp": "2026-01-23T13:46:01.726Z"
     },
     {
       "testName": "accounts/0",
@@ -64,8 +64,8 @@
       "expectedStatus": 400,
       "actualStatus": 400,
       "passed": true,
-      "latencyMs": 460,
-      "timestamp": "2026-01-23T13:24:55.997Z"
+      "latencyMs": 331,
+      "timestamp": "2026-01-23T13:46:02.056Z"
     },
     {
       "testName": "accounts/999999999999999",
@@ -75,8 +75,8 @@
       "expectedStatus": 404,
       "actualStatus": 404,
       "passed": true,
-      "latencyMs": 318,
-      "timestamp": "2026-01-23T13:24:56.458Z"
+      "latencyMs": 325,
+      "timestamp": "2026-01-23T13:46:02.388Z"
     },
     {
       "testName": "accounts/123!@#",
@@ -86,12 +86,12 @@
       "expectedStatus": 404,
       "actualStatus": 404,
       "passed": true,
-      "latencyMs": 319,
-      "timestamp": "2026-01-23T13:24:56.777Z"
+      "latencyMs": 328,
+      "timestamp": "2026-01-23T13:46:02.714Z"
     }
   ],
   "unexpected": [],
   "timeout": [],
-  "runDate": "2026-01-23T13:24:57.097Z",
-  "durationMs": 4244
+  "runDate": "2026-01-23T13:46:03.043Z",
+  "durationMs": 4810
 }
