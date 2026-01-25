@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const REPORT_DIR = path.resolve(process.cwd(), '.reports');
+const REPORT_DIR = path.resolve(process.cwd(), 'reports');
 const LOG_FILE = path.join(REPORT_DIR, 'api-heartbeat.jsonl');
 const SUMMARY_FILE = path.join(REPORT_DIR, 'heartbeat-summary.md');
 

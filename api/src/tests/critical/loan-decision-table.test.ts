@@ -31,8 +31,8 @@ import {
   combinedBoundaryTests,
   getCriticalTests,
   type LoanDecisionTestCase,
-} from './loan-decision-table';
-import type { LoanResponse } from '../../../types/loan.types';
+} from './loan-decision-table.js';
+import type { LoanResponse, LoanRequestParams } from '../../../types/index.js';
 
 // ============================================================================
 // TEST CONFIGURATION
@@ -50,17 +50,10 @@ const TEST_ACCOUNT_ID = 12345;
 // API CLIENT
 // ============================================================================
 
-interface LoanRequestOptions {
-  customerId: number;
-  amount: number;
-  downPayment: number;
-  fromAccountId: number;
-}
-
 /**
  * Request a loan from ParaBank API
  */
-async function requestLoan(options: LoanRequestOptions): Promise<LoanResponse> {
+async function requestLoan(options: LoanRequestParams): Promise<LoanResponse> {
   const params = new URLSearchParams({
     customerId: options.customerId.toString(),
     amount: options.amount.toString(),

@@ -27,3 +27,6 @@ resources/
 
 # Generated test reports (change every run)
 .reports/
+
+# Claude settings
+.claude
