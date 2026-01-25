@@ -30,9 +30,8 @@ import {
   availableFundsBoundary,
   combinedBoundaryTests,
   getCriticalTests,
-  type LoanDecisionTestCase,
 } from './loan-decision-table.js';
-import type { LoanResponse, LoanRequestParams } from '../../../types/index.js';
+import type { LoanResponse, LoanRequestParams, LoanDecisionTestCase } from '../../types/index.js';
 
 // ============================================================================
 // TEST CONFIGURATION
@@ -82,7 +81,7 @@ async function requestLoan(options: LoanRequestParams): Promise<LoanResponse> {
  * In production testing, we would set up accounts with specific balances.
  * For demonstration, we document what the expected behavior would be.
  */
-function mapTestCaseToRequest(testCase: LoanDecisionTestCase): LoanRequestOptions {
+function mapTestCaseToRequest(testCase: LoanDecisionTestCase): LoanRequestParams {
   return {
     customerId: TEST_CUSTOMER_ID,
     amount: testCase.loanAmount,
