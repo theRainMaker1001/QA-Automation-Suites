@@ -18,6 +18,8 @@ jobs:
     name: API Heartbeat
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: write
     env:
       BANK_BASE_URL: ${{ vars.BANK_BASE_URL }}
       BANK_CUSTOMER_ID: ${{ vars.BANK_CUSTOMER_ID }}
