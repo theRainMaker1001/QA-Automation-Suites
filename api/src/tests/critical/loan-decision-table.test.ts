@@ -71,7 +71,7 @@ async function requestLoan(options: LoanRequestParams): Promise<LoanResponse> {
   if (!response.ok) {
     // Try to parse error response, otherwise use status text
     try {
-      const errorBody = await response.json();
+      const errorBody = (await response.json()) as { message?: string };
       return {
         approved: false,
         message: errorBody.message || response.statusText,
