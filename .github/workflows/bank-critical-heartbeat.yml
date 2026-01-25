@@ -6,6 +6,7 @@ on:
     branches: ['main']
     paths:
       - 'api/**'
+      - 'src/tests/critical/**'
       - '.github/workflows/bank-critical-heartbeat.yml'
   schedule:
     - cron: '0 6 * * *'
@@ -38,6 +39,9 @@ jobs:
           mkdir -p reports
           npm run test:api:critical | tee reports/api-heartbeat.log
 
+      - name: Run Loan Decision Table tests
+        run: npm run test:loans
+
       - name: 📊 Upload heartbeat reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -46,11 +50,27 @@ jobs:
           path: reports/
           if-no-files-found: warn
 
+      - name: Commit test reports
+        if: always()
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add reports/
+          git diff --staged --quiet || git commit -m "docs: update heartbeat reports [skip ci]"
+          git push
+
       - name: Append PO summary to Job Summary
         if: always()
         run: |
           if [ -f "reports/heartbeat-summary.md" ]; then
             cat reports/heartbeat-summary.md >> "$GITHUB_STEP_SUMMARY"
-          else
+          fi
+          if [ -f "reports/loan-api-report.md" ]; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "---" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            cat reports/loan-api-report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [ ! -f "reports/heartbeat-summary.md" ] && [ ! -f "reports/loan-api-report.md" ]; then
             echo "Heartbeat run completed. See artifacts for details." >> "$GITHUB_STEP_SUMMARY"
           fi
