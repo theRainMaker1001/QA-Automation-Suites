@@ -71,7 +71,7 @@ async function requestLoan(options: LoanRequestParams): Promise<LoanResponse> {
     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
   }
 
-  return response.json();
+  return response.json() as Promise<LoanResponse>;
 }
 
 /**
