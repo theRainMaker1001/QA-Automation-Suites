@@ -71,6 +71,14 @@ const accountTestCases: AccountTestInput[] = [
     expectedStatus: 400,
   },
   {
+    description: 'Smallest positive account ID returns 400',
+    accountId: '1',
+    polarity: 'negative',
+    expectedValidity: 'valid',
+    equivalenceClass: 'boundary-min-positive',
+    expectedStatus: 400,
+  },
+  {
     description: 'Very large account ID returns 404',
     accountId: '999999999999999',
     polarity: 'negative',

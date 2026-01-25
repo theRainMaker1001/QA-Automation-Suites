@@ -1,5 +1,5 @@
 {
-  "totalTests": 8,
+  "totalTests": 9,
   "expected": [
     {
       "testName": "accounts/13344",
@@ -9,8 +9,8 @@
       "expectedStatus": 200,
       "actualStatus": 200,
       "passed": true,
-      "latencyMs": 1237,
-      "timestamp": "2026-01-23T15:18:20.563Z"
+      "latencyMs": 2182,
+      "timestamp": "2026-01-25T10:40:51.051Z"
     },
     {
       "testName": "accounts/99999999",
@@ -20,8 +20,8 @@
       "expectedStatus": 400,
       "actualStatus": 400,
       "passed": true,
-      "latencyMs": 622,
-      "timestamp": "2026-01-23T15:18:21.806Z"
+      "latencyMs": 289,
+      "timestamp": "2026-01-25T10:40:53.240Z"
     },
     {
       "testName": "accounts/abc",
@@ -31,8 +31,8 @@
       "expectedStatus": 404,
       "actualStatus": 404,
       "passed": true,
-      "latencyMs": 961,
-      "timestamp": "2026-01-23T15:18:22.429Z"
+      "latencyMs": 385,
+      "timestamp": "2026-01-25T10:40:53.531Z"
     },
     {
       "testName": "accounts/",
@@ -42,8 +42,8 @@
       "expectedStatus": 404,
       "actualStatus": 404,
       "passed": true,
-      "latencyMs": 334,
-      "timestamp": "2026-01-23T15:18:23.390Z"
+      "latencyMs": 276,
+      "timestamp": "2026-01-25T10:40:53.917Z"
     },
     {
       "testName": "accounts/-1",
@@ -53,8 +53,8 @@
       "expectedStatus": 400,
       "actualStatus": 400,
       "passed": true,
-      "latencyMs": 322,
-      "timestamp": "2026-01-23T15:18:23.725Z"
+      "latencyMs": 275,
+      "timestamp": "2026-01-25T10:40:54.195Z"
     },
     {
       "testName": "accounts/0",
@@ -64,8 +64,19 @@
       "expectedStatus": 400,
       "actualStatus": 400,
       "passed": true,
-      "latencyMs": 325,
-      "timestamp": "2026-01-23T15:18:24.048Z"
+      "latencyMs": 279,
+      "timestamp": "2026-01-25T10:40:54.471Z"
+    },
+    {
+      "testName": "accounts/1",
+      "description": "Smallest positive account ID returns 400",
+      "equivalenceClass": "boundary-min-positive",
+      "polarity": "negative",
+      "expectedStatus": 400,
+      "actualStatus": 400,
+      "passed": true,
+      "latencyMs": 514,
+      "timestamp": "2026-01-25T10:40:54.751Z"
     },
     {
       "testName": "accounts/999999999999999",
@@ -75,8 +86,8 @@
       "expectedStatus": 404,
       "actualStatus": 404,
       "passed": true,
-      "latencyMs": 322,
-      "timestamp": "2026-01-23T15:18:24.374Z"
+      "latencyMs": 279,
+      "timestamp": "2026-01-25T10:40:55.266Z"
     },
     {
       "testName": "accounts/123!@#",
@@ -86,12 +97,12 @@
       "expectedStatus": 404,
       "actualStatus": 404,
       "passed": true,
-      "latencyMs": 321,
-      "timestamp": "2026-01-23T15:18:24.697Z"
+      "latencyMs": 275,
+      "timestamp": "2026-01-25T10:40:55.546Z"
     }
   ],
   "unexpected": [],
   "timeout": [],
-  "runDate": "2026-01-23T15:18:25.019Z",
-  "durationMs": 4457
+  "runDate": "2026-01-25T10:40:55.823Z",
+  "durationMs": 4773
 }

@@ -39,7 +39,8 @@ type EquivalenceClass =
   | 'boundary-zero'
   | 'boundary-negative'
   | 'boundary-max'
-  | 'boundary-empty';
+  | 'boundary-empty'
+  | 'boundary-min-positive';
 
 // ============================================================================
 // Test case input shapes
