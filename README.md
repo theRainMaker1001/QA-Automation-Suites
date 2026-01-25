@@ -23,10 +23,14 @@
 This suite demonstrates practical quality engineering:
 
 - **E2E & API testing** with Playwright and Vitest
-- **ISTQB test-design techniques** applied to real scenarios (EP, BVA, Decision Tables)
-- **Accessibility checks** using axe-core
-- **CI/CD integration** with tagged test lanes (@smoke, @critical, @regression)
+- **ISTQB test-design techniques** applied to real scenarios:
+  - ✅ Equivalence Partitioning (Account validation)
+  - ✅ 3-Value Boundary Value Analysis (Loan amounts, ratios)
+  - ✅ Decision Tables (Loan approval rules - 34 test cases)
+- **CI/CD integration** with tagged test lanes (`@smoke`, `@critical`, `@regression`)
+- **Daily API heartbeat monitoring** with automated reporting
 - **Strict TypeScript**, linting, and Husky hooks for code quality
+- **Automated report generation** (markdown + JSON) with GitHub Actions integration
 
 ---
 
@@ -59,12 +63,32 @@ This suite demonstrates practical quality engineering:
 
 Applying formal test-design methods to fintech scenarios:
 
-| Technique | Application |
-|-----------|-------------|
-| **Equivalence Partitioning** | Account ID validation (valid, invalid, boundary cases) |
-| **Boundary Value Analysis** | Account limits, minimum/maximum transfer values |
-| **Decision Tables** | Loan eligibility rules (income, credit, employment status) |
-| **State-Transition** | Login flows, session timeout, account lockout |
+| Technique | Application | Implementation |
+|-----------|-------------|----------------|
+| **Equivalence Partitioning** | Account ID validation (valid, invalid, boundary cases) | ✅ Accounts API test suite |
+| **Boundary Value Analysis (3-Value)** | Loan amounts, down payments, ratio thresholds | ✅ 34 test cases with -2, -1, 0, +1, +2 |
+| **Decision Tables** | Loan approval rules (funds check, down payment ratio) | ✅ 4 combinatorial rules + BVA |
+| **State-Transition** | Login flows, session timeout, account lockout | _Planned_ |
+
+### 📋 Loan Approval Decision Table (Simplified)
+
+ParaBank loan approval evaluates two conditions **in sequence**:
+
+| Rule | C1: Funds ≥ Down Payment | C2: Down Payment ≥ 10% | Decision |
+|------|:------------------------:|:----------------------:|----------|
+| **R1** | ✅ TRUE | ✅ TRUE | **APPROVED** |
+| **R2** | ✅ TRUE | ❌ FALSE | **DENIED** (insufficient ratio) |
+| **R3** | ❌ FALSE | ✅ TRUE | **DENIED** (insufficient funds) |
+| **R4** | ❌ FALSE | ❌ FALSE | **DENIED** (insufficient funds) |
+
+> **Note:** R1 (funds check) is evaluated first. If it fails, R2 is never checked—both R3 and R4 return the same denial.
+
+**Test Coverage:**
+- ✅ 4 Decision Table Rules (combinatorial coverage)
+- ✅ 30 Boundary Value Analysis tests (3-value BVA at 6 boundaries)
+- ✅ 34 total test cases with automated reporting
+
+📖 **Detailed Documentation:** [Loan Approval Decision Table](docs/test-design/loan-approval-decision-table.md)
 
 ---
 
@@ -91,9 +115,12 @@ Basic accessibility coverage using axe-core on key user flows:
 
 ## 📊 Reporting
 
-- Playwright **HTML reports**
-- API integration reports (technical + stakeholder summaries)
-- Screenshots, videos, traces on failure (uploaded as CI artifacts)
+- **Playwright HTML reports** (E2E test results with traces)
+- **API integration reports** (technical + stakeholder summaries in markdown)
+- **Loan decision table reports** (34 test cases, grouped by technique, pass/fail breakdown)
+- **Daily heartbeat summaries** (API health, latency, critical path validation)
+- **Screenshots, videos, traces** on failure (uploaded as CI artifacts)
+- **GitHub Actions job summaries** with inline test results
 
 ---
 
@@ -104,9 +131,12 @@ QA-Automation-Suites/
 │  └─ workflows/
 │     ├─ ci.yml                      # typecheck + lint + API smoke tests
 │     ├─ playwright.yml              # E2E workflow
-│     └─ bank-critical-heartbeat.yml # daily API heartbeat
+│     └─ bank-critical-heartbeat.yml # daily API heartbeat + loan tests
 ├─ .husky/                           # pre-commit / pre-push hooks
-├─ .reports/                         # test output reports
+├─ reports/                          # test output reports (auto-generated)
+│  ├─ loan-api-report.md             # loan test summary
+│  ├─ integration-report.md          # integration test summary
+│  └─ heartbeat-summary.md           # API health summary
 ├─ api/
 │  ├─ data/
 │  │  └─ equivalence-partitions.ts   # EP test data sets
@@ -116,14 +146,23 @@ QA-Automation-Suites/
 │  │  ├─ helpers/
 │  │  │  ├─ http.ts                  # HTTP client
 │  │  │  ├─ retry.ts                 # retry utility
-│  │  │  └─ test-reporter.ts         # report generator
+│  │  │  └─ test-reporter.ts         # integration report generator
 │  │  ├─ types/
+│  │  │  ├─ index.ts                 # type aggregation
+│  │  │  ├─ loan.types.ts            # loan API types
 │  │  │  └─ inputs.ts                # test input shapes (types in)
 │  │  └─ tests/
 │  │     ├─ critical/
-│  │     │  └─ heartbeat.api.test.ts # @critical daily heartbeat
+│  │     │  ├─ heartbeat.api.test.ts        # @critical daily heartbeat
+│  │     │  ├─ loan-decision-table.ts       # loan test data (34 cases)
+│  │     │  └─ loan-decision-table.test.ts  # @critical loan approval tests
 │  │     └─ integration/
 │  │        └─ accounts.api.test.ts  # @smoke integration tests
+├─ scripts/
+│  └─ run-loan-tests.ts              # loan test runner + report generator
+├─ docs/
+│  └─ test-design/
+│     └─ loan-approval-decision-table.md  # detailed loan test design
 ├─ config/                           # env/config scaffolding
 ├─ e2e/
 │  ├─ tests/
@@ -141,7 +180,9 @@ QA-Automation-Suites/
 ├─ eslint.config.js
 ├─ package.json
 ├─ tsconfig.json
-├─ vitest.config.ts                  # API test runner config
+├─ vitest.unit.config.ts             # unit test config (5s timeout)
+├─ vitest.integration.config.ts      # integration + critical tests (30s timeout)
+├─ vitest.critical.config.ts         # critical tests only
 └─ README.md
 ```
 
@@ -186,6 +227,11 @@ npm run test:api:smoke
 npm run test:api:critical
 ```
 
+**Run loan decision table tests (with report generation):**
+```bash
+npm run test:loans
+```
+
 ---
 
 ## 🗺️ Roadmap
@@ -211,15 +257,16 @@ npm run test:api:critical
 
 * ✅ Standalone fetch-based client
 * ✅ Typed request/response interfaces (types in, interfaces out)
-* ⬜ Loan eligibility API tests
+* ✅ Loan eligibility API tests (34 test cases)
+* ✅ Automated report generation (markdown + JSON)
 
 ### 🧠 ISTQB Test-Design
 
 * ✅ Test Levels: Pyramid structure (Unit, Integration, E2E, Heartbeat)
 * ✅ Equivalence Partitioning: Account ID validation tests
-* ⬜ Boundary Value Analysis: Transfer amount limits
-* ⬜ Decision Table: Loan eligibility scenarios
-* ⬜ State-transition: Login/lockout flows
+* ✅ Boundary Value Analysis (3-Value): Loan amounts, down payments, ratios (30 BVA tests)
+* ✅ Decision Table: Loan approval rules (4 combinatorial scenarios + 34 total tests)
+* State-transition: Login/lockout flows _(planned)_
 
 ### ♿ Accessibility
 
