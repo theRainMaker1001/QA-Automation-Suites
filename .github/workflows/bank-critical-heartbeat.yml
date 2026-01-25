@@ -6,7 +6,9 @@ on:
     branches: ['main']
     paths:
       - 'api/**'
-      - 'src/tests/critical/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'vitest.*.config.ts'
       - '.github/workflows/bank-critical-heartbeat.yml'
   schedule:
     - cron: '0 6 * * *'
