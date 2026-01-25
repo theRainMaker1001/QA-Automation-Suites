@@ -47,7 +47,7 @@
  * - Boundary 2: downPayment = 0.1 * loanAmount (10% ratio check)
  */
 
-import type { LoanDecisionTestCase, LoanDecision, BoundaryPoint } from '../../types/loan.types.js';
+import type { LoanDecisionTestCase, LoanDecision } from '../../types/loan.types.js';
 
 // ============================================================================
 // BUSINESS RULE CONSTANTS
