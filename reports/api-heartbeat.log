@@ -1,0 +1,30 @@
+
+> automatedtesting@1.0.0 test:api:critical
+> vitest run --config vitest.integration.config.ts --testNamePattern @critical
+
+
+[1m[46m RUN [49m[22m [36mv4.0.14 [39m[90m/home/runner/work/QA-Automation-Suites/QA-Automation-Suites[39m
+
+ [2m[90m↓[39m[22m [30m[45m integration [49m[39m api/src/tests/critical/loan-decision-table.test.ts [2m([22m[2m41 tests[22m[2m | [22m[33m41 skipped[39m[2m)[22m
+[90mstdout[2m | api/src/tests/integration/accounts.api.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from api/.env -- tip: ⚙️  enable debug logging with { debug: true }
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+
+[90mstdout[2m | api/src/tests/critical/heartbeat.api.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from api/.env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ✅ audit secrets and track compliance: https://dotenvx.com/ops
+
+ [2m[90m↓[39m[22m [30m[45m integration [49m[39m api/src/tests/integration/accounts.api.test.ts [2m([22m[2m9 tests[22m[2m | [22m[33m9 skipped[39m[2m)[22m
+[90mstdout[2m | api/src/tests/critical/heartbeat.api.test.ts[2m > [22m[2m@critical API heartbeat[2m > [22m[2mPublic-safe data: GET /customer (fallback to /accounts) within budget; minimally validate JSON when JSON
+[22m[39m[HB] GET services/bank/customers/12212 -> 200 in 212ms :: {"id":12212,"firstName":"John","lastName":"Smith","address":{"street":"1431 Main St","city":"Beverly Hills","state":"CA","zipCode":"90210"},
+
+[90mstdout[2m | api/src/tests/critical/heartbeat.api.test.ts[2m > [22m[2m@critical API heartbeat[2m > [22m[2mNegative: unknown route returns 404 (not 200)
+[22m[39m[HB] GET services/bank/this-should-404 -> 404 in 23ms :: {"code":"STATUS","message":"HTTP 404 for GET https://parabank.parasoft.com/parabank/services/bank/this-should-404"}
+
+ [32m✓[39m [30m[45m integration [49m[39m api/src/tests/critical/heartbeat.api.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 330[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[2m | [22m[33m2 skipped[39m[90m (3)[39m
+[2m      Tests [22m [1m[32m3 passed[39m[22m[2m | [22m[33m50 skipped[39m[90m (53)[39m
+[2m   Start at [22m 15:49:26
+[2m   Duration [22m 675ms[2m (transform 228ms, setup 0ms, import 391ms, tests 330ms, environment 1ms)[22m
+
