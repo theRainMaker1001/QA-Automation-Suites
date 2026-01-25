@@ -29,7 +29,7 @@
     "dev": "tsx watch ./e2e/tests/index.ts",
     "tooling:summary": "tsx config/tooling-summary.ts",
     "test:loans": "npx ts-node scripts/run-loan-tests.ts",
-    "test:loans:only": "vitest run src/tests/critical/heartbeat/loans",
+    "test:loans:only": "vitest run api/src/tests/critical/loan-decision-table.test.ts",
     "test:critical": "vitest run -c vitest.critical.config.ts"
   },
   "lint-staged": {

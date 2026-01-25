@@ -172,7 +172,7 @@ function main(): void {
   try {
     // Run vitest with JSON reporter
     execSync(
-      `npx vitest run src/tests/critical/heartbeat/loans --reporter=json --outputFile=${JSON_REPORT_PATH}`,
+      `npx vitest run api/src/tests/critical/loan-decision-table.test.ts --reporter=json --outputFile=${JSON_REPORT_PATH}`,
       { stdio: 'inherit' },
     );
   } catch (e) {
