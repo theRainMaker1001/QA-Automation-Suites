@@ -10,9 +10,9 @@
 
 **Playwright • Vitest • TypeScript • Node.js • GitHub Actions CI/CD • ESLint • Prettier • Husky**
 
-[![CI + API Smoke](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml/badge.svg?branch=main&cacheBust=1)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml)
-[![Playwright E2E](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/playwright.yml/badge.svg?branch=main&cacheBust=1)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/playwright.yml)
-[![API Heartbeat (Daily)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/bank-critical-heartbeat.yml/badge.svg?branch=main)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/bank-critical-heartbeat.yml)
+[![Code Quality & Unit Tests](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml/badge.svg?branch=main&cacheBust=1)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml)
+[![End-to-End Tests](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/playwright.yml/badge.svg?branch=main&cacheBust=1)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/playwright.yml)
+[![Critical Function Healthcheck](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/bank-critical-heartbeat.yml/badge.svg?branch=main)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/bank-critical-heartbeat.yml)
 
 > The primary system under test is **ParaBank**, a banking demo application providing fintech workflows (accounts, transfers, loans, statements, auth).
 
@@ -27,8 +27,10 @@ This suite demonstrates practical quality engineering:
   - ✅ Equivalence Partitioning (Account validation)
   - ✅ 3-Value Boundary Value Analysis (Loan amounts, ratios)
   - ✅ Decision Tables (Loan approval rules - 34 test cases)
-- **CI/CD integration** with tagged test lanes (`@smoke`, `@critical`, `@regression`)
-- **Daily API heartbeat monitoring** with automated reporting
+- **WCAG 2.1 AA accessibility auditing** with axe-core and compliance reporting
+- **CI/CD integration** with tagged test lanes (`@smoke`, `@critical`, `@regression`, `@a11y`)
+- **Daily critical function healthcheck** with automated reporting
+- **50 unit tests** covering HTTP client, retry logic, and report generators
 - **Strict TypeScript**, linting, and Husky hooks for code quality
 - **Automated report generation** (markdown + JSON) with GitHub Actions integration
 
@@ -52,10 +54,11 @@ This suite demonstrates practical quality engineering:
 
 | Layer | Tool | Focus | Tags | Trigger |
 |-------|------|-------|------|---------|
-| **Unit** | Vitest | Isolated functions, utilities | — | Push, PR |
+| **Unit** | Vitest | Isolated functions, utilities (50 tests) | — | Push, PR |
 | **Integration** | Vitest + HTTP | API contracts, data flow | `@smoke` | Push, PR |
 | **E2E** | Playwright | User journeys, UI flows | `@smoke`, `@critical` | Push, PR |
-| **Heartbeat** | Vitest | API availability, latency | `@critical` | Daily (06:00 UTC) |
+| **Accessibility** | Playwright + axe-core | WCAG 2.1 AA compliance | `@a11y` | Push, Daily |
+| **Healthcheck** | Vitest + Playwright | API availability, loan tests, a11y audit | `@critical` | Daily (06:00 UTC) |
 
 > **ISTQB principle:** More tests at the base (fast, cheap, stable), fewer at the top (slow, expensive, brittle). Each layer catches different defect types.
 
@@ -92,12 +95,54 @@ ParaBank loan approval evaluates two conditions **in sequence**:
 
 ---
 
-## ♿ Accessibility
+## ♿ Accessibility Compliance Testing
 
-Basic accessibility coverage using axe-core on key user flows:
+Comprehensive WCAG 2.1 Level AA accessibility auditing using axe-core integrated with Playwright.
 
-- Automated WCAG violation scanning
-- Critical path coverage (login, account overview, transfers)
+### Audit Coverage
+
+| Category | Rules Tested | Focus |
+|----------|--------------|-------|
+| **Form Labels** | `label`, `label-title-only`, `form-field-multiple-labels` | Input/label association |
+| **Keyboard Navigation** | `tabindex`, `focus-order-semantics`, `scrollable-region-focusable` | Tab order, focus management |
+| **Focus Indicators** | Visual focus state detection | Visible focus styles |
+| **Screen Reader** | 12 ARIA rules including `html-has-lang`, `image-alt`, `link-name` | Assistive technology support |
+| **Error Messages** | `aria-input-field-name`, `aria-allowed-attr` | Accessible form validation |
+
+### Pages Audited
+
+- Homepage / Login
+- About Us
+- Services
+- Full WCAG 2.1 AA scan (Homepage)
+
+### Compliance Reporting
+
+Generates stakeholder-ready compliance reports with:
+
+- **Executive summary** with compliance status (Compliant, Partial, Non-Compliant)
+- **Violation breakdown** by category and impact severity
+- **Legal compliance reference** (WCAG 2.1 AA, Section 508, EN 301 549, ADA Title III)
+- **Remediation recommendations** with axe-core documentation links
+- **Risk assessment** for critical and serious violations
+
+### Audit Mode
+
+Tests operate in **audit mode**: they collect and report violations without failing the build. This approach is ideal for:
+
+- Monitoring third-party applications (like ParaBank)
+- Tracking accessibility improvements over time
+- Generating compliance documentation for stakeholders
+- Identifying issues without blocking deployments
+
+**Run accessibility audit:**
+```bash
+npm run test:a11y:report
+```
+
+Reports generated:
+- `reports/a11y-results.json` - Machine-readable audit data
+- `reports/a11y-compliance-report.md` - Stakeholder compliance report
 
 ---
 
@@ -118,7 +163,9 @@ Basic accessibility coverage using axe-core on key user flows:
 - **Playwright HTML reports** (E2E test results with traces)
 - **API integration reports** (technical + stakeholder summaries in markdown)
 - **Loan decision table reports** (34 test cases, grouped by technique, pass/fail breakdown)
-- **Daily heartbeat summaries** (API health, latency, critical path validation)
+- **Unit test reports** (50 tests with error codes for debugging)
+- **Accessibility compliance reports** (WCAG 2.1 AA audit with legal compliance reference)
+- **Daily healthcheck summaries** (API health, loan tests, accessibility audit)
 - **Screenshots, videos, traces** on failure (uploaded as CI artifacts)
 - **GitHub Actions job summaries** with inline test results
 
@@ -129,14 +176,17 @@ Basic accessibility coverage using axe-core on key user flows:
 QA-Automation-Suites/
 ├─ .github/
 │  └─ workflows/
-│     ├─ ci.yml                      # typecheck + lint + API smoke tests
-│     ├─ playwright.yml              # E2E workflow
-│     └─ bank-critical-heartbeat.yml # daily API heartbeat + loan tests
+│     ├─ ci.yml                      # Code Quality & Unit Tests
+│     ├─ playwright.yml              # End-to-End Tests
+│     └─ bank-critical-heartbeat.yml # Critical Function Healthcheck (daily)
 ├─ .husky/                           # pre-commit / pre-push hooks
 ├─ reports/                          # test output reports (auto-generated)
 │  ├─ loan-api-report.md             # loan test summary
 │  ├─ integration-report.md          # integration test summary
-│  └─ heartbeat-summary.md           # API health summary
+│  ├─ heartbeat-summary.md           # API health summary
+│  ├─ unit-summary.json              # unit test results
+│  ├─ a11y-results.json              # accessibility audit data
+│  └─ a11y-compliance-report.md      # WCAG compliance report
 ├─ api/
 │  ├─ data/
 │  │  └─ equivalence-partitions.ts   # EP test data sets
@@ -152,6 +202,10 @@ QA-Automation-Suites/
 │  │  │  ├─ loan.types.ts            # loan API types
 │  │  │  └─ inputs.ts                # test input shapes (types in)
 │  │  └─ tests/
+│  │     ├─ unit/
+│  │     │  ├─ http.test.ts          # HTTP client tests (16 tests)
+│  │     │  ├─ retry.test.ts         # retry utility tests (7 tests)
+│  │     │  └─ test-reporter.test.ts # report generator tests (27 tests)
 │  │     ├─ critical/
 │  │     │  ├─ heartbeat.api.test.ts        # @critical daily heartbeat
 │  │     │  ├─ loan-decision-table.ts       # loan test data (34 cases)
@@ -159,17 +213,21 @@ QA-Automation-Suites/
 │  │     └─ integration/
 │  │        └─ accounts.api.test.ts  # @smoke integration tests
 ├─ scripts/
-│  └─ run-loan-tests.ts              # loan test runner + report generator
+│  ├─ run-loan-tests.ts              # loan test runner + report generator
+│  ├─ run-unit-tests.ts              # unit test runner + report generator
+│  └─ run-a11y-tests.ts              # accessibility test runner + compliance report
 ├─ docs/
 │  └─ test-design/
 │     └─ loan-approval-decision-table.md  # detailed loan test design
 ├─ config/                           # env/config scaffolding
 ├─ e2e/
 │  ├─ tests/
-│  │  └─ bank/
-│  │     ├─ smoke.header.spec.ts
-│  │     ├─ critical.availability.spec.ts
-│  │     └─ critical.login.spec.ts
+│  │  ├─ bankProject/
+│  │  │  ├─ smoke.header.spec.ts
+│  │  │  ├─ critical.availability.spec.ts
+│  │  │  ├─ critical.login.spec.ts
+│  │  │  └─ critical.accessibility.spec.ts  # @a11y WCAG 2.1 AA audit
+│  │  └─ index.ts
 │  ├─ fixtures/
 │  ├─ pages/
 │  └─ utils/
@@ -232,6 +290,16 @@ npm run test:api:critical
 npm run test:loans
 ```
 
+**Run accessibility audit (with compliance report):**
+```bash
+npm run test:a11y:report
+```
+
+**Run unit tests (with developer report):**
+```bash
+npm run test:unit:report
+```
+
 ---
 
 ## 🗺️ Roadmap
@@ -270,15 +338,17 @@ npm run test:loans
 
 ### ♿ Accessibility
 
-* ⬜ axe-core integration on key screens
-* ⬜ Critical path a11y coverage
+* ✅ axe-core + Playwright integration (WCAG 2.1 AA)
+* ✅ Critical path a11y audit (Homepage, About, Services)
+* ✅ Compliance reporting (stakeholder + legal documentation)
+* ✅ Audit mode (monitor without blocking deployments)
 
 ### 🌍 Environments & CI
 
 * ✅ `.nvmrc` Node version alignment
 * ✅ CI static gates before E2E
-* ✅ CI runs typecheck, lint, prettier, and `@smoke` API tests on push/PR
-* ✅ Daily scheduled `@critical` API heartbeat
+* ✅ CI runs typecheck, lint, prettier, unit tests, and `@smoke` API tests on push/PR
+* ✅ Daily scheduled Critical Function Healthcheck (API, loans, accessibility)
 * ⬜ Scheduled `@regression` runs
 
 ---

@@ -1,4 +1,4 @@
-name: Bank Critical Heartbeat
+name: Critical Function Healthcheck
 
 on:
   workflow_dispatch:
@@ -15,8 +15,8 @@ on:
     - cron: '0 6 * * *'
 
 jobs:
-  api-heartbeat:
-    name: API Heartbeat
+  critical-healthcheck:
+    name: Critical Path Validation
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -68,8 +68,9 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add reports/
-          git diff --staged --quiet || git commit -m "docs: update heartbeat reports [skip ci]"
-          git push
+          git diff --staged --quiet || git commit -m "docs: update healthcheck reports [skip ci]"
+          git pull --rebase || true
+          git push || echo "Push failed - reports will be included in next run"
 
       - name: Append PO summary to Job Summary
         if: always()

@@ -1,4 +1,4 @@
-name: CI (TypeCheck + Lint + Prettier + Unit + API Smoke)
+name: Code Quality & Unit Tests
 
 on:
   push:

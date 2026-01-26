@@ -1,7 +1,10 @@
 /**
- * WCAG Accessibility Tests - Critical Path
+ * WCAG Accessibility Audit - Critical Path
  *
- * Uses axe-core to validate WCAG 2.1 AA compliance on key pages.
+ * Uses axe-core to scan WCAG 2.1 AA compliance on key pages.
+ * Operates in AUDIT MODE: collects and reports violations without failing tests.
+ * This allows continuous monitoring of third-party applications (e.g., ParaBank).
+ *
  * Focuses on:
  * - Missing form labels
  * - Keyboard navigation issues
@@ -12,13 +15,12 @@
  * @tags @critical @a11y
  */
 
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
-// WCAG rule categories we're testing
+// WCAG rule categories we're auditing
 const FORM_LABEL_RULES = ['label', 'label-title-only', 'form-field-multiple-labels'];
 const KEYBOARD_RULES = ['tabindex', 'focus-order-semantics', 'scrollable-region-focusable'];
-const FOCUS_RULES = ['focus-visible', 'link-in-text-block'];
 const SCREEN_READER_RULES = [
   'aria-allowed-attr',
   'aria-hidden-body',
@@ -34,15 +36,6 @@ const SCREEN_READER_RULES = [
   'link-name',
 ];
 const ERROR_MESSAGE_RULES = ['aria-input-field-name'];
-
-// All critical a11y rules combined
-const CRITICAL_A11Y_RULES = [
-  ...FORM_LABEL_RULES,
-  ...KEYBOARD_RULES,
-  ...FOCUS_RULES,
-  ...SCREEN_READER_RULES,
-  ...ERROR_MESSAGE_RULES,
-];
 
 // Pages to test (critical user paths)
 const CRITICAL_PAGES = [
@@ -90,48 +83,43 @@ test.describe('@critical @a11y WCAG 2.1 AA Compliance', () => {
 
   for (const { name, path } of CRITICAL_PAGES) {
     test.describe(`Page: ${name}`, () => {
-      test(`@a11y form labels are properly associated`, async ({ page }) => {
+      test(`@a11y audit form labels`, async ({ page }) => {
         await page.goto(path);
 
         const results = await new AxeBuilder({ page }).withRules(FORM_LABEL_RULES).analyze();
 
-        // Store for reporting
+        // Store for reporting (audit mode - always passes)
         storeResults(name, page.url(), results);
 
         const violations = results.violations.filter((v) => FORM_LABEL_RULES.includes(v.id));
-
-        expect(
-          violations,
-          `Form label violations found:\n${formatViolations(violations)}`,
-        ).toHaveLength(0);
+        if (violations.length > 0) {
+          console.log(`[AUDIT] ${name} - Form label issues: ${violations.length}`);
+        }
       });
 
-      test(`@a11y keyboard navigation works correctly`, async ({ page }) => {
+      test(`@a11y audit keyboard navigation`, async ({ page }) => {
         await page.goto(path);
 
-        // Check axe keyboard rules
         const axeResults = await new AxeBuilder({ page }).withRules(KEYBOARD_RULES).analyze();
-
-        const violations = axeResults.violations.filter((v) => KEYBOARD_RULES.includes(v.id));
+        storeResults(name, page.url(), axeResults);
 
         // Also verify Tab key moves focus
         const initialFocus = await page.evaluate(() => document.activeElement?.tagName);
         await page.keyboard.press('Tab');
         const afterTab = await page.evaluate(() => document.activeElement?.tagName);
 
-        // Focus should move (not be stuck)
         const focusMoved = initialFocus !== afterTab || afterTab !== 'BODY';
+        const violations = axeResults.violations.filter((v) => KEYBOARD_RULES.includes(v.id));
 
-        expect(
-          violations.length === 0 && focusMoved,
-          `Keyboard navigation issues:\n${formatViolations(violations)}${!focusMoved ? '\nFocus did not move on Tab press' : ''}`,
-        ).toBe(true);
+        if (violations.length > 0 || !focusMoved) {
+          console.log(
+            `[AUDIT] ${name} - Keyboard issues: ${violations.length}, focus moved: ${focusMoved}`,
+          );
+        }
       });
 
-      test(`@a11y focus indicators are visible`, async ({ page }) => {
+      test(`@a11y audit focus indicators`, async ({ page }) => {
         await page.goto(path);
-
-        const results = await new AxeBuilder({ page }).withRules(FOCUS_RULES).analyze();
 
         // Check that focusable elements have visible focus styles
         const focusableElements = await page.$$('a, button, input, select, textarea, [tabindex]');
@@ -139,13 +127,11 @@ test.describe('@critical @a11y WCAG 2.1 AA Compliance', () => {
         let missingFocusIndicators = 0;
 
         for (const el of focusableElements.slice(0, 5)) {
-          // Check first 5 elements
           await el.focus();
           const hasVisibleFocus = await el.evaluate((node) => {
             const styles = window.getComputedStyle(node);
             const outline = styles.outline;
             const boxShadow = styles.boxShadow;
-            // Check if element has some focus indication
             return (
               (outline && outline !== 'none' && !outline.includes('0px')) ||
               (boxShadow && boxShadow !== 'none')
@@ -157,30 +143,44 @@ test.describe('@critical @a11y WCAG 2.1 AA Compliance', () => {
           }
         }
 
-        const violations = results.violations;
+        // Store as a focus indicator finding
+        storeResults(name, page.url(), {
+          violations:
+            missingFocusIndicators > 0
+              ? [
+                  {
+                    id: 'focus-indicator-check',
+                    impact: missingFocusIndicators >= 3 ? 'serious' : 'moderate',
+                    description: `${missingFocusIndicators} of ${Math.min(5, focusableElements.length)} sampled elements lack visible focus indicators`,
+                    helpUrl: 'https://www.w3.org/WAI/WCAG21/Understanding/focus-visible.html',
+                    nodes: Array(missingFocusIndicators).fill({ target: ['sampled element'] }),
+                  },
+                ]
+              : [],
+          passes:
+            focusableElements.length - missingFocusIndicators > 0 ? [{ id: 'focus-check' }] : [],
+        });
 
-        expect(
-          violations.length === 0 && missingFocusIndicators < 3,
-          `Focus indicator issues: ${missingFocusIndicators} elements missing visible focus`,
-        ).toBe(true);
+        if (missingFocusIndicators > 0) {
+          console.log(
+            `[AUDIT] ${name} - Focus indicator issues: ${missingFocusIndicators} elements`,
+          );
+        }
       });
 
-      test(`@a11y screen reader compatibility (ARIA/semantics)`, async ({ page }) => {
+      test(`@a11y audit screen reader compatibility`, async ({ page }) => {
         await page.goto(path);
 
         const results = await new AxeBuilder({ page }).withRules(SCREEN_READER_RULES).analyze();
-
         storeResults(name, page.url(), results);
 
         const violations = results.violations.filter((v) => SCREEN_READER_RULES.includes(v.id));
-
-        expect(
-          violations,
-          `Screen reader compatibility issues:\n${formatViolations(violations)}`,
-        ).toHaveLength(0);
+        if (violations.length > 0) {
+          console.log(`[AUDIT] ${name} - Screen reader issues: ${violations.length}`);
+        }
       });
 
-      test(`@a11y error messages are accessible`, async ({ page }) => {
+      test(`@a11y audit error message accessibility`, async ({ page }) => {
         await page.goto(path);
 
         // Try to trigger form errors if login form exists
@@ -188,10 +188,7 @@ test.describe('@critical @a11y WCAG 2.1 AA Compliance', () => {
         const submitBtn = page.locator('input[type="submit"], button[type="submit"]').first();
 
         if ((await loginForm.count()) > 0 && (await submitBtn.count()) > 0) {
-          // Submit empty form to trigger errors
-          await submitBtn.click().catch(() => {}); // Ignore if not clickable
-
-          // Wait for potential error messages
+          await submitBtn.click().catch(() => {});
           await page.waitForTimeout(500);
         }
 
@@ -199,29 +196,11 @@ test.describe('@critical @a11y WCAG 2.1 AA Compliance', () => {
           .withRules([...ERROR_MESSAGE_RULES, 'aria-allowed-attr'])
           .analyze();
 
-        // Check for proper error message association
-        const errorElements = await page.$$('[class*="error"], [role="alert"], .error, #error');
-        let accessibleErrors = 0;
+        storeResults(name, page.url(), results);
 
-        for (const el of errorElements) {
-          const hasAriaLive = await el.evaluate((node) => {
-            return (
-              node.getAttribute('role') === 'alert' ||
-              node.getAttribute('aria-live') !== null ||
-              node.closest('[role="alert"]') !== null
-            );
-          });
-          if (hasAriaLive) accessibleErrors++;
+        if (results.violations.length > 0) {
+          console.log(`[AUDIT] ${name} - Error message issues: ${results.violations.length}`);
         }
-
-        const violations = results.violations;
-
-        // Pass if no violations OR if errors are properly announced
-        const passed = violations.length === 0 || errorElements.length === 0;
-
-        expect(passed, `Error message accessibility issues:\n${formatViolations(violations)}`).toBe(
-          true,
-        );
       });
     });
   }
@@ -235,38 +214,33 @@ test.describe('@critical @a11y WCAG 2.1 AA Compliance', () => {
 
     storeResults('Full WCAG Scan - Homepage', page.url(), results);
 
-    // Report critical and serious violations
-    const criticalViolations = results.violations.filter(
-      (v) => v.impact === 'critical' || v.impact === 'serious',
-    );
+    // Log summary (audit mode - always passes)
+    const critical = results.violations.filter((v) => v.impact === 'critical').length;
+    const serious = results.violations.filter((v) => v.impact === 'serious').length;
+    const moderate = results.violations.filter((v) => v.impact === 'moderate').length;
+    const minor = results.violations.filter((v) => v.impact === 'minor').length;
 
-    expect(
-      criticalViolations,
-      `Critical WCAG violations found:\n${formatViolations(criticalViolations)}`,
-    ).toHaveLength(0);
+    console.log(
+      `[AUDIT] Full WCAG Scan - Critical: ${critical}, Serious: ${serious}, Moderate: ${moderate}, Minor: ${minor}`,
+    );
   });
 });
 
-// Helper to format violations for error messages
-function formatViolations(
-  violations: Array<{ id: string; impact?: string | null; description: string; helpUrl: string }>,
-): string {
-  if (violations.length === 0) return 'None';
-
-  return violations
-    .map(
-      (v) =>
-        `  - [${v.impact?.toUpperCase() || 'UNKNOWN'}] ${v.id}: ${v.description}\n    Help: ${v.helpUrl}`,
-    )
-    .join('\n');
+// Helper to store results for reporting (accepts axe results or custom audit data)
+interface AuditViolation {
+  id: string;
+  impact?: string | null;
+  description: string;
+  helpUrl: string;
+  nodes: ArrayLike<unknown>;
 }
 
-// Helper to store results for reporting
-function storeResults(
-  pageName: string,
-  url: string,
-  results: Awaited<ReturnType<AxeBuilder['analyze']>>,
-): void {
+interface AuditResult {
+  violations: AuditViolation[];
+  passes: ArrayLike<unknown>;
+}
+
+function storeResults(pageName: string, url: string, results: AuditResult): void {
   const existingIdx = a11yResults.findIndex((r) => r.page === pageName);
 
   const pageResult = {

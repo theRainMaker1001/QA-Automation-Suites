@@ -1,4 +1,4 @@
-name: Playwright E2E
+name: End-to-End Tests
 
 on:
   pull_request:
