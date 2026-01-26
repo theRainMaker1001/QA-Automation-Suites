@@ -1,0 +1,148 @@
+# Accessibility Compliance Report
+
+> **Assessment Date:** 26 January 2026
+> **Standard:** WCAG 2.1 Level AA
+> **System:** ParaBank Web Application
+
+---
+
+## Executive Summary
+
+| Metric                          | Result           |
+| ------------------------------- | ---------------- |
+| **Compliance Status**           | 🔴 NON-COMPLIANT |
+| **Pages Tested**                | 1                |
+| **Unique Violations**           | 5                |
+| **Accessibility Checks Passed** | 12               |
+
+**Recommendation:** Immediate remediation required. Critical barriers prevent users with disabilities from accessing content.
+
+---
+
+## Compliance Overview
+
+### Violation Breakdown by Category
+
+| Category                    | Issues | Impact Level |
+| --------------------------- | :----: | ------------ |
+| Form Labels                 |   1    | 🔴 Critical  |
+| Keyboard Navigation         |   0    | ✅ None      |
+| Focus Indicators            |   0    | ✅ None      |
+| Screen Reader Compatibility |   3    | 🔴 Critical  |
+| Other WCAG Issues           |   1    | 🟠 Serious   |
+
+---
+
+## Pages Tested
+
+| Page                      | URL                                                                                          | Violations | Status      |
+| ------------------------- | -------------------------------------------------------------------------------------------- | :--------: | ----------- |
+| Full WCAG Scan - Homepage | https://parabank.parasoft.com/parabank/index.htm;jsessionid=C6965878964E82ED28F17EAD352B3679 |     5      | ⚠️ 5 issues |
+
+---
+
+## Detailed Findings
+
+### 🔴 Critical Issues
+
+#### image-alt
+
+**Description:** Ensure <img> elements have alternative text or a role of none or presentation
+
+**Affected Elements:** 1 instance(s) found
+
+**Remediation:** See [axe-core documentation](https://dequeuniversity.com/rules/axe/4.11/image-alt?application=playwright)
+
+---
+
+#### label
+
+**Description:** Ensure every form element has a label
+
+**Affected Elements:** 2 instance(s) found
+
+**Remediation:** See [axe-core documentation](https://dequeuniversity.com/rules/axe/4.11/label?application=playwright)
+
+---
+
+### 🟠 Serious Issues
+
+#### color-contrast
+
+**Description:** Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds
+
+**Affected Elements:** 6 instance(s) found
+
+**Remediation:** See [axe-core documentation](https://dequeuniversity.com/rules/axe/4.11/color-contrast?application=playwright)
+
+---
+
+#### html-has-lang
+
+**Description:** Ensure every HTML document has a lang attribute
+
+**Affected Elements:** 1 instance(s) found
+
+**Remediation:** See [axe-core documentation](https://dequeuniversity.com/rules/axe/4.11/html-has-lang?application=playwright)
+
+---
+
+#### link-name
+
+**Description:** Ensure links have discernible text
+
+**Affected Elements:** 1 instance(s) found
+
+**Remediation:** See [axe-core documentation](https://dequeuniversity.com/rules/axe/4.11/link-name?application=playwright)
+
+---
+
+## Legal Compliance Reference
+
+### Applicable Standards
+
+| Standard          | Requirement                           | Status        |
+| ----------------- | ------------------------------------- | ------------- |
+| **WCAG 2.1 AA**   | Web Content Accessibility Guidelines  | NON-COMPLIANT |
+| **Section 508**   | US Federal accessibility requirements | NON-COMPLIANT |
+| **EN 301 549**    | EU accessibility standard             | NON-COMPLIANT |
+| **ADA Title III** | Americans with Disabilities Act       | NON-COMPLIANT |
+
+### Impact Assessment
+
+| Impact Level | Count | User Effect                             |
+| ------------ | :---: | --------------------------------------- |
+| Critical     |   2   | Users cannot complete essential tasks   |
+| Serious      |   3   | Significant difficulty completing tasks |
+| Moderate     |   0   | Some difficulty but workarounds exist   |
+| Minor        |   0   | Minimal impact on user experience       |
+
+**Risk Assessment:** HIGH - Potential legal liability and user exclusion.
+
+---
+
+## Methodology
+
+This assessment was conducted using automated testing with [axe-core](https://github.com/dequelabs/axe-core), an industry-standard accessibility testing engine. Tests covered:
+
+- **Form Labels:** Proper association between labels and inputs
+- **Keyboard Navigation:** Tab order, focus management, no keyboard traps
+- **Focus Indicators:** Visible focus states for interactive elements
+- **Screen Reader Support:** ARIA attributes, semantic HTML, alt text
+- **Error Handling:** Accessible error messages and form validation
+
+**Limitations:** Automated testing detects approximately 30-50% of accessibility issues. Manual testing with assistive technologies is recommended for full compliance verification.
+
+---
+
+## Recommendations
+
+1. **Immediate:** Address all critical and serious violations within 30 days
+2. **Short-term:** Remediate moderate issues within 90 days
+3. **Ongoing:** Implement accessibility checks in CI/CD pipeline
+4. **Training:** Consider developer accessibility training
+
+---
+
+_Report generated by QA-Automation-Suites accessibility testing framework_
+_For questions about this report, contact the QA team_

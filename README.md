@@ -180,13 +180,14 @@ QA-Automation-Suites/
 │     ├─ playwright.yml              # End-to-End Tests
 │     └─ bank-critical-heartbeat.yml # Critical Function Healthcheck (daily)
 ├─ .husky/                           # pre-commit / pre-push hooks
-├─ reports/                          # test output reports (auto-generated)
-│  ├─ loan-api-report.md             # loan test summary
-│  ├─ integration-report.md          # integration test summary
-│  ├─ heartbeat-summary.md           # API health summary
-│  ├─ unit-summary.json              # unit test results
-│  ├─ a11y-results.json              # accessibility audit data
-│  └─ a11y-compliance-report.md      # WCAG compliance report
+├─ docs/
+│  ├─ sample-reports/                # example test outputs (for reference)
+│  │  ├─ loan-api-report.md          # loan decision table report
+│  │  ├─ a11y-compliance-report.md   # WCAG compliance report
+│  │  ├─ unit-summary.md             # unit test summary
+│  │  └─ heartbeat-summary.md        # API health summary
+│  └─ test-design/
+│     └─ loan-approval-decision-table.md
 ├─ api/
 │  ├─ data/
 │  │  └─ equivalence-partitions.ts   # EP test data sets
@@ -216,9 +217,6 @@ QA-Automation-Suites/
 │  ├─ run-loan-tests.ts              # loan test runner + report generator
 │  ├─ run-unit-tests.ts              # unit test runner + report generator
 │  └─ run-a11y-tests.ts              # accessibility test runner + compliance report
-├─ docs/
-│  └─ test-design/
-│     └─ loan-approval-decision-table.md  # detailed loan test design
 ├─ config/                           # env/config scaffolding
 ├─ e2e/
 │  ├─ tests/
