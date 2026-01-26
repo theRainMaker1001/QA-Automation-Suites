@@ -25,7 +25,8 @@ resources/
 # Ignore cache file
 .eslintcache
 
-# Generated test reports (change every run)
+# Generated test reports (uploaded as CI artifacts, not committed)
+reports/
 .reports/
 
 # Claude settings

@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { HttpClient, type Ms, type ApiError } from '../../helpers/http.js';
+import { HttpClient, type Ms } from '../../helpers/http.js';
 
 // Mock fetch globally
 const mockFetch = vi.fn();

@@ -62,16 +62,6 @@ jobs:
           path: reports/
           if-no-files-found: warn
 
-      - name: Commit test reports
-        if: always()
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add reports/
-          git diff --staged --quiet || git commit -m "docs: update healthcheck reports [skip ci]"
-          git pull --rebase || true
-          git push || echo "Push failed - reports will be included in next run"
-
       - name: Append PO summary to Job Summary
         if: always()
         run: |
