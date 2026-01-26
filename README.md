@@ -166,10 +166,10 @@ All test reports are automatically published to GitHub Pages after each CI run:
 
 | Report | Description |
 |--------|-------------|
-| [Loan Decision Table](https://therainmaker1001.github.io/QA-Automation-Suites/loan-api-report.md) | 34 test cases with BVA coverage |
-| [Accessibility Compliance](https://therainmaker1001.github.io/QA-Automation-Suites/a11y-compliance-report.md) | WCAG 2.1 AA audit |
-| [Unit Test Summary](https://therainmaker1001.github.io/QA-Automation-Suites/unit-summary.md) | 50 unit tests |
-| [API Heartbeat](https://therainmaker1001.github.io/QA-Automation-Suites/heartbeat-summary.md) | Daily health check |
+| [Loan Decision Table](https://therainmaker1001.github.io/QA-Automation-Suites/loan-api-report.html) | 34 test cases with BVA coverage |
+| [Accessibility Compliance](https://therainmaker1001.github.io/QA-Automation-Suites/a11y-compliance-report.html) | WCAG 2.1 AA audit |
+| [Unit Test Summary](https://therainmaker1001.github.io/QA-Automation-Suites/unit-summary.html) | 50 unit tests |
+| [API Heartbeat](https://therainmaker1001.github.io/QA-Automation-Suites/heartbeat-summary.html) | Daily health check |
 
 Additional reporting:
 - **Playwright HTML reports** (E2E test results with traces)
