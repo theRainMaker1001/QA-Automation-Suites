@@ -6,6 +6,7 @@ on:
     branches: ['main']
     paths:
       - 'api/**'
+      - 'e2e/**'
       - 'scripts/**'
       - 'package.json'
       - 'vitest.*.config.ts'
@@ -38,6 +39,9 @@ jobs:
       - name: Install dependencies (include dev)
         run: npm ci
 
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
       - name: Run API heartbeat (critical only)
         run: |
           mkdir -p reports
@@ -45,6 +49,10 @@ jobs:
 
       - name: Run Loan Decision Table tests
         run: npm run test:loans
+
+      - name: Run Accessibility Compliance tests
+        run: npm run test:a11y:report
+        continue-on-error: true
 
       - name: 📊 Upload heartbeat reports
         if: always()
@@ -75,6 +83,12 @@ jobs:
             echo "" >> "$GITHUB_STEP_SUMMARY"
             cat reports/loan-api-report.md >> "$GITHUB_STEP_SUMMARY"
           fi
-          if [ ! -f "reports/heartbeat-summary.md" ] && [ ! -f "reports/loan-api-report.md" ]; then
+          if [ -f "reports/a11y-compliance-report.md" ]; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "---" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            cat reports/a11y-compliance-report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [ ! -f "reports/heartbeat-summary.md" ] && [ ! -f "reports/loan-api-report.md" ] && [ ! -f "reports/a11y-compliance-report.md" ]; then
             echo "Heartbeat run completed. See artifacts for details." >> "$GITHUB_STEP_SUMMARY"
           fi
