@@ -160,12 +160,19 @@ Reports generated:
 
 ## 📊 Reporting
 
+**[View Latest Test Reports →](https://therainmaker1001.github.io/QA-Automation-Suites/)**
+
+All test reports are automatically published to GitHub Pages after each CI run:
+
+| Report | Description |
+|--------|-------------|
+| [Loan Decision Table](https://therainmaker1001.github.io/QA-Automation-Suites/loan-api-report.md) | 34 test cases with BVA coverage |
+| [Accessibility Compliance](https://therainmaker1001.github.io/QA-Automation-Suites/a11y-compliance-report.md) | WCAG 2.1 AA audit |
+| [Unit Test Summary](https://therainmaker1001.github.io/QA-Automation-Suites/unit-summary.md) | 50 unit tests |
+| [API Heartbeat](https://therainmaker1001.github.io/QA-Automation-Suites/heartbeat-summary.md) | Daily health check |
+
+Additional reporting:
 - **Playwright HTML reports** (E2E test results with traces)
-- **API integration reports** (technical + stakeholder summaries in markdown)
-- **Loan decision table reports** (34 test cases, grouped by technique, pass/fail breakdown)
-- **Unit test reports** (50 tests with error codes for debugging)
-- **Accessibility compliance reports** (WCAG 2.1 AA audit with legal compliance reference)
-- **Daily healthcheck summaries** (API health, loan tests, accessibility audit)
 - **Screenshots, videos, traces** on failure (uploaded as CI artifacts)
 - **GitHub Actions job summaries** with inline test results
 
@@ -178,7 +185,8 @@ QA-Automation-Suites/
 │  └─ workflows/
 │     ├─ ci.yml                      # Code Quality & Unit Tests
 │     ├─ playwright.yml              # End-to-End Tests
-│     └─ bank-critical-heartbeat.yml # Critical Function Healthcheck (daily)
+│     ├─ bank-critical-heartbeat.yml # Critical Function Healthcheck (daily)
+│     └─ deploy-reports.yml          # Publish reports to GitHub Pages
 ├─ .husky/                           # pre-commit / pre-push hooks
 ├─ docs/
 │  ├─ sample-reports/                # example test outputs (for reference)
