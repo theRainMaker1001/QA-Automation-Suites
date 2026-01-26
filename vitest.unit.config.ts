@@ -9,7 +9,7 @@ export default defineConfig({
     testTimeout: 5000,
     reporters: ['verbose', 'json'],
     outputFile: {
-      json: '.reports/unit-report.json',
+      json: 'reports/unit-report.json',
     },
   },
 });

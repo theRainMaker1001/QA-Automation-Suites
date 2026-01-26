@@ -30,7 +30,8 @@
     "tooling:summary": "tsx config/tooling-summary.ts",
     "test:loans": "npx ts-node scripts/run-loan-tests.ts",
     "test:loans:only": "vitest run api/src/tests/critical/loan-decision-table.test.ts",
-    "test:critical": "vitest run -c vitest.critical.config.ts"
+    "test:critical": "vitest run -c vitest.critical.config.ts",
+    "test:unit:report": "npx ts-node scripts/run-unit-tests.ts"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

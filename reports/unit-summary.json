@@ -1,81 +1,436 @@
 {
   "overview": {
-    "totalTests": 7,
-    "passed": 7,
+    "totalTests": 50,
+    "passed": 50,
     "failed": 0,
+    "skipped": 0,
     "passRate": "100.0%",
-    "totalDurationMs": 118,
-    "runDate": "2026-01-23T13:23:48.040Z"
+    "totalDurationMs": 189.21,
+    "runDate": "2026-01-26T06:11:53.988Z"
   },
   "suites": [
     {
-      "name": "withRetry > successful calls",
+      "name": "http > HttpClient > URL building",
+      "tests": 4,
+      "passed": 4,
+      "failed": 0
+    },
+    {
+      "name": "http > HttpClient > headers",
+      "tests": 3,
+      "passed": 3,
+      "failed": 0
+    },
+    {
+      "name": "http > HttpClient > response handling",
       "tests": 2,
       "passed": 2,
       "failed": 0
     },
     {
-      "name": "withRetry > exhausted retries",
+      "name": "http > HttpClient > error handling",
+      "tests": 4,
+      "passed": 4,
+      "failed": 0
+    },
+    {
+      "name": "http > HttpClient > method handling",
+      "tests": 3,
+      "passed": 3,
+      "failed": 0
+    },
+    {
+      "name": "retry > withRetry > successful calls",
       "tests": 2,
       "passed": 2,
       "failed": 0
     },
     {
-      "name": "withRetry > default config",
+      "name": "retry > withRetry > exhausted retries",
       "tests": 2,
       "passed": 2,
       "failed": 0
     },
     {
-      "name": "sleep",
+      "name": "retry > withRetry > default config",
+      "tests": 2,
+      "passed": 2,
+      "failed": 0
+    },
+    {
+      "name": "retry > sleep",
       "tests": 1,
       "passed": 1,
+      "failed": 0
+    },
+    {
+      "name": "test-reporter > generateTechnicalReport > header and metadata",
+      "tests": 3,
+      "passed": 3,
+      "failed": 0
+    },
+    {
+      "name": "test-reporter > generateTechnicalReport > summary table",
+      "tests": 3,
+      "passed": 3,
+      "failed": 0
+    },
+    {
+      "name": "test-reporter > generateTechnicalReport > expected results section",
+      "tests": 3,
+      "passed": 3,
+      "failed": 0
+    },
+    {
+      "name": "test-reporter > generateTechnicalReport > unexpected results section",
+      "tests": 2,
+      "passed": 2,
+      "failed": 0
+    },
+    {
+      "name": "test-reporter > generateTechnicalReport > timeout section",
+      "tests": 1,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "name": "test-reporter > generateTechnicalReport > footer",
+      "tests": 1,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "name": "test-reporter > generateStakeholderSummary > status indicators",
+      "tests": 3,
+      "passed": 3,
+      "failed": 0
+    },
+    {
+      "name": "test-reporter > generateStakeholderSummary > test coverage checklist",
+      "tests": 3,
+      "passed": 3,
+      "failed": 0
+    },
+    {
+      "name": "test-reporter > generateStakeholderSummary > results table",
+      "tests": 2,
+      "passed": 2,
+      "failed": 0
+    },
+    {
+      "name": "test-reporter > generateStakeholderSummary > interpretation section",
+      "tests": 3,
+      "passed": 3,
+      "failed": 0
+    },
+    {
+      "name": "test-reporter > generateStakeholderSummary > next steps",
+      "tests": 3,
+      "passed": 3,
       "failed": 0
     }
   ],
   "failures": [],
   "results": [
     {
-      "suite": "withRetry > successful calls",
+      "suite": "http > HttpClient > URL building",
+      "test": "joins base URL and path correctly",
+      "status": "passed",
+      "durationMs": 27.03
+    },
+    {
+      "suite": "http > HttpClient > URL building",
+      "test": "handles leading slashes in path",
+      "status": "passed",
+      "durationMs": 0.93
+    },
+    {
+      "suite": "http > HttpClient > URL building",
+      "test": "appends query parameters correctly",
+      "status": "passed",
+      "durationMs": 0.88
+    },
+    {
+      "suite": "http > HttpClient > URL building",
+      "test": "omits null and undefined query parameters",
+      "status": "passed",
+      "durationMs": 0.67
+    },
+    {
+      "suite": "http > HttpClient > headers",
+      "test": "merges default headers with request headers",
+      "status": "passed",
+      "durationMs": 0.97
+    },
+    {
+      "suite": "http > HttpClient > headers",
+      "test": "request headers override default headers",
+      "status": "passed",
+      "durationMs": 0.34
+    },
+    {
+      "suite": "http > HttpClient > headers",
+      "test": "adds content-type header when body is present",
+      "status": "passed",
+      "durationMs": 0.26
+    },
+    {
+      "suite": "http > HttpClient > response handling",
+      "test": "returns ok:true with data on successful JSON response",
+      "status": "passed",
+      "durationMs": 0.46
+    },
+    {
+      "suite": "http > HttpClient > response handling",
+      "test": "returns text for non-JSON content types",
+      "status": "passed",
+      "durationMs": 0.28
+    },
+    {
+      "suite": "http > HttpClient > error handling",
+      "test": "returns STATUS error for non-2xx responses",
+      "status": "passed",
+      "durationMs": 0.4
+    },
+    {
+      "suite": "http > HttpClient > error handling",
+      "test": "returns INVALID_JSON error when JSON parsing fails",
+      "status": "passed",
+      "durationMs": 0.31
+    },
+    {
+      "suite": "http > HttpClient > error handling",
+      "test": "returns NETWORK error on fetch failure",
+      "status": "passed",
+      "durationMs": 0.27
+    },
+    {
+      "suite": "http > HttpClient > error handling",
+      "test": "returns TIMEOUT error on abort",
+      "status": "passed",
+      "durationMs": 0.18
+    },
+    {
+      "suite": "http > HttpClient > method handling",
+      "test": "defaults to GET method",
+      "status": "passed",
+      "durationMs": 0.17
+    },
+    {
+      "suite": "http > HttpClient > method handling",
+      "test": "uses specified method",
+      "status": "passed",
+      "durationMs": 0.14
+    },
+    {
+      "suite": "http > HttpClient > method handling",
+      "test": "serializes body as JSON",
+      "status": "passed",
+      "durationMs": 0.16
+    },
+    {
+      "suite": "retry > withRetry > successful calls",
       "test": "returns result on first attempt",
       "status": "passed",
-      "durationMs": 1.74
+      "durationMs": 1.85
     },
     {
-      "suite": "withRetry > successful calls",
+      "suite": "retry > withRetry > successful calls",
       "test": "returns result after retry",
       "status": "passed",
-      "durationMs": 17.96
+      "durationMs": 20.55
     },
     {
-      "suite": "withRetry > exhausted retries",
+      "suite": "retry > withRetry > exhausted retries",
       "test": "throws after all attempts exhausted",
       "status": "passed",
-      "durationMs": 33.68
+      "durationMs": 30.7
     },
     {
-      "suite": "withRetry > exhausted retries",
+      "suite": "retry > withRetry > exhausted retries",
       "test": "includes the last error",
       "status": "passed",
-      "durationMs": 12.38
+      "durationMs": 14.82
     },
     {
-      "suite": "withRetry > default config",
+      "suite": "retry > withRetry > default config",
       "test": "uses default maxAttempts of 2",
       "status": "passed",
       "durationMs": 0.23
     },
     {
-      "suite": "withRetry > default config",
+      "suite": "retry > withRetry > default config",
       "test": "uses default delayMs of 500",
+      "status": "passed",
+      "durationMs": 0.14
+    },
+    {
+      "suite": "retry > sleep",
+      "test": "resolves after specified delay",
+      "status": "passed",
+      "durationMs": 62.42
+    },
+    {
+      "suite": "test-reporter > generateTechnicalReport > header and metadata",
+      "test": "includes report title",
+      "status": "passed",
+      "durationMs": 1.33
+    },
+    {
+      "suite": "test-reporter > generateTechnicalReport > header and metadata",
+      "test": "includes run date",
+      "status": "passed",
+      "durationMs": 0.17
+    },
+    {
+      "suite": "test-reporter > generateTechnicalReport > header and metadata",
+      "test": "includes duration",
+      "status": "passed",
+      "durationMs": 0.14
+    },
+    {
+      "suite": "test-reporter > generateTechnicalReport > summary table",
+      "test": "shows expected count",
+      "status": "passed",
+      "durationMs": 0.24
+    },
+    {
+      "suite": "test-reporter > generateTechnicalReport > summary table",
+      "test": "shows unexpected count",
+      "status": "passed",
+      "durationMs": 0.17
+    },
+    {
+      "suite": "test-reporter > generateTechnicalReport > summary table",
+      "test": "shows timeout count",
+      "status": "passed",
+      "durationMs": 0.12
+    },
+    {
+      "suite": "test-reporter > generateTechnicalReport > expected results section",
+      "test": "includes expected results heading when tests pass",
+      "status": "passed",
+      "durationMs": 0.12
+    },
+    {
+      "suite": "test-reporter > generateTechnicalReport > expected results section",
+      "test": "shows test details in table format",
+      "status": "passed",
+      "durationMs": 0.23
+    },
+    {
+      "suite": "test-reporter > generateTechnicalReport > expected results section",
+      "test": "truncates long descriptions",
       "status": "passed",
       "durationMs": 0.13
     },
     {
-      "suite": "sleep",
-      "test": "resolves after specified delay",
+      "suite": "test-reporter > generateTechnicalReport > unexpected results section",
+      "test": "includes unexpected results heading when tests fail",
       "status": "passed",
-      "durationMs": 50.63
+      "durationMs": 0.18
+    },
+    {
+      "suite": "test-reporter > generateTechnicalReport > unexpected results section",
+      "test": "includes error details for failed tests",
+      "status": "passed",
+      "durationMs": 0.11
+    },
+    {
+      "suite": "test-reporter > generateTechnicalReport > timeout section",
+      "test": "includes timeout heading when tests time out",
+      "status": "passed",
+      "durationMs": 0.1
+    },
+    {
+      "suite": "test-reporter > generateTechnicalReport > footer",
+      "test": "includes generator attribution",
+      "status": "passed",
+      "durationMs": 0.07
+    },
+    {
+      "suite": "test-reporter > generateStakeholderSummary > status indicators",
+      "test": "shows all passed status when no issues",
+      "status": "passed",
+      "durationMs": 18.94
+    },
+    {
+      "suite": "test-reporter > generateStakeholderSummary > status indicators",
+      "test": "shows issues found status when tests fail",
+      "status": "passed",
+      "durationMs": 0.31
+    },
+    {
+      "suite": "test-reporter > generateStakeholderSummary > status indicators",
+      "test": "shows warning status for timeout-only failures",
+      "status": "passed",
+      "durationMs": 0.23
+    },
+    {
+      "suite": "test-reporter > generateStakeholderSummary > test coverage checklist",
+      "test": "marks valid requests as tested",
+      "status": "passed",
+      "durationMs": 0.22
+    },
+    {
+      "suite": "test-reporter > generateStakeholderSummary > test coverage checklist",
+      "test": "marks invalid requests as tested",
+      "status": "passed",
+      "durationMs": 0.26
+    },
+    {
+      "suite": "test-reporter > generateStakeholderSummary > test coverage checklist",
+      "test": "marks edge cases as tested",
+      "status": "passed",
+      "durationMs": 0.24
+    },
+    {
+      "suite": "test-reporter > generateStakeholderSummary > results table",
+      "test": "includes results at a glance section",
+      "status": "passed",
+      "durationMs": 0.25
+    },
+    {
+      "suite": "test-reporter > generateStakeholderSummary > results table",
+      "test": "categorises tests by type",
+      "status": "passed",
+      "durationMs": 0.29
+    },
+    {
+      "suite": "test-reporter > generateStakeholderSummary > interpretation section",
+      "test": "explains all-passed results",
+      "status": "passed",
+      "durationMs": 0.21
+    },
+    {
+      "suite": "test-reporter > generateStakeholderSummary > interpretation section",
+      "test": "explains failed results with issue list",
+      "status": "passed",
+      "durationMs": 0.22
+    },
+    {
+      "suite": "test-reporter > generateStakeholderSummary > interpretation section",
+      "test": "explains timeout-only results",
+      "status": "passed",
+      "durationMs": 0.19
+    },
+    {
+      "suite": "test-reporter > generateStakeholderSummary > next steps",
+      "test": "shows no action required for all passed",
+      "status": "passed",
+      "durationMs": 0.18
+    },
+    {
+      "suite": "test-reporter > generateStakeholderSummary > next steps",
+      "test": "shows review steps for failures",
+      "status": "passed",
+      "durationMs": 0.2
+    },
+    {
+      "suite": "test-reporter > generateStakeholderSummary > next steps",
+      "test": "references technical report",
+      "status": "passed",
+      "durationMs": 0.19
     }
   ]
 }
