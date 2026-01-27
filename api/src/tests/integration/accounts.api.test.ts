@@ -169,5 +169,47 @@ describe('@smoke Accounts API', () => {
       // Should return 4xx error for XSS attempt
       expect(res.ok).toBe(false);
     });
+
+    it('rejects SQL injection attempt', async () => {
+      const res = await client.get<ErrorResponse>(routes.account("1' OR '1'='1"));
+
+      // Should return error for SQL injection attempt
+      expect(res.ok).toBe(false);
+    });
+
+    it('handles very large account ID', async () => {
+      const res = await client.get<ErrorResponse>(routes.account('99999999999999999'));
+
+      // Should handle gracefully, not crash
+      expect(res).toBeDefined();
+    });
+
+    it('rejects float account ID', async () => {
+      const res = await client.get<ErrorResponse>(routes.account('123.456'));
+
+      // Account IDs should be integers
+      expect(res.ok).toBe(false);
+    });
+
+    it('rejects whitespace-only account ID', async () => {
+      const res = await client.get<ErrorResponse>(routes.account('   '));
+
+      // Should return error for whitespace
+      expect(res.ok).toBe(false);
+    });
+
+    it('includes latency measurement in response', async () => {
+      const res = await client.get<ErrorResponse>(routes.account('12345'));
+
+      // Latency should always be measured
+      expect(res.latencyMs).toBeGreaterThanOrEqual(0);
+    });
+
+    it('handles unicode characters in account ID', async () => {
+      const res = await client.get<ErrorResponse>(routes.account('123™®'));
+
+      // Should return error for unicode
+      expect(res.ok).toBe(false);
+    });
   });
 });

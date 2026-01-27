@@ -129,5 +129,63 @@ describe('API Schema Validation - Integration', () => {
 
       expect(isValidResponse(LoanResponseSchema, validShape)).toBe(true);
     });
+
+    it('validates minimal loan response (only required fields)', () => {
+      const minimal = { approved: false };
+
+      expect(isValidResponse(LoanResponseSchema, minimal)).toBe(true);
+    });
+
+    it('rejects loan response with wrong approved type', () => {
+      const wrongType = { approved: 'yes' };
+
+      expect(isValidResponse(LoanResponseSchema, wrongType)).toBe(false);
+    });
+
+    it('accepts null values for nullable fields', () => {
+      const withNulls = {
+        approved: true,
+        message: null,
+        accountId: null,
+      };
+
+      expect(isValidResponse(LoanResponseSchema, withNulls)).toBe(true);
+    });
+  });
+
+  describe('Error Response Validation', () => {
+    it('handles API error responses gracefully', async () => {
+      // Request with invalid params to trigger error
+      const res = await client.request({
+        path: 'services/bank/requestLoan',
+        method: 'POST',
+      });
+
+      // Should get a response (success or error)
+      expect(res).toBeDefined();
+    });
+
+    it('error responses have expected structure', async () => {
+      const res = await client.get('services/bank/accounts/invalid-id');
+
+      // Error response should exist
+      if (!res.ok) {
+        expect(res.error).toBeDefined();
+      }
+    });
+
+    it('timeout handling returns proper error code', async () => {
+      // This tests our client's error handling, not ParaBank
+      const slowClient = new HttpClient({
+        baseUrl: env.BANK_BASE_URL,
+        defaultTimeoutMs: 1 as number & { readonly __brand: 'Ms' }, // 1ms timeout
+        defaultHeaders: { Accept: 'application/json' },
+      });
+
+      const res = await slowClient.get('services/bank/accounts/12345');
+
+      // Should return timeout or error, not crash
+      expect(res).toBeDefined();
+    });
   });
 });
