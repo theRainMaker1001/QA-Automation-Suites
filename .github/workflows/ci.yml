@@ -1,4 +1,4 @@
-name: Code Quality & Unit Tests
+name: Testing Lanes - Risk-Based Orchestration
 
 on:
   push:
@@ -7,46 +7,126 @@ on:
     branches: [main]
 
 jobs:
-  validate:
+  # ════════════════════════════════════════════════════════════════════════════
+  # COMMIT GATE: Lint + Unit Tests (Fail Fast)
+  # ════════════════════════════════════════════════════════════════════════════
+  commit-gate:
+    name: Commit Gate (Lint + Unit)
     runs-on: ubuntu-latest
     steps:
-      - name: 🛎️ Checkout repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: 🧰 Setup Node.js (read from .nvmrc)
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
 
-      - name: 📦 Install dependencies
+      - name: Install dependencies
         run: npm ci
 
-      - name: 🔍 Type check
+      - name: Type check
         run: npm run typecheck
 
-      - name: 🧹 Lint
+      - name: Lint
         run: npm run lint
 
-      - name: 💅 Prettier format check
+      - name: Prettier format check
         run: npx prettier --check .
 
-      - name: 🧪 Unit Tests
+      - name: Unit Tests
         run: |
           mkdir -p reports
           npm run test:unit
 
-      - name: 📊 Upload test reports
+      - name: Upload unit reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-reports
+          name: unit-reports
           path: reports/
-          if-no-files-found: error
+          if-no-files-found: warn
 
-      - name: 📋 Append summary to Job Summary
-        if: always()
-        run: |
-          if [ -f "reports/integration-summary.md" ]; then
-            cat reports/integration-summary.md >> "$GITHUB_STEP_SUMMARY"
-          fi
+  # ════════════════════════════════════════════════════════════════════════════
+  # SMOKE LANE: UI + API Connectivity ("Is the bank open?")
+  # ════════════════════════════════════════════════════════════════════════════
+  smoke-lane:
+    name: Smoke Lane (@smoke)
+    needs: commit-gate
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run @smoke API tests
+        run: npm run test:api -- --testNamePattern @smoke
+
+      - name: Run @smoke E2E tests
+        run: npx playwright test -c e2e/playwright.config.ts --grep @smoke --project=chromium
+
+      - name: Upload smoke artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-artifacts
+          path: |
+            e2e/test-results/
+            e2e/playwright-report/
+          retention-days: 7
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # CRITICAL LANE: Decision Tables + BVA + Auth ("Can we process money safely?")
+  # ════════════════════════════════════════════════════════════════════════════
+  critical-lane:
+    name: Critical Lane (@critical)
+    needs: smoke-lane
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      API_LATENCY_MS: 5000
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run @critical API tests (with SLA)
+        run: npm run test:api -- --testNamePattern @critical
+
+      - name: Run @critical E2E tests
+        run: npx playwright test -c e2e/playwright.config.ts --grep @critical --project=chromium
+
+      - name: Upload critical artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: critical-artifacts
+          path: |
+            e2e/test-results/
+            e2e/playwright-report/
+            reports/
+          retention-days: 7

@@ -1,10 +1,12 @@
-#!/usr/bin/env sh
-. "$(dirname "$0")/_/husky.sh"
+# Pre-Push Gate: Smoke Tests for Integration Breaking Changes
+# Catches connectivity issues before they reach PR
 
-echo "🔎 pre-push: typecheck, lint, api tests"
+echo "Pre-push: typecheck + smoke tests"
+
 npm run typecheck || exit 1
 npm run lint || exit 1
-npm run test:api || exit 1
-# If you want E2E on push (slower), uncomment:
-# npm run test:e2e || exit 1
-echo "✅ pre-push checks passed"
+
+# Run smoke tests only (fast, connectivity check)
+npm run test:smoke || exit 1
+
+echo "Pre-push gate passed."

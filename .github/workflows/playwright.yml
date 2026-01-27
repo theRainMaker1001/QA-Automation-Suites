@@ -1,12 +1,110 @@
-name: End-to-End Tests
+name: E2E Testing Lanes
 
 on:
   pull_request:
   push:
     branches: [main, master]
+  schedule:
+    # Nightly deep audit at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      test_lane:
+        description: 'Test lane to run'
+        required: true
+        default: 'smoke'
+        type: choice
+        options:
+          - smoke
+          - critical
+          - regression
+          - a11y
+          - audit
 
 jobs:
-  test:
+  # ════════════════════════════════════════════════════════════════════════════
+  # SMOKE LANE: Fast connectivity checks
+  # ════════════════════════════════════════════════════════════════════════════
+  smoke:
+    name: Smoke Lane
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright (Chromium only)
+        run: npx playwright install --with-deps chromium
+
+      - name: Run @smoke tests
+        run: npx playwright test -c e2e/playwright.config.ts --grep @smoke --project=chromium
+
+      - name: Upload smoke report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-report
+          path: e2e/playwright-report/
+          retention-days: 7
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # CRITICAL LANE: Auth + State Transitions
+  # ════════════════════════════════════════════════════════════════════════════
+  critical:
+    name: Critical Lane
+    needs: smoke
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright (Chromium only)
+        run: npx playwright install --with-deps chromium
+
+      - name: Run @critical tests
+        run: npx playwright test -c e2e/playwright.config.ts --grep @critical --project=chromium
+
+      - name: Upload critical report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: critical-report
+          path: e2e/playwright-report/
+          retention-days: 7
+
+      - name: Upload artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: critical-artifacts
+          path: e2e/test-results/
+          retention-days: 7
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # NIGHTLY DEEP AUDIT: @regression + @a11y (Too slow for PRs)
+  # ════════════════════════════════════════════════════════════════════════════
+  nightly-audit:
+    name: Nightly Deep Audit
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.test_lane == 'audit')
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
@@ -17,29 +115,31 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: 'npm'
-          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright browsers
+      - name: Install Playwright (all browsers)
         run: npx playwright install --with-deps
 
-      - name: Run Playwright tests
-        run: npm run test:e2e
+      - name: Run @regression tests
+        run: npx playwright test -c e2e/playwright.config.ts --grep @regression
 
-      - name: Upload Playwright report
+      - name: Run @a11y tests
+        run: npx playwright test -c e2e/playwright.config.ts --grep @a11y
+
+      - name: Upload audit report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
+          name: nightly-audit-report
           path: e2e/playwright-report/
           retention-days: 30
 
-      - name: Upload test artifacts on failure
+      - name: Upload artifacts on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-artifacts
+          name: nightly-artifacts
           path: e2e/test-results/
-          retention-days: 7
+          retention-days: 14

@@ -62,7 +62,7 @@ async function getDiag(path: string) {
   return res;
 }
 
-describe('@critical API heartbeat', () => {
+describe('@heartbeat @critical API heartbeat - Daily Env Health', () => {
   it('Public-safe data: GET /customer (fallback to /accounts) within budget; minimally validate JSON when JSON', async () => {
     // Try public friendly endpoint first
     let res = await getDiag(routes.customer(env.BANK_CUSTOMER_ID));

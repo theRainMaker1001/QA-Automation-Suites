@@ -1,65 +1,63 @@
-import 'dotenv/config'; // load e2e/.env automatically (BANK_BASE_URL, etc.)
+import 'dotenv/config';
 import { defineConfig, devices } from '@playwright/test';
+import path from 'path';
+
+const STORAGE_STATE_PATH = path.join(__dirname, '.auth', 'user.json');
 
 /**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-
-// import dotenv from 'dotenv';
-// import path from 'path';
-// dotenv.config({ path: path.resolve(__dirname, '.env') });
-
-/**
- * See https://playwright.dev/docs/test-configuration.
+ * Playwright Configuration - Risk-Based Testing Lanes
+ *
+ * Projects:
+ * - setup: Creates authenticated session (runs first)
+ * - chromium/firefox/webkit: Main browser testing
+ * - chromium-auth: Uses storage state for faster @critical tests
  */
 export default defineConfig({
-  // Where tests live (relative to this config file)
   testDir: './tests',
+
+  /* Global setup for auth optimization */
+  globalSetup: './global.setup.ts',
 
   /* Execution model */
   fullyParallel: true,
-  forbidOnly: !!process.env.CI, // fail CI if test.only is committed
-  retries: process.env.CI ? 2 : 0, // a little flake protection in CI
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
 
   /* Reporters */
-  reporter: [
-    ['list'], // pretty console output
-    ['html', { open: 'never' }], // HTML report (don’t auto-open in CI)
-    // ['junit', { outputFile: 'reports/junit.xml' }], // ← enable for CI dashboards
-  ],
+  reporter: [['list'], ['html', { open: 'never' }]],
 
-  /* Shared settings for all projects */
+  /* Shared settings */
   use: {
-    // baseURL: 'http://localhost:3000',  // set if app runs locally
-    baseURL: process.env.BANK_BASE_URL ?? 'https://parabank.parasoft.com/parabank', // ← points tests at target (fallback keeps CI sane)
+    baseURL: process.env.BANK_BASE_URL ?? 'https://parabank.parasoft.com/parabank',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: process.env.CI ? 'retain-on-failure' : 'off',
-    // storageState: 'storageState.json', // reuse logged-in state across tests
   },
 
-  /* Configure projects for major browsers */
+  /* Testing Lane Projects */
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+    // Main browser projects (no auth state)
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+    },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+    },
 
-    /* Test against mobile viewports. */
-    // { name: 'Mobile Chrome', use: { ...devices['Pixel 5'] } },
-    // { name: 'Mobile Safari', use: { ...devices['iPhone 12'] } },
-
-    /* Test against branded browsers. */
-    // { name: 'Microsoft Edge', use: { ...devices['Desktop Edge'], channel: 'msedge' } },
-    // { name: 'Google Chrome',  use: { ...devices['Desktop Chrome'], channel: 'chrome' } },
+    // Authenticated project for @critical and @smoke lanes (faster)
+    {
+      name: 'chromium-auth',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: STORAGE_STATE_PATH,
+      },
+    },
   ],
-
-  /* Run local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run start',
-  //   url: 'http://localhost:3000',
-  //   reuseExistingServer: !process.env.CI,
-  //   timeout: 120000
-  // },
 });

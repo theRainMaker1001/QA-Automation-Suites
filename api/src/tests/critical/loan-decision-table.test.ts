@@ -161,7 +161,7 @@ function runDecisionTableTest(testCase: LoanDecisionTestCase) {
 // TEST SUITES
 // ============================================================================
 
-describe('Loan Request API - Decision Table Tests', () => {
+describe('@critical Loan Request API - Decision Table Tests', () => {
   describe('Decision Table Rules (Combinatorial Coverage)', () => {
     /**
      * Tests the four logical combinations from the decision table.

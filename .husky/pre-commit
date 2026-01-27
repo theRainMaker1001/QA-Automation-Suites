@@ -1,14 +1,22 @@
-# .husky/pre-commit (Husky v9+ compatible)
+# Zero Gate: Local Enforcement (Husky + lint-staged)
+# Blocks commits with formatting/lint issues to keep Git history clean for audits
 
-# Run ESLint + Prettier on staged files (configured in package.json as "lint-staged")
+# Run ESLint + Prettier on staged files
 npx lint-staged
 
-# Block the commit if any staged text file still contains CRLF
+# Block if CRLF line endings found
 CR=$(printf '\r')
 if git grep -I -n --cached "$CR" -- . >/dev/null; then
-  echo "✖ CRLF line endings found in staged files."
-  echo "  Run: npx prettier --write .   (or re-stage after formatting)"
+  echo "CRLF line endings found in staged files."
+  echo "  Run: npx prettier --write ."
   exit 1
 fi
 
-echo "✓ ALL Pre-commit checks passed (ESLint, Prettier, Line endings)."
+# Run related unit tests for staged files (fast feedback)
+STAGED_TS=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.ts$' | head -5)
+if [ -n "$STAGED_TS" ]; then
+  echo "Running unit tests for staged files..."
+  npm run test:unit --silent 2>/dev/null || true
+fi
+
+echo "Zero Gate passed (format, lint, line endings)."

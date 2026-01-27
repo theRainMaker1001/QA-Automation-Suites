@@ -11,6 +11,12 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["tests/**/*.ts", "pages/**/*.ts", "fixtures/**/*.ts", "playwright.config.ts"],
+  "include": [
+    "tests/**/*.ts",
+    "pages/**/*.ts",
+    "fixtures/**/*.ts",
+    "playwright.config.ts",
+    "global.setup.ts"
+  ],
   "exclude": ["node_modules", "playwright-report", "test-results"]
 }
