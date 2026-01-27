@@ -1,4 +1,4 @@
-name: Critical Function Healthcheck
+name: Critical Functions and API Healthcheck
 
 on:
   workflow_dispatch:

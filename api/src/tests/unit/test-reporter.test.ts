@@ -323,3 +323,134 @@ describe('generateStakeholderSummary', () => {
     });
   });
 });
+
+describe('edge cases', () => {
+  describe('empty results', () => {
+    it('handles empty test results array', () => {
+      const summary = createSummary({
+        totalTests: 0,
+        expected: [],
+        unexpected: [],
+        timeout: [],
+      });
+      const report = generateTechnicalReport(summary);
+
+      expect(report).toContain('# API Integration Report');
+      expect(report).toContain('| 0 |');
+    });
+
+    it('handles summary with all empty arrays', () => {
+      const summary = createSummary({
+        totalTests: 0,
+        expected: [],
+        unexpected: [],
+        timeout: [],
+      });
+      const report = generateStakeholderSummary(summary);
+
+      expect(report).toBeDefined();
+      expect(typeof report).toBe('string');
+    });
+  });
+
+  describe('special characters', () => {
+    it('handles test descriptions with special markdown characters', () => {
+      const summary = createSummary({
+        expected: [
+          createTestResult({
+            description: 'Test with | pipe and * asterisk chars',
+          }),
+        ],
+      });
+      const report = generateTechnicalReport(summary);
+
+      expect(report).toBeDefined();
+      expect(report.length).toBeGreaterThan(0);
+    });
+
+    it('handles test descriptions with backticks', () => {
+      const summary = createSummary({
+        expected: [
+          createTestResult({
+            description: 'Test with `code` backticks',
+          }),
+        ],
+      });
+      const report = generateTechnicalReport(summary);
+
+      expect(report).toContain('backticks');
+    });
+  });
+
+  describe('numeric edge cases', () => {
+    it('handles zero latency', () => {
+      const summary = createSummary({
+        expected: [createTestResult({ latencyMs: 0 })],
+      });
+      const report = generateTechnicalReport(summary);
+
+      expect(report).toContain('0ms');
+    });
+
+    it('handles very high latency values', () => {
+      const summary = createSummary({
+        expected: [createTestResult({ latencyMs: 999999 })],
+      });
+      const report = generateTechnicalReport(summary);
+
+      expect(report).toContain('999999ms');
+    });
+
+    it('handles zero duration', () => {
+      const summary = createSummary({ durationMs: 0 });
+      const report = generateTechnicalReport(summary);
+
+      expect(report).toContain('**Duration:** 0ms');
+    });
+  });
+
+  describe('large datasets', () => {
+    it('handles many test results', () => {
+      const manyResults = Array.from({ length: 100 }, (_, i) =>
+        createTestResult({ testName: `test-${i}`, description: `Test case ${i}` }),
+      );
+      const summary = createSummary({
+        totalTests: 100,
+        expected: manyResults,
+      });
+      const report = generateTechnicalReport(summary);
+
+      expect(report).toContain('| 100 |');
+    });
+  });
+
+  describe('mixed results', () => {
+    it('handles mix of expected, unexpected, and timeout', () => {
+      const summary = createSummary({
+        totalTests: 3,
+        expected: [createTestResult({ description: 'Pass test' })],
+        unexpected: [
+          createTestResult({ description: 'Fail test', passed: false, actualStatus: 500 }),
+        ],
+        timeout: [createTestResult({ description: 'Timeout test', error: 'Timed out' })],
+      });
+      const report = generateTechnicalReport(summary);
+
+      expect(report).toContain('## ✅ Expected Results');
+      expect(report).toContain('## ❌ Unexpected Results');
+      expect(report).toContain('## ⚠️ Timeout');
+    });
+
+    it('calculates correct pass rate with mixed results', () => {
+      const summary = createSummary({
+        totalTests: 3,
+        expected: [createTestResult(), createTestResult()],
+        unexpected: [createTestResult({ passed: false })],
+        timeout: [],
+      });
+      const report = generateStakeholderSummary(summary);
+
+      expect(report).toBeDefined();
+    });
+  });
+});

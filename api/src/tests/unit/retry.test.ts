@@ -51,6 +51,97 @@ describe('withRetry', () => {
         error: expect.objectContaining({ message: 'specific error' }),
       });
     });
+
+    it('throws immediately when maxAttempts is 1', async () => {
+      const fn = vi.fn().mockRejectedValue(new Error('fail'));
+
+      await expect(withRetry(fn, { maxAttempts: 1, delayMs: 10 })).rejects.toMatchObject({
+        exhausted: true,
+        attempts: 1,
+      });
+
+      expect(fn).toHaveBeenCalledTimes(1);
+    });
+
+    it('preserves error type through retries', async () => {
+      class CustomError extends Error {
+        code = 'CUSTOM';
+      }
+      const fn = vi.fn().mockRejectedValue(new CustomError('custom fail'));
+
+      await expect(withRetry(fn, { maxAttempts: 2, delayMs: 10 })).rejects.toMatchObject({
+        error: expect.objectContaining({ code: 'CUSTOM' }),
+      });
+    });
+
+    it('tracks each failed attempt', async () => {
+      const fn = vi
+        .fn()
+        .mockRejectedValueOnce(new Error('fail 1'))
+        .mockRejectedValueOnce(new Error('fail 2'))
+        .mockRejectedValue(new Error('fail 3'));
+
+      await expect(withRetry(fn, { maxAttempts: 3, delayMs: 10 })).rejects.toMatchObject({
+        attempts: 3,
+      });
+
+      expect(fn).toHaveBeenCalledTimes(3);
+    });
+  });
+
+  describe('timing and delays', () => {
+    it('waits between retry attempts', async () => {
+      const fn = vi.fn().mockRejectedValueOnce(new Error('fail')).mockResolvedValue('success');
+
+      const start = Date.now();
+      await withRetry(fn, { maxAttempts: 2, delayMs: 50 });
+      const elapsed = Date.now() - start;
+
+      expect(elapsed).toBeGreaterThanOrEqual(45);
+    });
+
+    it('accumulates delay across multiple retries', async () => {
+      const fn = vi
+        .fn()
+        .mockRejectedValueOnce(new Error('fail 1'))
+        .mockRejectedValueOnce(new Error('fail 2'))
+        .mockResolvedValue('success');
+
+      const start = Date.now();
+      await withRetry(fn, { maxAttempts: 3, delayMs: 30 });
+      const elapsed = Date.now() - start;
+
+      expect(elapsed).toBeGreaterThanOrEqual(55); // 2 delays of 30ms each
+    });
+  });
+
+  describe('edge cases', () => {
+    it('handles async function that returns undefined', async () => {
+      const fn = vi.fn().mockResolvedValue(undefined);
+
+      const { result, attempts } = await withRetry(fn);
+
+      expect(result).toBeUndefined();
+      expect(attempts).toBe(1);
+    });
+
+    it('handles async function that returns null', async () => {
+      const fn = vi.fn().mockResolvedValue(null);
+
+      const { result, attempts } = await withRetry(fn);
+
+      expect(result).toBeNull();
+      expect(attempts).toBe(1);
+    });
+
+    it('handles async function that returns empty object', async () => {
+      const fn = vi.fn().mockResolvedValue({});
+
+      const { result, attempts } = await withRetry(fn);
+
+      expect(result).toEqual({});
+      expect(attempts).toBe(1);
+    });
   });
 
   describe('default config', () => {

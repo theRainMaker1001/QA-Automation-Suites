@@ -243,6 +243,135 @@ describe('HttpClient', () => {
         expect(result.error.code).toBe('TIMEOUT');
       }
     });
+
+    it('returns STATUS error for 4xx client errors', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 400,
+        headers: new Headers({ 'content-type': 'application/json' }),
+      });
+
+      const result = await client.get('/bad-request');
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe('STATUS');
+        expect(result.status).toBe(400);
+      }
+    });
+
+    it('returns STATUS error for 5xx server errors', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        headers: new Headers({ 'content-type': 'application/json' }),
+      });
+
+      const result = await client.get('/server-error');
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe('STATUS');
+        expect(result.status).toBe(500);
+      }
+    });
+
+    it('returns STATUS error for 503 service unavailable', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 503,
+        headers: new Headers({ 'content-type': 'application/json' }),
+      });
+
+      const result = await client.get('/unavailable');
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe('STATUS');
+        expect(result.status).toBe(503);
+      }
+    });
+
+    it('handles empty response body gracefully', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 204,
+        headers: new Headers(),
+        text: () => Promise.resolve(''),
+      });
+
+      const result = await client.request({ path: '/resource/123', method: 'DELETE' });
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.status).toBe(204);
+      }
+    });
+
+    it('handles response with missing content-type header', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: new Headers(),
+        text: () => Promise.resolve('raw response'),
+      });
+
+      const result = await client.get('/no-content-type');
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.data).toBe('raw response');
+      }
+    });
+
+    it('includes latency in error responses', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        headers: new Headers({ 'content-type': 'application/json' }),
+      });
+
+      const result = await client.get('/error');
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.latencyMs).toBeGreaterThanOrEqual(0);
+      }
+    });
+
+    it('returns NETWORK error for DNS resolution failure', async () => {
+      mockFetch.mockRejectedValue(new TypeError('Failed to fetch'));
+
+      const result = await client.get('/dns-fail');
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe('NETWORK');
+      }
+    });
+
+    it('returns NETWORK error for connection refused', async () => {
+      mockFetch.mockRejectedValue(new Error('ECONNREFUSED'));
+
+      const result = await client.get('/conn-refused');
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe('NETWORK');
+        expect(result.error.message).toContain('ECONNREFUSED');
+      }
+    });
+
+    it('returns NETWORK error for connection reset', async () => {
+      mockFetch.mockRejectedValue(new Error('ECONNRESET'));
+
+      const result = await client.get('/conn-reset');
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe('NETWORK');
+      }
+    });
   });
 
   describe('method handling', () => {
