@@ -33,7 +33,11 @@
     "test:critical": "vitest run -c vitest.critical.config.ts",
     "test:unit:report": "npx ts-node scripts/run-unit-tests.ts",
     "test:a11y": "playwright test -c e2e/playwright.config.ts --grep @a11y",
-    "test:a11y:report": "npx ts-node scripts/run-a11y-tests.ts"
+    "test:a11y:report": "npx ts-node scripts/run-a11y-tests.ts",
+    "test:e2e:smoke": "playwright test -c e2e/playwright.config.ts --grep @smoke",
+    "test:e2e:critical": "playwright test -c e2e/playwright.config.ts --grep @critical",
+    "test:e2e:regression": "playwright test -c e2e/playwright.config.ts --grep @regression",
+    "test:e2e:state": "playwright test -c e2e/playwright.config.ts --grep @state-transition"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

@@ -31,3 +31,6 @@ reports/
 
 # Claude settings
 .claude
+
+# Internal planning docs (not for repo)
+docs/test-design/PW-FINISHER-PLAN.md
