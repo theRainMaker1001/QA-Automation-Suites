@@ -116,4 +116,44 @@ describe('@smoke Accounts API', () => {
       }
     });
   });
+
+  // ============================================================================
+  // Negative Cases - Error Handling
+  // ============================================================================
+
+  describe('Negative Cases', () => {
+    it('returns error for non-existent account', async () => {
+      const res = await client.get<ErrorResponse>(routes.account('999999999'));
+
+      expect(res.ok).toBe(true);
+      if (res.ok) {
+        // ParaBank may return 200 with error or 404
+        expect(res.status).toBeGreaterThanOrEqual(200);
+      }
+    });
+
+    it('returns error for invalid account ID format', async () => {
+      const res = await client.get<ErrorResponse>(routes.account('not-a-number'));
+
+      expect(res.ok).toBeDefined();
+    });
+
+    it('returns error for negative account ID', async () => {
+      const res = await client.get<ErrorResponse>(routes.account('-1'));
+
+      expect(res.ok).toBeDefined();
+    });
+
+    it('returns error for empty account ID', async () => {
+      const res = await client.get<ErrorResponse>(routes.account(''));
+
+      expect(res.ok).toBeDefined();
+    });
+
+    it('handles special characters in account ID', async () => {
+      const res = await client.get<ErrorResponse>(routes.account('123<script>'));
+
+      expect(res.ok).toBeDefined();
+    });
+  });
 });

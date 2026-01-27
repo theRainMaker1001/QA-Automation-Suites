@@ -37,7 +37,8 @@
     "test:e2e:smoke": "playwright test -c e2e/playwright.config.ts --grep @smoke",
     "test:e2e:critical": "playwright test -c e2e/playwright.config.ts --grep @critical",
     "test:e2e:regression": "playwright test -c e2e/playwright.config.ts --grep @regression",
-    "test:e2e:state": "playwright test -c e2e/playwright.config.ts --grep @state-transition"
+    "test:e2e:state": "playwright test -c e2e/playwright.config.ts --grep @state-transition",
+    "test:e2e:negative": "playwright test -c e2e/playwright.config.ts --grep @negative"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

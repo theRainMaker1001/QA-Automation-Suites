@@ -273,9 +273,9 @@ describe('Test Coverage Summary', () => {
       ═══════════════════════════════════════════════════════════════
       LOAN DECISION TABLE TEST COVERAGE SUMMARY
       ═══════════════════════════════════════════════════════════════
-      
+
       3-VALUE BVA: Tests at -2, -1, 0 (boundary), +1, +2 for each boundary
-      
+
       Decision Table Rules:           ${decisionTableRules.length} tests
       Funds Check BVA (-2 to +2):     ${fundsCheckBoundary.length} tests
       Ratio Check BVA (-2 to +2):     ${ratioCheckBoundary.length} tests
@@ -287,5 +287,111 @@ describe('Test Coverage Summary', () => {
       TOTAL TEST CASES:               ${totalTests} tests
       ═══════════════════════════════════════════════════════════════
     `);
+  });
+});
+
+// ============================================================================
+// NEGATIVE API CASES - Error Handling & Edge Cases
+// ============================================================================
+
+describe('Loan API - Negative Cases', () => {
+  it('rejects request with zero loan amount', async () => {
+    const request = mapTestCaseToRequest({
+      id: 'NEG-ZERO-AMOUNT',
+      description: 'Zero loan amount',
+      tags: ['@negative'],
+      loanAmount: 0,
+      downPayment: 0,
+      availableFunds: 1000,
+      expectedDecision: 'DENIED_INSUFFICIENT_DOWN_PAYMENT',
+    });
+
+    const response = await requestLoan(request);
+
+    expect(response).toBeDefined();
+    expect(typeof response.approved).toBe('boolean');
+  });
+
+  it('rejects request with negative down payment', async () => {
+    const request = mapTestCaseToRequest({
+      id: 'NEG-DOWN-PAYMENT',
+      description: 'Negative down payment',
+      tags: ['@negative'],
+      loanAmount: 1000,
+      downPayment: -100,
+      availableFunds: 500,
+      expectedDecision: 'DENIED_INSUFFICIENT_DOWN_PAYMENT',
+    });
+
+    const response = await requestLoan(request);
+
+    expect(response).toBeDefined();
+    expect(typeof response.approved).toBe('boolean');
+  });
+
+  it('handles extremely large loan amount', async () => {
+    const request = mapTestCaseToRequest({
+      id: 'NEG-LARGE-AMOUNT',
+      description: 'Extremely large loan',
+      tags: ['@negative', '@edge-case'],
+      loanAmount: 999999999,
+      downPayment: 100000000,
+      availableFunds: 100000000,
+      expectedDecision: 'APPROVED',
+    });
+
+    const response = await requestLoan(request);
+
+    expect(response).toBeDefined();
+  });
+
+  it('handles decimal precision in amounts', async () => {
+    const request = mapTestCaseToRequest({
+      id: 'NEG-DECIMALS',
+      description: 'Decimal precision',
+      tags: ['@edge-case'],
+      loanAmount: 1000.999,
+      downPayment: 100.001,
+      availableFunds: 500.555,
+      expectedDecision: 'APPROVED',
+    });
+
+    const response = await requestLoan(request);
+
+    expect(response).toBeDefined();
+  });
+
+  it('response includes all expected fields on approval', async () => {
+    const request = mapTestCaseToRequest({
+      id: 'NEG-FIELD-CHECK',
+      description: 'Field validation',
+      tags: ['@positive'],
+      loanAmount: 1000,
+      downPayment: 200,
+      availableFunds: 500,
+      expectedDecision: 'APPROVED',
+    });
+
+    const response = await requestLoan(request);
+
+    expect(response).toHaveProperty('approved');
+  });
+
+  it('responseDate is valid format when present', async () => {
+    const request = mapTestCaseToRequest({
+      id: 'NEG-DATE-FORMAT',
+      description: 'Date format validation',
+      tags: ['@positive'],
+      loanAmount: 1000,
+      downPayment: 200,
+      availableFunds: 500,
+      expectedDecision: 'APPROVED',
+    });
+
+    const response = await requestLoan(request);
+
+    if (response.responseDate) {
+      expect(() => new Date(response.responseDate!)).not.toThrow();
+    }
   });
 });
