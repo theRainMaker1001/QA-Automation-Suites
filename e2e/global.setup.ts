@@ -7,9 +7,11 @@
  * Usage: Configure as globalSetup in playwright.config.ts
  */
 
-import { chromium, expect, type FullConfig } from '@playwright/test';
+import { chromium, type FullConfig } from '@playwright/test';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PARABANK_URL = 'https://parabank.parasoft.com/parabank';
 const STORAGE_STATE_PATH = path.join(__dirname, '.auth', 'user.json');
 
@@ -19,7 +21,7 @@ const TEST_USER = {
   password: 'demo',
 };
 
-async function globalSetup(config: FullConfig): Promise<void> {
+async function globalSetup(_config: FullConfig): Promise<void> {
   console.log('[Global Setup] Creating authenticated session...');
 
   const browser = await chromium.launch();
