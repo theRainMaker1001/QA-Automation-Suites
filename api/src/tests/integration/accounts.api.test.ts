@@ -122,38 +122,42 @@ describe('@smoke Accounts API', () => {
   // ============================================================================
 
   describe('Negative Cases', () => {
-    it('returns error for non-existent account', async () => {
+    it('rejects non-existent account', async () => {
       const res = await client.get<ErrorResponse>(routes.account('999999999'));
 
-      expect(res.ok).toBe(true);
-      if (res.ok) {
-        // ParaBank may return 200 with error or 404
-        expect(res.status).toBeGreaterThanOrEqual(200);
+      // ParaBank returns 400 for non-existent accounts, so ok=false
+      expect(res.ok).toBe(false);
+      if (!res.ok && res.status) {
+        expect(res.status).toBeGreaterThanOrEqual(400);
       }
     });
 
-    it('returns error for invalid account ID format', async () => {
+    it('rejects invalid account ID format', async () => {
       const res = await client.get<ErrorResponse>(routes.account('not-a-number'));
 
-      expect(res.ok).toBeDefined();
+      // Should return 4xx error for invalid format
+      expect(res.ok).toBe(false);
     });
 
-    it('returns error for negative account ID', async () => {
+    it('rejects negative account ID', async () => {
       const res = await client.get<ErrorResponse>(routes.account('-1'));
 
-      expect(res.ok).toBeDefined();
+      // Should return 4xx error for negative ID
+      expect(res.ok).toBe(false);
     });
 
-    it('returns error for empty account ID', async () => {
+    it('rejects empty account ID', async () => {
       const res = await client.get<ErrorResponse>(routes.account(''));
 
-      expect(res.ok).toBeDefined();
+      // Should return 404 for missing route segment
+      expect(res.ok).toBe(false);
     });
 
-    it('handles special characters in account ID', async () => {
+    it('rejects special characters in account ID', async () => {
       const res = await client.get<ErrorResponse>(routes.account('123<script>'));
 
-      expect(res.ok).toBeDefined();
+      // Should return 4xx error for XSS attempt
+      expect(res.ok).toBe(false);
     });
   });
 });
