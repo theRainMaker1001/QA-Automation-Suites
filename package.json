@@ -19,7 +19,7 @@
     "test:api:critical": "vitest run --config vitest.integration.config.ts --testNamePattern @critical",
     "test:all": "npm run test:unit && npm run test:api",
     "test": "npm run test:all",
-    "test:e2e": "playwright test -c e2e/playwright.config.ts",
+    "test:e2e": "playwright test -c e2e/playwright.config.ts --grep-invert @negative",
     "clean": "rimraf dist api/dist",
     "typecheck": "tsc --noEmit -p . && tsc --noEmit -p e2e",
     "lint": "eslint --format stylish --cache --ext .ts --ext .tsx ./api/src ./e2e ./config ./*.ts",

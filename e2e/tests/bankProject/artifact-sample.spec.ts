@@ -4,6 +4,8 @@
  * These tests intentionally fail to demonstrate CI artifact collection.
  * Tagged @negative to run separately and verify artifact upload works.
  *
+ * Run with: npm run test:e2e:negative
+ *
  * Expected artifacts on failure:
  * - Screenshot at point of failure
  * - Video recording of test execution
@@ -12,7 +14,13 @@
 
 import { test, expect } from '@playwright/test';
 
+// Skip these tests in normal runs - only run via test:e2e:negative
+test.skip(({ browserName }) => browserName !== 'chromium', 'Artifact demo runs on chromium only');
+
 test.describe('@negative @sample Artifact Upload Verification', () => {
+  // Don't retry intentional failures
+  test.describe.configure({ retries: 0 });
+
   test('SAMPLE: intentional assertion failure for artifact demo', async ({ page }) => {
     await page.goto('https://parabank.parasoft.com/parabank/');
     await page.waitForLoadState('networkidle');
