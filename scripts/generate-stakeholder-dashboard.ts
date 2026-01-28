@@ -407,7 +407,7 @@ function generateHTML(data: DashboardData): string {
     </div>
 
     <div class="footer">
-      <p>QA Automation Suite | <a href="./allure/">View Detailed Developer Report</a></p>
+      <p>QA Automation Suite | <a href="../allure/">View Detailed Developer Report</a> | <a href="../">Dashboard Hub</a></p>
     </div>
   </div>
 </body>

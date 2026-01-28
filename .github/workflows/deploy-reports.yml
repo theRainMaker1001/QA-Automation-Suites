@@ -48,18 +48,25 @@ jobs:
         run: npx playwright install chromium --with-deps
 
       # ════════════════════════════════════════════════════════════════════════
-      # GENERATE TEST DATA
+      # GENERATE TEST DATA (produces fresh Allure results)
       # ════════════════════════════════════════════════════════════════════════
       - name: Generate test reports
         run: |
-          mkdir -p reports
+          mkdir -p reports allure-results
+          npm run test:unit:report || true
           npm run test:api:critical || true
           npm run test:loans || true
-          npm run test:unit:report || true
           npm run test:a11y:report || true
         env:
           BANK_BASE_URL: ${{ vars.BANK_BASE_URL }}
           BANK_CUSTOMER_ID: ${{ vars.BANK_CUSTOMER_ID }}
+
+      - name: Copy local Allure results to merged
+        run: |
+          mkdir -p allure-results-merged
+          if [ -d "allure-results" ]; then
+            cp -r allure-results/* allure-results-merged/ 2>/dev/null || true
+          fi
 
       # ════════════════════════════════════════════════════════════════════════
       # DOWNLOAD ALLURE RESULTS FROM TEST WORKFLOWS
@@ -175,9 +182,6 @@ jobs:
           npm run report:stakeholder || true
           mkdir -p public/stakeholder
           if [ -f "reports/stakeholder-dashboard.html" ]; then
-            # Fix relative link to Allure report since this file is moved to /stakeholder/ subdirectory
-            sed -i 's|href="allure"|href="../allure"|g' reports/stakeholder-dashboard.html
-            sed -i 's|href="./allure"|href="../allure"|g' reports/stakeholder-dashboard.html
             cp reports/stakeholder-dashboard.html public/stakeholder/index.html
             cp reports/stakeholder-dashboard.json public/stakeholder/ 2>/dev/null || true
           fi

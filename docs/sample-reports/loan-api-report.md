@@ -119,4 +119,4 @@ This suite implements **ISTQB Decision Table Testing** combined with **3-Value B
 
 ---
 
-📖 **Test Design**: See [loan-approval-decision-table.md](../docs/test-design/loan-approval-decision-table.md)
+📖 **Test Design**: See [loan-approval-decision-table.md](../test-design/loan-approval-decision-table.md)

@@ -3,7 +3,7 @@
 
 [![Quality Gate](https://img.shields.io/badge/Quality_Gate-Passing-success?style=for-the-badge&logo=github)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions)
 [![ISTQB Certified](https://img.shields.io/badge/ISTQB_Foundation-92.5%25-blue?style=for-the-badge)](https://www.istqb.org/)
-[![Tech Stack](https://img.shields.io/badge/Stack-Playwright_%7C_Vitest_%7C_TypeScript-blueviolet?style=for-the-badge)](./docs/TECHNICAL_DETAILS.md)
+[![Tech Stack](https://img.shields.io/badge/Stack-Playwright_%7C_Vitest_%7C_TypeScript-blueviolet?style=for-the-badge)](./docs/TECHNICAL-DESIGN.MD)
 [![Status](https://img.shields.io/badge/Availability-Feb_16th-orange?style=for-the-badge)](https://www.linkedin.com/in/tom-cunningham-5b6823103/)
 
 ---
@@ -25,6 +25,7 @@ The framework bridges the gap between technical execution and stakeholder visibi
 
 | Dashboard | Audience | Link |
 |-----------|----------|------|
+| **Dashboard Hub** | All | [Choose Dashboard](https://therainmaker1001.github.io/QA-Automation-Suites/) |
 | **Stakeholder Dashboard** | PMs, Leadership | [View Executive Summary](https://therainmaker1001.github.io/QA-Automation-Suites/stakeholder/) |
 | **Developer Dashboard** | QA, Developers | [View Allure Report](https://therainmaker1001.github.io/QA-Automation-Suites/allure/) |
 
@@ -74,8 +75,8 @@ We utilize a **5-Tag Taxonomy** to ensure the right tests run at the right time.
 ---
 
 ## 🔗 Documentation
-* **[Technical Implementation Details](./docs/TECHNICAL_DETAILS.md)** - *Deep dive into Architecture, Test Design, and CI/CD.*
-* **[Loan Decision Logic](./docs/test-design/loan-approval-decision-table.md)** - *The ISTQB logic behind the testing.*
+* **[Technical Design & Engineering Specifications](./docs/TECHNICAL-DESIGN.MD)** - *Deep dive into Architecture, Test Design, and CI/CD.*
+* **[Loan Approval Decision Table](./docs/test-design/loan-approval-decision-table.md)** - *Decision Table Testing + 3-Value BVA for loan approval logic.*
 
 ---
 
