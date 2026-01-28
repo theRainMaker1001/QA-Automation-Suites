@@ -54,9 +54,9 @@ jobs:
         run: |
           mkdir -p reports allure-results
           npm run test:unit:report || true
-          npm run test:api:critical || true
+          npm run test:api || true
           npm run test:loans || true
-          npm run test:a11y:report || true
+          npx ts-node scripts/run-a11y-tests.ts || true
         env:
           BANK_BASE_URL: ${{ vars.BANK_BASE_URL }}
           BANK_CUSTOMER_ID: ${{ vars.BANK_CUSTOMER_ID }}

@@ -270,9 +270,9 @@ function main(): void {
   let exitCode = 0;
 
   try {
-    // Run vitest with JSON reporter for unit tests
+    // Run vitest with both JSON and Allure reporters for unit tests
     execSync(
-      `npx vitest run --config vitest.unit.config.ts --reporter=json --outputFile=${JSON_REPORT_PATH}`,
+      `npx vitest run --config vitest.unit.config.ts --reporter=json --reporter=allure-vitest/reporter --outputFile=${JSON_REPORT_PATH}`,
       { stdio: 'inherit' },
     );
   } catch {

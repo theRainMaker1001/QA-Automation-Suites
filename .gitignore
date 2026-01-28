@@ -1,3 +1,6 @@
+# Windows /dev/null artefact
+nul
+
 # Local resources / artifacts / secrets
 resources/
 !resources/.gitkeep
