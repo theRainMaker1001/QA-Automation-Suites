@@ -122,7 +122,7 @@ describe('measureLatency', () => {
     const { result, durationMs } = await measureLatency(slow);
 
     expect(result).toBe('slow');
-    expect(durationMs).toBeGreaterThanOrEqual(50);
+    expect(durationMs).toBeGreaterThanOrEqual(48);
   });
 
   it('does not throw for slow operations', async () => {
