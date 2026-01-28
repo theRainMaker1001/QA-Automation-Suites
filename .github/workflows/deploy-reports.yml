@@ -175,6 +175,9 @@ jobs:
           npm run report:stakeholder || true
           mkdir -p public/stakeholder
           if [ -f "reports/stakeholder-dashboard.html" ]; then
+            # Fix relative link to Allure report since this file is moved to /stakeholder/ subdirectory
+            sed -i 's|href="allure"|href="../allure"|g' reports/stakeholder-dashboard.html
+            sed -i 's|href="./allure"|href="../allure"|g' reports/stakeholder-dashboard.html
             cp reports/stakeholder-dashboard.html public/stakeholder/index.html
             cp reports/stakeholder-dashboard.json public/stakeholder/ 2>/dev/null || true
           fi
