@@ -16,19 +16,19 @@ const PARABANK_URL = 'https://parabank.parasoft.com/parabank';
 
 test.describe('@regression @state-transition Transaction Search State Machine', () => {
   test.beforeEach(async ({ page }) => {
-    // Login using the page object
     const loginPage = new LoginPage(page);
-    await loginPage.goto();
 
-    // Attempt login with demo credentials
-    await loginPage.login('john', 'demo');
-    await page.waitForLoadState('networkidle');
+    // First check if already logged in (e.g., using storage state from chromium-auth project)
+    await page.goto(`${PARABANK_URL}/overview.htm`);
+    await page.waitForLoadState('domcontentloaded');
 
-    // Check if we're logged in - if not, skip to avoid cascading failures
-    const isLoggedIn = await loginPage.isLoggedIn();
-    if (!isLoggedIn) {
-      // Try to continue anyway - tests will handle auth state appropriately
-      console.log('Login may not have succeeded - continuing with test');
+    const alreadyLoggedIn = await loginPage.isLoggedIn();
+
+    if (!alreadyLoggedIn) {
+      // Not logged in - need to authenticate
+      await loginPage.goto();
+      await loginPage.login('john', 'demo');
+      await page.waitForLoadState('networkidle');
     }
 
     // Navigate to Find Transactions page
