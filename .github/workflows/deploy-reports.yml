@@ -69,6 +69,8 @@ jobs:
         with:
           name: allure-results-unit
           path: allure-results/unit/
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
       - name: Download Allure results (smoke)
@@ -76,6 +78,8 @@ jobs:
         with:
           name: allure-results-smoke
           path: allure-results/smoke/
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
       - name: Download Allure results (critical)
@@ -83,6 +87,8 @@ jobs:
         with:
           name: allure-results-critical
           path: allure-results/critical/
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
       - name: Download Allure results (E2E smoke)
@@ -90,6 +96,8 @@ jobs:
         with:
           name: allure-results-e2e-smoke
           path: allure-results/e2e-smoke/
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
       - name: Download Allure results (E2E critical)
@@ -97,6 +105,8 @@ jobs:
         with:
           name: allure-results-e2e-critical
           path: allure-results/e2e-critical/
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
       - name: Download Allure results (E2E nightly)
@@ -104,6 +114,8 @@ jobs:
         with:
           name: allure-results-e2e-nightly
           path: allure-results/e2e-nightly/
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
       - name: Download previous Allure history

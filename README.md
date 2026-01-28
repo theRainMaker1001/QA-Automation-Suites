@@ -1,7 +1,7 @@
 # 🏦 FinTech Quality Engineering Framework
 ### *High-Confidence Automation & Risk-Based Testing for ParaBank*
 
-[![Quality Gate](https://img.shields.io/badge/Quality_Gate-Passing-success?style=for-the-badge&logo=github)](https://github.com/theRainMaker101/QA-Automation-Suites/actions)
+[![Quality Gate](https://img.shields.io/badge/Quality_Gate-Passing-success?style=for-the-badge&logo=github)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions)
 [![ISTQB Certified](https://img.shields.io/badge/ISTQB_Foundation-92.5%25-blue?style=for-the-badge)](https://www.istqb.org/)
 [![Tech Stack](https://img.shields.io/badge/Stack-Playwright_%7C_Vitest_%7C_TypeScript-blueviolet?style=for-the-badge)](./docs/TECHNICAL_DETAILS.md)
 [![Status](https://img.shields.io/badge/Availability-Feb_16th-orange?style=for-the-badge)](https://www.linkedin.com/in/tom-cunningham-5b6823103/)
@@ -25,8 +25,8 @@ The framework bridges the gap between technical execution and stakeholder visibi
 
 | Dashboard | Audience | Link |
 |-----------|----------|------|
-| **Stakeholder Dashboard** | PMs, Leadership | [View Executive Summary](https://therainmaker101.github.io/QA-Automation-Suites/stakeholder/) |
-| **Developer Dashboard** | QA, Developers | [View Allure Report](https://therainmaker101.github.io/QA-Automation-Suites/allure/) |
+| **Stakeholder Dashboard** | PMs, Leadership | [View Executive Summary](https://therainmaker1001.github.io/QA-Automation-Suites/stakeholder/) |
+| **Developer Dashboard** | QA, Developers | [View Allure Report](https://therainmaker1001.github.io/QA-Automation-Suites/allure/) |
 
 ### Stakeholder Dashboard Features
 * **Confidence Score:** Weighted aggregate of all test lane pass rates
