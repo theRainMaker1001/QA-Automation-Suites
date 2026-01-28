@@ -1,8 +1,8 @@
-name: deploy test reports
+name: Deploy Test Reports & Dashboards
 
 on:
   workflow_run:
-    workflows: ['Critical Function Healthcheck', 'Code Quality & Unit Tests']
+    workflows: ['Testing Lanes - Risk-Based Orchestration', 'E2E Testing Lanes']
     types: [completed]
     branches: [main]
   workflow_dispatch:
@@ -11,6 +11,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  actions: read
 
 concurrency:
   group: 'pages'
@@ -23,6 +24,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,13 +35,22 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
 
+      - name: Setup Java (for Allure CLI)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
       - name: Install dependencies
         run: npm ci
 
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
 
-      - name: Generate all reports
+      # ════════════════════════════════════════════════════════════════════════
+      # GENERATE TEST DATA
+      # ════════════════════════════════════════════════════════════════════════
+      - name: Generate test reports
         run: |
           mkdir -p reports
           npm run test:api:critical || true
@@ -50,90 +61,208 @@ jobs:
           BANK_BASE_URL: ${{ vars.BANK_BASE_URL }}
           BANK_CUSTOMER_ID: ${{ vars.BANK_CUSTOMER_ID }}
 
-      - name: Convert markdown to HTML
+      # ════════════════════════════════════════════════════════════════════════
+      # DOWNLOAD ALLURE RESULTS FROM TEST WORKFLOWS
+      # ════════════════════════════════════════════════════════════════════════
+      - name: Download Allure results (unit)
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-results-unit
+          path: allure-results/unit/
+        continue-on-error: true
+
+      - name: Download Allure results (smoke)
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-results-smoke
+          path: allure-results/smoke/
+        continue-on-error: true
+
+      - name: Download Allure results (critical)
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-results-critical
+          path: allure-results/critical/
+        continue-on-error: true
+
+      - name: Download Allure results (E2E smoke)
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-results-e2e-smoke
+          path: allure-results/e2e-smoke/
+        continue-on-error: true
+
+      - name: Download Allure results (E2E critical)
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-results-e2e-critical
+          path: allure-results/e2e-critical/
+        continue-on-error: true
+
+      - name: Download Allure results (E2E nightly)
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-results-e2e-nightly
+          path: allure-results/e2e-nightly/
+        continue-on-error: true
+
+      - name: Download previous Allure history
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-history
+          path: allure-results/history/
+        continue-on-error: true
+
+      # ════════════════════════════════════════════════════════════════════════
+      # MERGE ALLURE RESULTS
+      # ════════════════════════════════════════════════════════════════════════
+      - name: Merge Allure results
         run: |
-          npm install -g marked
-          for file in reports/*.md; do
-            if [ -f "$file" ]; then
-              basename="${file%.md}"
-              echo "<!DOCTYPE html><html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>$(basename "$file" .md)</title><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;max-width:900px;margin:0 auto;padding:2rem;background:#0d1117;color:#c9d1d9;line-height:1.6}h1,h2,h3{color:#fff}a{color:#58a6ff}table{border-collapse:collapse;width:100%}th,td{border:1px solid #30363d;padding:8px;text-align:left}th{background:#161b22}pre{background:#161b22;padding:1rem;overflow-x:auto;border-radius:6px}code{background:#161b22;padding:2px 6px;border-radius:3px}.back{margin-bottom:2rem;display:inline-block}</style></head><body><a href='index.html' class='back'>← Back to Reports</a>" > "${basename}.html"
-              marked "$file" >> "${basename}.html"
-              echo "</body></html>" >> "${basename}.html"
+          mkdir -p allure-results-merged
+          # Copy all results to merged directory
+          for dir in allure-results/*/; do
+            if [ -d "$dir" ]; then
+              cp -r "$dir"* allure-results-merged/ 2>/dev/null || true
             fi
           done
+          echo "Merged Allure results:"
+          ls -la allure-results-merged/ || echo "No results to merge"
 
-      - name: Create reports index
+      # ════════════════════════════════════════════════════════════════════════
+      # GENERATE ALLURE REPORT
+      # ════════════════════════════════════════════════════════════════════════
+      - name: Generate Allure report
         run: |
-          cat > reports/index.html << 'EOF'
+          if [ -d "allure-results-merged" ] && [ "$(ls -A allure-results-merged 2>/dev/null)" ]; then
+            npx allure generate allure-results-merged --clean -o public/allure
+            echo "Allure report generated"
+          else
+            mkdir -p public/allure
+            echo "<html><body><h1>No Allure results available</h1><p>Run tests first to generate results.</p></body></html>" > public/allure/index.html
+            echo "No Allure results - created placeholder"
+          fi
+
+      # ════════════════════════════════════════════════════════════════════════
+      # GENERATE STAKEHOLDER DASHBOARD
+      # ════════════════════════════════════════════════════════════════════════
+      - name: Generate Stakeholder dashboard
+        run: |
+          npm run report:stakeholder || true
+          mkdir -p public/stakeholder
+          if [ -f "reports/stakeholder-dashboard.html" ]; then
+            cp reports/stakeholder-dashboard.html public/stakeholder/index.html
+            cp reports/stakeholder-dashboard.json public/stakeholder/ 2>/dev/null || true
+          fi
+
+      # ════════════════════════════════════════════════════════════════════════
+      # CREATE DASHBOARD HUB (NAVIGATION)
+      # ════════════════════════════════════════════════════════════════════════
+      - name: Create dashboard hub
+        run: |
+          cat > public/index.html << 'EOF'
           <!DOCTYPE html>
           <html lang="en">
           <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>QA Automation Suite - Test Reports</title>
+            <title>QA Automation Suite - Dashboard Hub</title>
             <style>
-              :root { --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #c9d1d9; --link: #58a6ff; --green: #3fb950; }
               * { box-sizing: border-box; margin: 0; padding: 0; }
-              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding: 2rem; }
-              .container { max-width: 900px; margin: 0 auto; }
-              h1 { color: #fff; margin-bottom: 0.5rem; }
-              .subtitle { color: #8b949e; margin-bottom: 2rem; }
-              .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
-              .card { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 1.5rem; transition: border-color 0.2s; }
-              .card:hover { border-color: var(--link); }
-              .card h3 { color: #fff; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
-              .card p { color: #8b949e; font-size: 0.875rem; margin-bottom: 1rem; }
-              .card a { color: var(--link); text-decoration: none; font-weight: 500; }
-              .card a:hover { text-decoration: underline; }
-              .badge { background: var(--green); color: #000; padding: 0.125rem 0.5rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600; }
-              .updated { text-align: center; color: #8b949e; margin-top: 2rem; font-size: 0.875rem; }
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+                color: #c9d1d9;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 2rem;
+              }
+              .container { max-width: 800px; text-align: center; }
+              h1 { color: #f0f6fc; font-size: 2.5rem; margin-bottom: 0.5rem; }
+              .subtitle { color: #8b949e; margin-bottom: 3rem; font-size: 1.1rem; }
+              .cards {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 1.5rem;
+              }
+              .card {
+                background: #161b22;
+                border: 1px solid #30363d;
+                border-radius: 12px;
+                padding: 2rem;
+                text-decoration: none;
+                color: inherit;
+                transition: all 0.3s ease;
+              }
+              .card:hover {
+                border-color: #58a6ff;
+                transform: translateY(-4px);
+                box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+              }
+              .card h2 { color: #f0f6fc; margin-bottom: 0.75rem; font-size: 1.5rem; }
+              .card p { color: #8b949e; font-size: 0.95rem; line-height: 1.5; }
+              .card .icon { font-size: 2.5rem; margin-bottom: 1rem; }
+              .stakeholder .icon { color: #3fb950; }
+              .developer .icon { color: #58a6ff; }
+              .footer {
+                margin-top: 3rem;
+                color: #8b949e;
+                font-size: 0.85rem;
+              }
+              .footer a { color: #58a6ff; text-decoration: none; }
             </style>
           </head>
           <body>
             <div class="container">
               <h1>QA Automation Suite</h1>
-              <p class="subtitle">FinTech Quality Engineering - Test Reports</p>
+              <p class="subtitle">FinTech Quality Engineering - Dashboard Hub</p>
 
-              <div class="grid">
-                <div class="card">
-                  <h3><span class="badge">API</span> Loan Decision Table</h3>
-                  <p>34 test cases covering decision table rules and 3-value BVA boundaries</p>
-                  <a href="loan-api-report.html">View Report →</a>
-                </div>
+              <div class="cards">
+                <a href="./stakeholder/" class="card stakeholder">
+                  <div class="icon">📊</div>
+                  <h2>Stakeholder Dashboard</h2>
+                  <p>Executive summary with confidence metrics, risk indicators, and WCAG compliance status. Ideal for PMs and leadership.</p>
+                </a>
 
-                <div class="card">
-                  <h3><span class="badge">A11Y</span> Accessibility Compliance</h3>
-                  <p>WCAG 2.1 AA audit with legal compliance reference</p>
-                  <a href="a11y-compliance-report.html">View Report →</a>
-                </div>
-
-                <div class="card">
-                  <h3><span class="badge">UNIT</span> Unit Test Summary</h3>
-                  <p>127 unit tests covering HTTP client, retry logic, validation, and performance</p>
-                  <a href="unit-summary.html">View Report →</a>
-                </div>
-
-                <div class="card">
-                  <h3><span class="badge">API</span> Heartbeat Summary</h3>
-                  <p>Daily API health check and latency monitoring</p>
-                  <a href="heartbeat-summary.html">View Report →</a>
-                </div>
+                <a href="./allure/" class="card developer">
+                  <div class="icon">🔬</div>
+                  <h2>Developer Dashboard</h2>
+                  <p>Detailed Allure report with full test results, execution history, trends, and failure analysis. For QA and developers.</p>
+                </a>
               </div>
 
-              <p class="updated">Last updated: <span id="date"></span></p>
+              <div class="footer">
+                <p>Last deployed: <span id="date"></span></p>
+                <p><a href="https://github.com/theRainMaker1001/QA-Automation-Suites" target="_blank">View Repository</a></p>
+              </div>
               <script>document.getElementById('date').textContent = new Date().toLocaleString();</script>
             </div>
           </body>
           </html>
           EOF
 
+      # ════════════════════════════════════════════════════════════════════════
+      # PRESERVE ALLURE HISTORY FOR NEXT RUN
+      # ════════════════════════════════════════════════════════════════════════
+      - name: Upload Allure history
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-history
+          path: public/allure/history/
+          retention-days: 90
+          if-no-files-found: ignore
+
+      # ════════════════════════════════════════════════════════════════════════
+      # DEPLOY TO GITHUB PAGES
+      # ════════════════════════════════════════════════════════════════════════
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
-      - name: Upload artifact
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: reports/
+          path: public/
 
       - name: Deploy to GitHub Pages
         id: deployment

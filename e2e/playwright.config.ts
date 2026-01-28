@@ -27,7 +27,18 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
 
   /* Reporters */
-  reporter: [['list'], ['html', { open: 'never' }]],
+  reporter: [
+    ['list'],
+    ['html', { open: 'never' }],
+    [
+      'allure-playwright',
+      {
+        resultsDir: '../allure-results/e2e',
+        detail: true,
+        suiteTitle: true,
+      },
+    ],
+  ],
 
   /* Shared settings */
   use: {

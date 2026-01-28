@@ -48,6 +48,15 @@ jobs:
           path: reports/
           if-no-files-found: warn
 
+      - name: Upload Allure results (unit)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-unit
+          path: allure-results/unit/
+          if-no-files-found: ignore
+          retention-days: 7
+
   # ════════════════════════════════════════════════════════════════════════════
   # SMOKE LANE: UI + API Connectivity ("Is the bank open?")
   # ════════════════════════════════════════════════════════════════════════════
@@ -86,6 +95,15 @@ jobs:
           path: |
             e2e/test-results/
             e2e/playwright-report/
+          retention-days: 7
+
+      - name: Upload Allure results (smoke)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-smoke
+          path: allure-results/
+          if-no-files-found: ignore
           retention-days: 7
 
   # ════════════════════════════════════════════════════════════════════════════
@@ -129,4 +147,13 @@ jobs:
             e2e/test-results/
             e2e/playwright-report/
             reports/
+          retention-days: 7
+
+      - name: Upload Allure results (critical)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-critical
+          path: allure-results/
+          if-no-files-found: ignore
           retention-days: 7

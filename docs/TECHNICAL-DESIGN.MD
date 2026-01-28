@@ -194,7 +194,79 @@ npm run test:e2e        # 20+ tests (Full User Journeys)
 
 ### **Reporting**
 ```bash
-# View Allure Dashboard locally
+# Generate and view Allure Dashboard locally
 npm run report:generate
 npm run report:open
+
+# Generate Stakeholder Dashboard
+npm run report:stakeholder
+```
+
+---
+
+## 📊 Dual Dashboard Architecture
+
+The reporting system provides two distinct views tailored to different audiences:
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│                     TEST EXECUTION                               │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐        │
+│  │  Vitest  │  │  Vitest  │  │Playwright│  │Playwright│        │
+│  │   Unit   │  │   API    │  │   E2E    │  │   A11y   │        │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘        │
+│       │             │             │             │               │
+│       └──────┬──────┴──────┬──────┴──────┬──────┘               │
+│              │             │             │                      │
+│              ▼             ▼             ▼                      │
+│      ┌───────────────────────────────────────────┐              │
+│      │           ALLURE RESULTS (JSON)           │              │
+│      └───────────────────┬───────────────────────┘              │
+└──────────────────────────┼──────────────────────────────────────┘
+                           │
+           ┌───────────────┴───────────────┐
+           │                               │
+           ▼                               ▼
+┌─────────────────────┐        ┌─────────────────────┐
+│  ALLURE GENERATOR   │        │ STAKEHOLDER SCRIPT  │
+│   (allure-cli)      │        │ (TypeScript)        │
+└──────────┬──────────┘        └──────────┬──────────┘
+           │                               │
+           ▼                               ▼
+┌─────────────────────┐        ┌─────────────────────┐
+│ DEVELOPER DASHBOARD │        │STAKEHOLDER DASHBOARD│
+│  /allure/           │        │  /stakeholder/      │
+│                     │        │                     │
+│ • Full test details │        │ • Confidence score  │
+│ • History & trends  │        │ • Risk level badge  │
+│ • Video/screenshots │        │ • WCAG compliance   │
+│ • Failure analysis  │        │ • Lane summaries    │
+└─────────────────────┘        └─────────────────────┘
+```
+
+### Dashboard Features Comparison
+
+| Feature | Developer Dashboard | Stakeholder Dashboard |
+|---------|--------------------|-----------------------|
+| Audience | QA Engineers, Developers | PMs, Leadership |
+| Detail Level | Full test execution data | Aggregated metrics |
+| History | 90-day trend analysis | Current run summary |
+| Failures | Stack traces, screenshots, video | Pass/fail counts only |
+| WCAG | Individual violations listed | Compliance badge (AA/A/NC) |
+| Risk | Per-test severity labels | Overall risk level |
+
+### Report Generation Commands
+
+```bash
+# Generate Allure report (requires Java)
+npm run report:generate
+
+# Generate Stakeholder dashboard (no Java required)
+npm run report:stakeholder
+
+# Open Allure report in browser
+npm run report:open
+
+# Serve Allure from results (live reload)
+npm run report:serve
 ```

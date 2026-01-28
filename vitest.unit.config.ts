@@ -7,7 +7,11 @@ export default defineConfig({
     exclude: ['e2e/**', 'node_modules/**', 'dist/**', 'coverage/**'],
     environment: 'node',
     testTimeout: 5000,
-    reporters: ['verbose', 'json'],
+    reporters: [
+      'verbose',
+      'json',
+      ['allure-vitest/reporter', { resultsDir: 'allure-results/unit' }],
+    ],
     outputFile: {
       json: 'reports/unit-report.json',
     },

@@ -21,13 +21,23 @@ The framework bridges the gap between technical execution and stakeholder visibi
 
 ---
 
-## 📊 Stakeholder Health Dashboard (Live)
-> **⚠️ [CLICK HERE TO VIEW THE LIVE STAKEHOLDER REPORT](YOUR_GITHUB_PAGES_URL)**
+## 📊 Live Dashboards
 
-We utilize **Allure Reporting** to transform raw test data into business insights.
-* **Trend Analysis:** Are we getting more stable or more flaky?
-* **Failure Categorization:** Instantly distinguish between *Product Bugs* and *Environment Noise*.
-* **Visual Evidence:** Video recordings and screenshots attached to every failed test case.
+| Dashboard | Audience | Link |
+|-----------|----------|------|
+| **Stakeholder Dashboard** | PMs, Leadership | [View Executive Summary](https://therainmaker1001.github.io/QA-Automation-Suites/stakeholder/) |
+| **Developer Dashboard** | QA, Developers | [View Allure Report](https://therainmaker1001.github.io/QA-Automation-Suites/allure/) |
+
+### Stakeholder Dashboard Features
+* **Confidence Score:** Weighted aggregate of all test lane pass rates
+* **Risk Level Indicator:** LOW / MEDIUM / HIGH / CRITICAL based on critical path results
+* **WCAG Compliance Badge:** Real-time accessibility status (AA / A / Non-Compliant)
+
+### Developer Dashboard Features (Allure)
+* **Trend Analysis:** Historical pass rates across runs
+* **Failure Categorization:** Distinguish *Product Bugs* from *Environment Noise*
+* **Visual Evidence:** Video recordings and screenshots on every failed test
+* **Full Test Details:** Steps, assertions, timing, and attachments
 
 ---
 

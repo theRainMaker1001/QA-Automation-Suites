@@ -31,8 +31,9 @@ resources/
 reports/
 .reports/
 
+# Allure (generated fresh each run, not committed)
+allure-results/
+allure-report/
+
 # Claude settings
 .claude
-
-# Internal planning docs (not for repo)
-docs/test-design/PW-FINISHER-PLAN.md

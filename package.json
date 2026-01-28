@@ -39,7 +39,12 @@
     "test:e2e:critical": "playwright test -c e2e/playwright.config.ts --grep @critical",
     "test:e2e:regression": "playwright test -c e2e/playwright.config.ts --grep @regression",
     "test:e2e:state": "playwright test -c e2e/playwright.config.ts --grep @state-transition",
-    "test:e2e:negative": "playwright test -c e2e/playwright.config.ts --grep @negative"
+    "test:e2e:negative": "playwright test -c e2e/playwright.config.ts --grep @negative",
+    "report:history": "tsx scripts/preserve-allure-history.ts",
+    "report:generate": "npm run report:history && npx allure generate allure-results --clean -o allure-report",
+    "report:open": "npx allure open allure-report",
+    "report:serve": "npx allure serve allure-results",
+    "report:stakeholder": "tsx scripts/generate-stakeholder-dashboard.ts"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
@@ -62,6 +67,9 @@
   "license": "ISC",
   "devDependencies": {
     "@axe-core/playwright": "^4.11.0",
+    "allure-commandline": "^2.30.0",
+    "allure-playwright": "^3.0.0",
+    "allure-vitest": "^3.0.0",
     "@eslint/js": "^9.38.0",
     "@playwright/test": "^1.57.0",
     "@types/node": "^24.10.1",

@@ -7,5 +7,9 @@ export default defineConfig({
     exclude: ['e2e/**', 'node_modules/**', 'dist/**', 'coverage/**'],
     environment: 'node',
     testTimeout: 30000,
+    reporters: [
+      'verbose',
+      ['allure-vitest/reporter', { resultsDir: 'allure-results/integration' }],
+    ],
   },
 });
