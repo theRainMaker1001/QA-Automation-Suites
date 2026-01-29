@@ -1,7 +1,6 @@
 name: E2E Testing Lanes
 
 on:
-  pull_request:
   push:
     branches: [main, master]
   schedule:
