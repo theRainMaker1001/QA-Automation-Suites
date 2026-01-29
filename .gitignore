@@ -40,3 +40,6 @@ allure-report/
 
 # Claude settings
 .claude
+
+# Document audit
+DOCUMENTATION_AUDIT_PLAN.md

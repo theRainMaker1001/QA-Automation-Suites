@@ -140,13 +140,22 @@ graph LR
     Gate1 -->|Pass| Push[🚀 Push Remote]
     Push -->|Trigger| CI[GitHub Actions]
     
-    subgraph "CI Lanes"
+    subgraph "PR Pipeline"
     direction TB
     CI --> Smoke[Running @smoke]
     Smoke -->|Pass| Critical[Running @critical]
     end
     
+    subgraph "Scheduled Lanes"
+    direction TB
+    Nightly[🕐 Nightly] --> Regression[Running @regression]
+    Nightly --> A11y[Running @a11y]
+    Hourly[⏰ Hourly] --> Heartbeat[Running @heartbeat]
+    end
+
     Critical -->|Pass| Report[📊 Allure Report]
+    Regression --> Report
+    A11y --> Report
     Report -->|Deploy| Pages[GitHub Pages]
 
     style Local fill:#f9f9f9,stroke:#333,stroke-width:2px,color:black
@@ -172,6 +181,7 @@ Our framework includes a dedicated helper library validated by **62 specific tes
 
 ### **Environment Setup**
 ```bash
+# Ensure Node.js v24.11.1+ is installed (see .nvmrc)
 # Install dependencies and browsers
 npm install && npx playwright install
 ```
@@ -185,6 +195,11 @@ npm run typecheck       # TypeScript validation
 # Running by Business Risk (Lanes)
 npm run test:smoke      # 30s Connectivity check
 npm run test:critical   # Core loan and transaction logic
+npm run test:regression # Full Feature Parity (Nightly)
+npm run test:a11y       # Accessibility Audit (Nightly)
+npm run test:heartbeat  # API Health Monitor (Hourly)
+npm run test:audit      # Run Regression + A11y (Full Audit)
+npm run test:loans      # Run Loan Decision Table scenarios
 
 # Running by Architectural Layer
 npm run test:unit       # 189 tests (Logic & Math)

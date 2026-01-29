@@ -59,7 +59,7 @@ We utilize a **5-Tag Taxonomy** to ensure the right tests run at the right time.
 *This framework is fully operational and implements the following advanced engineering modules:*
 
 ### **1. Advanced Test Design (ISTQB)**
-- ✅ **Combinatorial Decision Tables:** Validating 47 distinct Loan Eligibility scenarios using Boundary Value Analysis (BVA).
+- ✅ **Combinatorial Decision Tables:** Validating 34 distinct Loan Eligibility scenarios using Boundary Value Analysis (BVA).
 - ✅ **State Machine Architecture:** Finite state modeling for Authentication flows (Login -> Timeout -> Lockout).
 - ✅ **Schema Contracts:** Zod-based validation to ensure API responses match strict banking data types.
 
