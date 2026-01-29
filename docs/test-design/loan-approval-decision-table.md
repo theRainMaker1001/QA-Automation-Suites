@@ -303,52 +303,190 @@ ParaBank's loan API uses **account balance** as `availableFunds`. This means:
 ### 6.2 File Structure
 
 ```
-src/
-├── types/
-│   └── loan.types.ts
-└── tests/
-    └── critical/
-        └── heartbeat/
-            └── loans/
-                ├── loan-decision-table.ts
-                ├── loan-decision-table.test.ts
-                └── index.ts
+api/
+├── src/
+│   ├── helpers/
+│   │   └── generate-unit-summary.ts
+│   ├── services/
+│   │   └── bank-api.ts
+│   ├── tests/
+│   │   ├── unit/                           # Fast, isolated tests
+│   │   │   ├── env.test.ts
+│   │   │   ├── financial-math.test.ts
+│   │   │   └── ...
+│   │   ├── integration/                    # API contract tests
+│   │   │   ├── accounts.api.test.ts
+│   │   │   └── schema-validation.api.test.ts
+│   │   └── critical/                       # Business logic tests
+│   │       ├── heartbeat.api.test.ts
+│   │       ├── loan-decision-table.ts      # Test data generator (34 cases)
+│   │       └── loan-decision-table.test.ts # Test implementation
+│   └── types/
+│       └── loan.types.ts
+
+e2e/
+├── tests/
+│   └── bankProject/
+│       ├── smoke.header.spec.ts            # @smoke
+│       ├── critical.login.spec.ts          # @critical
+│       ├── critical.accessibility.spec.ts  # @a11y
+│       └── ...
+├── pages/                                  # Page Object Model
+├── fixtures/
+├── global.setup.ts                         # Auth session setup
+└── playwright.config.ts
 
 scripts/
-└── run-loan-tests.ts
+├── run-loan-tests.ts                       # Loan test runner + report
+├── run-unit-tests.ts                       # Unit test runner
+├── run-a11y-tests.ts                       # Accessibility report
+├── generate-stakeholder-dashboard.ts       # Executive dashboard
+└── preserve-allure-history.ts              # Trend tracking
 
-docs/
-└── test-design/
-    └── loan-approval-decision-table.md
+config/
+├── env.ts                                  # Zod-validated environment
+└── tooling-summary.ts
 
-reports/
-└── loan-api-report.md  (generated)
+reports/                                    # Generated reports
+├── loan-api-report.md
+├── unit-summary.md
+├── a11y-compliance-report.md
+└── stakeholder-dashboard.json
 
-.github/
-└── workflows/
-    └── critical-heartbeat.yml
+allure-results/                             # Test results (per lane)
+├── unit/
+├── integration/
+└── e2e/
+
+.github/workflows/
+├── ci.yml                                  # Testing lanes orchestration
+├── playwright.yml                          # E2E test lanes
+└── deploy-reports.yml                      # Report generation & GitHub Pages
 ```
 
 ### 6.3 Running the Tests
 
 ```bash
-# All loan decision table tests
-npm test -- --grep "Loan Request API"
+# Run all loan decision table tests (34 test cases)
+npm run test:loans:only
 
-# Critical path only (smoke tests)
-npm test -- --grep "Critical Path"
+# Run with markdown report generation
+npm run test:loans
 
-# Specific boundary category
-npm test -- --grep "BVA: Ratio"
+# Run via critical lane (includes heartbeat + loans)
+npm run test:critical
+
+# Run specific boundary category using test name pattern
+npx vitest run api/src/tests/critical/loan-decision-table.test.ts --testNamePattern "BVA: Ratio"
+
+# Run decision table rules only
+npx vitest run api/src/tests/critical/loan-decision-table.test.ts --testNamePattern "Decision Table"
+```
+
+### 6.4 Vitest Configuration
+
+The loan tests use `vitest.integration.config.ts`:
+
+```typescript
+{
+  include: ['api/src/tests/integration/**/*.test.ts', 'api/src/tests/critical/**/*.test.ts'],
+  testTimeout: 30000,
+  reporters: ['verbose', ['allure-vitest', { resultsDir: './allure-results/integration' }]]
+}
 ```
 
 ---
 
-## 7. References
+## 7. CI/CD Integration
+
+### 7.1 Testing Lane Strategy
+
+The loan approval tests are part of the **critical lane** in the risk-based testing pipeline:
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│  COMMIT GATE    │────▶│   SMOKE LANE    │────▶│  CRITICAL LANE  │
+│  (Every Push)   │     │  (PR/Dispatch)  │     │  (PR/Dispatch)  │
+├─────────────────┤     ├─────────────────┤     ├─────────────────┤
+│ • Type check    │     │ • API @smoke    │     │ • API @critical │
+│ • Lint          │     │ • E2E @smoke    │     │ • E2E @critical │
+│ • Unit tests    │     │                 │     │ • Loan tests    │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+```
+
+### 7.2 GitHub Actions Workflows
+
+| Workflow             | Trigger                 | Loan Tests Run?  |
+| -------------------- | ----------------------- | ---------------- |
+| `ci.yml`             | Push to main, PR        | ✅ Critical lane |
+| `playwright.yml`     | Push, nightly, dispatch | ❌ E2E only      |
+| `deploy-reports.yml` | On workflow completion  | ✅ For reporting |
+
+### 7.3 Environment Variables
+
+```yaml
+env:
+  BANK_BASE_URL: https://parabank.parasoft.com/parabank
+  BANK_CUSTOMER_ID: '12345'
+  API_LATENCY_MS: 5000 # SLA threshold
+```
+
+---
+
+## 8. Report Generation
+
+### 8.1 Loan Test Report
+
+The `scripts/run-loan-tests.ts` script generates a detailed markdown report:
+
+```bash
+npm run test:loans
+# Output: reports/loan-api-report.md
+```
+
+**Report Contents**:
+
+- Summary table (total, passed, failed, pass rate, duration)
+- Test technique breakdown (Decision Table vs BVA categories)
+- Results grouped by boundary type
+- Failed test details with error messages
+
+### 8.2 Allure Integration
+
+Test results are published to Allure for trend tracking:
+
+```
+allure-results/
+├── integration/          # Loan tests land here
+└── ...
+
+# Generated report
+allure-report/
+└── index.html            # Interactive dashboard
+```
+
+### 8.3 Stakeholder Dashboard
+
+Executive-level metrics are aggregated via `scripts/generate-stakeholder-dashboard.ts`:
+
+- **Confidence Score**: Weighted average (critical 50%, unit 30%, a11y 20%)
+- **Risk Level**: LOW | MEDIUM | HIGH | CRITICAL
+- **Lane Health**: Per-lane pass/fail indicators
+
+Access the dashboards:
+
+- **Developer View**: `/allure/` - Full Allure report with test details
+- **Stakeholder View**: `/stakeholder/` - Executive summary
+
+---
+
+## 9. References
 
 - **ISTQB Foundation Level Syllabus** - Section 4.3: Black-box Test Techniques
 - **ParaBank Source Code** - `com.parasoft.parabank.domain.logic.impl.LoanProcessor`
 - **ParaBank API Documentation** - Swagger UI at `/parabank/api-docs/index.html`
+- **Project Repository** - Test implementation in `api/src/tests/critical/loan-decision-table.test.ts`
+- **CI/CD Configuration** - `.github/workflows/ci.yml` (critical lane)
 
 ---
 

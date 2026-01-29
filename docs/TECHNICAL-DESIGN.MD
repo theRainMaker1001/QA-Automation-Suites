@@ -10,7 +10,7 @@ To prevent the "Ice Cream Cone" anti-pattern, this suite is weighted toward fast
 ```text
                   / \
                  /   \
-                /  E2E  \             👉 Playwright (20+ Tests)
+                /  E2E  \             👉 Playwright (46 Tests)
                /---------\               "User Journeys"
               /           \
              / Integration \          👉 Vitest + Fetch (84 Tests)
@@ -20,8 +20,8 @@ To prevent the "Ice Cream Cone" anti-pattern, this suite is weighted toward fast
          /---------------------\         "Math & Logic"
 ```
 
-* **E2E (20+ Tests):** High-fidelity user simulation focusing on critical paths.
-* **Integration (84 Tests):** Fast API contract validation and Zod-based schema integrity.
+* **E2E (~46 Tests):** High-fidelity user simulation covering smoke, critical, regression, and accessibility scenarios.
+* **Integration (84 Tests):** API contract validation via Equivalence Partitioning (20), schema integrity (14), loan Decision Table + BVA (47), and heartbeat monitoring (3).
 * **Unit (189 Tests):** Sub-millisecond validation of financial utilities and isolated business logic.
 
 ---
@@ -139,18 +139,18 @@ graph LR
     Local(💻 Local Dev) -->|Husky| Gate1{Lint & Unit}
     Gate1 -->|Pass| Push[🚀 Push Remote]
     Push -->|Trigger| CI[GitHub Actions]
-    
-    subgraph "PR Pipeline"
+
+    subgraph "PR Pipeline (ci.yml)"
     direction TB
-    CI --> Smoke[Running @smoke]
+    CI --> CommitGate[Commit Gate]
+    CommitGate -->|Pass| Smoke[Running @smoke]
     Smoke -->|Pass| Critical[Running @critical]
     end
-    
-    subgraph "Scheduled Lanes"
+
+    subgraph "Nightly Audit (playwright.yml)"
     direction TB
-    Nightly[🕐 Nightly] --> Regression[Running @regression]
+    Nightly[🕐 2 AM UTC] --> Regression[Running @regression]
     Nightly --> A11y[Running @a11y]
-    Hourly[⏰ Hourly] --> Heartbeat[Running @heartbeat]
     end
 
     Critical -->|Pass| Report[📊 Allure Report]
@@ -193,18 +193,18 @@ npm run lint            # Code style enforcement
 npm run typecheck       # TypeScript validation
 
 # Running by Business Risk (Lanes)
-npm run test:smoke      # 30s Connectivity check
+npm run test:smoke      # Fast connectivity check (API + E2E)
 npm run test:critical   # Core loan and transaction logic
 npm run test:regression # Full Feature Parity (Nightly)
 npm run test:a11y       # Accessibility Audit (Nightly)
-npm run test:heartbeat  # API Health Monitor (Hourly)
+npm run test:heartbeat  # API Health Monitor
 npm run test:audit      # Run Regression + A11y (Full Audit)
-npm run test:loans      # Run Loan Decision Table scenarios
+npm run test:loans      # Run Loan Decision Table scenarios (34 tests)
 
 # Running by Architectural Layer
 npm run test:unit       # 189 tests (Logic & Math)
 npm run test:api        # 84 tests (Contract & Integration)
-npm run test:e2e        # 20+ tests (Full User Journeys)
+npm run test:e2e        # ~46 tests (Full User Journeys)
 ```
 
 ### **Reporting**
