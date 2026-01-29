@@ -170,9 +170,9 @@ function main(): void {
   let exitCode = 0;
 
   try {
-    // Run vitest with JSON reporter
+    // Run vitest with both JSON and Allure reporters
     execSync(
-      `npx vitest run api/src/tests/critical/loan-decision-table.test.ts --reporter=json --outputFile=${JSON_REPORT_PATH}`,
+      `npx vitest run api/src/tests/critical/loan-decision-table.test.ts --reporter=json --reporter=allure-vitest/reporter --outputFile=${JSON_REPORT_PATH}`,
       { stdio: 'inherit' },
     );
   } catch (e) {

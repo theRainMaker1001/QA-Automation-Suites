@@ -365,9 +365,9 @@ function main(): void {
   let exitCode = 0;
 
   try {
-    // Run Playwright accessibility tests
+    // Run Playwright accessibility tests with both list and Allure reporters
     execSync(
-      `npx playwright test -c e2e/playwright.config.ts --grep @a11y --project=chromium --reporter=list`,
+      `npx playwright test -c e2e/playwright.config.ts --grep @a11y --project=chromium --reporter=list --reporter=allure-playwright`,
       { stdio: 'inherit' },
     );
   } catch {

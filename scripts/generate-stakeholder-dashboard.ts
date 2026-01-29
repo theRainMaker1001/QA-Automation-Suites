@@ -403,6 +403,9 @@ function generateHTML(data: DashboardData): string {
             <div class="stat-label">Serious Issues</div>
           </div>
         </div>
+        <div style="margin-top: 1rem; text-align: center;">
+          <a href="../a11y-compliance-report.html" style="color: #58a6ff; font-size: 0.85rem;">View Full WCAG Compliance Report</a>
+        </div>
       </div>
     </div>
 

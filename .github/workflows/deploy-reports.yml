@@ -186,6 +186,58 @@ jobs:
             cp reports/stakeholder-dashboard.json public/stakeholder/ 2>/dev/null || true
           fi
 
+      - name: Convert a11y compliance report to HTML
+        run: |
+          if [ -f "reports/a11y-compliance-report.md" ]; then
+            # Simple markdown to HTML conversion with styling
+            cat > public/a11y-compliance-report.html << 'HTMLEOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>WCAG Accessibility Compliance Report</title>
+            <style>
+              * { box-sizing: border-box; }
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                background: #0d1117;
+                color: #c9d1d9;
+                padding: 2rem;
+                max-width: 900px;
+                margin: 0 auto;
+                line-height: 1.6;
+              }
+              h1, h2, h3, h4 { color: #f0f6fc; margin-top: 2rem; }
+              h1 { border-bottom: 1px solid #30363d; padding-bottom: 0.5rem; }
+              table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+              th, td { border: 1px solid #30363d; padding: 0.75rem; text-align: left; }
+              th { background: #161b22; }
+              blockquote { border-left: 4px solid #58a6ff; padding-left: 1rem; margin: 1rem 0; color: #8b949e; }
+              a { color: #58a6ff; }
+              hr { border: none; border-top: 1px solid #30363d; margin: 2rem 0; }
+              .back-link { margin-bottom: 2rem; }
+            </style>
+          </head>
+          <body>
+            <div class="back-link"><a href="./stakeholder/">← Back to Stakeholder Dashboard</a></div>
+            <div id="content"></div>
+            <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+            <script>
+          HTMLEOF
+            # Embed the markdown content as a JS string
+            echo "const md = \`" >> public/a11y-compliance-report.html
+            cat reports/a11y-compliance-report.md | sed 's/`/\\`/g' | sed 's/\$/\\$/g' >> public/a11y-compliance-report.html
+            echo "\`;" >> public/a11y-compliance-report.html
+            cat >> public/a11y-compliance-report.html << 'HTMLEOF2'
+              document.getElementById('content').innerHTML = marked.parse(md);
+            </script>
+          </body>
+          </html>
+          HTMLEOF2
+            echo "A11y compliance report converted to HTML"
+          fi
+
       # ════════════════════════════════════════════════════════════════════════
       # CREATE DASHBOARD HUB (NAVIGATION)
       # ════════════════════════════════════════════════════════════════════════
