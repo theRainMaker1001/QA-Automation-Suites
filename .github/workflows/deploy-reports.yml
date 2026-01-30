@@ -151,12 +151,21 @@ jobs:
       - name: Merge Allure results
         run: |
           mkdir -p allure-results-merged
-          # Copy all results to merged directory
+
+          # Copy test results (flattening subdirectories like unit, smoke, etc.)
           for dir in allure-results/*/; do
-            if [ -d "$dir" ]; then
+            dirname=$(basename "$dir")
+            if [ -d "$dir" ] && [ "$dirname" != "history" ]; then
               cp -r "$dir"* allure-results-merged/ 2>/dev/null || true
             fi
           done
+
+          # Copy history specifically to a 'history' subdirectory so Allure recognizes it
+          if [ -d "allure-results/history" ]; then
+            mkdir -p allure-results-merged/history
+            cp -r allure-results/history/* allure-results-merged/history/
+          fi
+
           echo "Merged Allure results:"
           ls -la allure-results-merged/ || echo "No results to merge"
 
