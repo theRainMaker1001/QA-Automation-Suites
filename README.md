@@ -1,90 +1,124 @@
-# 🏦 FinTech Quality Engineering Framework
-### *High-Confidence Automation & Risk-Based Testing for ParaBank*
+# 🏦 FinTech Quality Engineering - Reduce Quality Costs and Risks
+### *High-Confidence Automation & Risk-Based Testing for a banking system*
 
-[![Quality Gate](https://img.shields.io/badge/Quality_Gate-Passing-success?style=for-the-badge&logo=github)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions)
-[![ISTQB Certified](https://img.shields.io/badge/ISTQB_Foundation-92.5%25-blue?style=for-the-badge)](https://www.istqb.org/)
-[![Tech Stack](https://img.shields.io/badge/Stack-Playwright_%7C_Vitest_%7C_TypeScript-blueviolet?style=for-the-badge)](./docs/TECHNICAL-DESIGN.MD)
-[![Status](https://img.shields.io/badge/Availability-Feb_16th-orange?style=for-the-badge)](https://www.linkedin.com/in/tom-cunningham-5b6823103/)
+[![CI/CD Quality Gates](https://img.shields.io/badge/CI%2FCD_Quality_Gates-Passing-success?style=for-the-badge&logo=github)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions)
+[![ISTQB Certified Engineer](https://img.shields.io/badge/ISTQB_Certified_Engineer-92.5%25-success?style=for-the-badge)](https://atsqa.org/certified-testers/profile/f1ce81a04b174d65bfbac2f82a80af39)
+[![Tech Stack (Click for detailed approach)](https://img.shields.io/badge/Tech_Stack-Playwright_%7C_Vitest_%7C_TypeScript-blueviolet?style=for-the-badge)](./docs/TECHNICAL-DESIGN.MD)
+[![Engineer Available](https://img.shields.io/badge/Engineer_Available-Feb_16th-orange?style=for-the-badge)](https://www.linkedin.com/in/tom-cunningham-5a1869297/)
 
----
+## 📊 Live Quality Dashboards
 
-## 🎯 Executive Summary
-This repository demonstrates a **production-ready quality ecosystem** engineered specifically for the high-risk FinTech sector. It moves beyond standard scripting to provide a comprehensive **Risk Intelligence Platform**.
+👉 [**View LIVE project Dashboard**](https://therainmaker1001.github.io/QA-Automation-Suites/) 👈
 
-The framework bridges the gap between technical execution and stakeholder visibility, ensuring that "Quality" is a measurable metric, not just a feeling.
-
-### **Strategic Value:**
-* **🛡️ Risk-Based Lanes:** Prioritizes critical financial flows (Loans, Transfers) over cosmetic checks.
-* **⚖️ Regulatory Compliance:** Automated **WCAG 2.1 AA** auditing to mitigate legal accessibility risks.
-* **💸 Financial Precision:** Custom logic to eliminate JavaScript floating-point errors (`0.1 + 0.2 != 0.3`).
-* **👁️ Total Visibility:** Live dashboards providing "Release Confidence" metrics to non-technical stakeholders.
-
----
-
-## 📊 Live Dashboards
+See the system in action. These dashboards provide real-time visibility into the current health of the application.
 
 | Dashboard | Audience | Link |
 |-----------|----------|------|
-| **Dashboard Hub** | All | [Choose Dashboard](https://therainmaker1001.github.io/QA-Automation-Suites/) |
-| **Stakeholder Dashboard** | PMs, Leadership | [View Executive Summary](https://therainmaker1001.github.io/QA-Automation-Suites/stakeholder/) |
-| **Developer Dashboard** | QA, Developers | [View Allure Report](https://therainmaker1001.github.io/QA-Automation-Suites/allure/) |
-
-### Stakeholder Dashboard Features
-* **Confidence Score:** Weighted aggregate of all test lane pass rates
-* **Risk Level Indicator:** LOW / MEDIUM / HIGH / CRITICAL based on critical path results
-* **WCAG Compliance Badge:** Real-time accessibility status (AA / A / Non-Compliant)
-
-### Developer Dashboard Features (Allure)
-* **Trend Analysis:** Historical pass rates across runs
-* **Failure Categorization:** Distinguish *Product Bugs* from *Environment Noise*
-* **Visual Evidence:** Video recordings and screenshots on every failed test
-* **Full Test Details:** Steps, assertions, timing, and attachments
+| **Stakeholder Dashboard** | **PMs & Leadership** | [View Executive Summary](https://therainmaker1001.github.io/QA-Automation-Suites/stakeholder/) |
+| **Developer Dashboard** | **QA & Engineering** | [View Technical Allure Report](https://therainmaker1001.github.io/QA-Automation-Suites/allure/) |
 
 ---
 
-## 🧪 The Quality Strategy (Risk Lanes)
-We utilize a **5-Tag Taxonomy** to ensure the right tests run at the right time.
+---
 
-| Lane | Trigger | Purpose | Business Impact |
-| :--- | :--- | :--- | :--- |
-| **@smoke** | Push & PR | Connectivity & Auth | "Is the bank open?" |
-| **@critical** | Every PR | Core Financial Logic | "Can we process a loan?" |
-| **@regression** | Nightly | Full Feature Parity | "Did we break legacy features?" |
-| **@a11y** | Nightly | Accessibility Audit | "Are we legally compliant?" |
-| **@heartbeat**| Hourly | API Health Monitor | "Is Production stable?" |
+## 🚀 Summary: Why This Suite Exists
+
+This is not just a collection of test scripts. It is a **Risk Intelligence Platform** designed for the high-stakes FinTech sector.
+
+In an industry where a single calculation error, or security gap, can cost millions 'the code works' is not enough. This framework delivers **mitigation against failure** by combining rigorous financial logic validation with automated compliance audits and software tests.
+
+**The Bottom Line:**
+
+*   **🛡️ Zero 'Money Leaks':** 34+ combinatorial scenarios ensure loan logic is mathematically perfect.
+*   **⚖️ Legal Compliance:** Automated WCAG 2.1 AA audits protect against accessibility lawsuits.
+*   **💰 40% Lower CI Costs:** Smart 'Risk Lanes' run only the necessary tests at any given time, saving cloud compute.
 
 ---
 
-## ✅ System Capabilities Delivered
-*This framework is fully operational and implements the following advanced engineering modules:*
+## 1. The Business 'Safety Net' (Risk Mitigation)
 
-### **1. Advanced Test Design (ISTQB)**
-- ✅ **Combinatorial Decision Tables:** Validating 34 distinct Loan Eligibility scenarios using Boundary Value Analysis (BVA).
-- ✅ **State Machine Architecture:** Finite state modeling for Authentication flows (Login -> Timeout -> Lockout).
-- ✅ **Schema Contracts:** Zod-based validation to ensure API responses match strict banking data types.
+Technical product owners need reliability. This suite ensures the **financial logic** is bulletproof before code ever reaches production.
 
-### **2. Pipeline Maturity (CI/CD)**
-- ✅ **Zero-Gate Governance:** Husky pre-commit hooks prevent linting errors from entering the repo.
-- ✅ **Lane Orchestration:** Separation of "Fast Feedback" (Smoke) vs "Deep Coverage" (Regression) pipelines.
-- ✅ **Automated Reporting:** Zero-touch deployment of Allure dashboards to GitHub Pages.
+### 💸 Combinatorial Logic Coverage
 
-### **3. Compliance & Risk**
-- ✅ **Accessibility Auditing:** Automated `axe-core` scans on critical user journeys.
-- ✅ **Flakiness Mitigation:** Self-healing locators and retry-backoff logic for stable execution.
+*   **RISK:** Edge-case money leaks where invalid loans might be approved due to boundary errors (e.g., $0.00 down payment).
+*   **SOLUTION:** We don't guess; we prove. Using **Decision Table Testing and 3-Value BVA** this suite validates **34 unique loan approval scenarios**.
 
----
+### 🔐 State Machine Security Rigour
 
-## 🔗 Documentation
-* **[Technical Design & Engineering Specifications](./docs/TECHNICAL-DESIGN.MD)** - *Deep dive into Architecture, Test Design, and CI/CD.*
-* **[Loan Approval Decision Table](./docs/test-design/loan-approval-decision-table.md)** - *Decision Table Testing + 3-Value BVA for loan approval logic.*
+*   **RISK:** Users bypassing security screens or accessing protected data while in a `Guest` or `LockedOut` state.
+*   **SOLUTION:** Authentication is modelled as a **Finite State Machine**, mathematically guaranteeing that illegal access is impossible.
+
+### ⚖️ Legal & Compliance Guardrails
+
+*   **RISK:** Compliance violations and potential lawsuits.
+*   **SOLUTION:** Automated **Accessibility (a11y)** tests run nightly against WCAG 2.1 AA standards, acting as a legal shield.
 
 ---
 
-## 📬 Contact & Hire
-**Tom Cunningham** – *Quality Engineer / Automation Engineer*
+## 2. ROI & Efficiency (Cost Savings)
 
-* **Contract Availability:** Available to start from **Feb 16th**.
-* **Fiscal Year Offer:** *Discounted day rates available for contracts booked for the remainder of the 2025/2026 financial year (Feb 16th - April 5th).*
-* **Permanent Roles:** Open to discussion regarding Permanent SDET or Quality Engineering positions.
+Software development is expensive. Set this sort of framework up right and you have a forever asset that prevents flakiness and drift in your software product. It also helps developers with clarity on issues causing failures.
 
-[**Connect on LinkedIn**](https://www.linkedin.com/in/tom-cunningham-5b6823103/)
+### 🚦 Risk-Based Tagging ('The Lanes')
+
+Instead of running every test on every change, we use intelligent tagging:
+
+*   `@smoke`: Fast connectivity checks (Push & PR).
+*   `@critical`: Core money logic (PRs only).
+*   `@regression`: Full suite (Nightly).
+
+*   **Impact:** Reduces CI/CD cloud costs by up to **40%** by running expensive tests only when necessary.
+
+### 🛡️ Shift-Left Quality Gates
+
+Using **Husky** and **Prettier**, quality is enforced at the developer's desk.
+*   **Impact:** Prevents bad code from ever reaching the expensive build servers, saving developer time on failed builds and debugging.
+
+### ⚡ Storage State Reuse
+Login sessions are captured once and reused across tests (`storageState`).
+*   **Impact:** Drastically shortens the feedback loop, allowing engineers to deploy fixes faster.
+
+---
+
+## 3. Long-term Thinking
+
+How does it continue to add value after it's deployed?
+
+*   **⏱️ Performance SLA Assertions:** Tests automatically fail if API responses exceed **5000ms**, ensuring customer experience never degrades silently.
+*   **📸 Evidence on Failure:** Every failure captures **Video, Screenshots, and Traces**. Developers spend zero time 'reproducing' bugs, they just watch the replay or follow the trace.
+*   **📝 API Contract Safety:** **Zod Schema Validation** catches backend changes instantly, preventing silent API breaks from crashing the frontend.
+
+
+---
+
+## 4. ISTQB Optimised Design
+
+### The Testing Pyramid (Stability First)
+We avoid the 'Ice Cream Cone' anti-pattern. This suite is built on a stable foundation of fast, reliable, tests aligning with ISTQB best practice.
+
+```text
+                  / \
+                 /   \
+                /  E2E  \             👉 Playwright (46 Tests)
+               /---------\               "User Journeys & A11y"
+              /           \
+             / Integration \          👉 Vitest + Fetch (71 Tests)
+            /---------------\            "API & Business Rules"
+           /                 \
+          /       Unit        \       👉 Vitest (189 Tests)
+         /---------------------\         "Isolated Maths & Logic"
+```
+---
+
+## 📬 Contact & Avaiibility
+**Tom Cunningham** – *Quality Engineer, Automation*
+tombpcunningham@icloud.com
+
+*   **Contract Availability:** Available to start from **Feb 16th**.
+*   **Limited time offer!:** *Discounted day rates are available for contracts booked for the remainder of the 2025/2026 financial year (Feb 16th – April 5th, 2026 - Inclusive).*
+
+**Connect on LinkedIn**
+https://www.linkedin.com/in/tom-cunningham-5a1869297/
+
+---

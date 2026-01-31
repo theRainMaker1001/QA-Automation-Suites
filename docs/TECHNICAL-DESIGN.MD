@@ -17,7 +17,7 @@ To prevent the "Ice Cream Cone" anti-pattern, this suite is weighted toward fast
             /---------------\            "API & Business Rules"
            /                 \
           /       Unit        \       👉 Vitest (189 Tests)
-         /---------------------\         "Isolated Logic"
+         /---------------------\         "Isolated Maths & Logic"
 ```
 
 * **E2E (~46 Tests):** High-fidelity user simulation covering smoke, critical, regression, and accessibility scenarios.
@@ -144,7 +144,7 @@ graph LR
     direction TB
     CI --> CommitGate[Commit Gate]
     CommitGate -->|Pass| Smoke[Running @smoke]
-    Smoke -->|Pass| Critical[Running @critical <br/>(PR Only)]
+    Smoke -->|Pass| Critical["Running @critical <br/>(PR Only)"]
     end
 
     subgraph "Nightly Audit (playwright.yml)"
