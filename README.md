@@ -19,6 +19,13 @@ See the system in action. These dashboards provide real-time visibility into the
 
 ---
 
+## 🏗️ Architecture & Engineering Design
+
+🧱 [**Technical Design & Architecture**](./docs/TECHNICAL-DESIGN.MD)  
+🧰 [**Loan Approval Decision Tables / 3-Value BVA**](./docs/test-design/loan-approval-decision-table.md)
+
+---
+
 ---
 
 ## 🚀 Summary: Why This Suite Exists
