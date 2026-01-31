@@ -1,8 +1,6 @@
 name: E2E Testing Lanes
 
 on:
-  push:
-    branches: [main, master]
   schedule:
     # Nightly deep audit at 2 AM UTC
     - cron: '0 2 * * *'

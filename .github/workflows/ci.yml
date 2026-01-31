@@ -59,12 +59,12 @@ jobs:
           retention-days: 7
 
   # ════════════════════════════════════════════════════════════════════════════
-  # SMOKE LANE: UI + API Connectivity ("Is the bank open?")
+  # SMOKE LANE: UI + API Connectivity ("Are the basics working?")
   # ════════════════════════════════════════════════════════════════════════════
   smoke-lane:
     name: Smoke Lane (@smoke)
     needs: commit-gate
-    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
