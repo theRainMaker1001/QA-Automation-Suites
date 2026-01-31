@@ -1,5 +1,5 @@
 # Zero Gate: Local Enforcement (Husky + lint-staged)
-# Blocks commits with formatting/lint issues to keep Git history clean for audits
+# Blocks commits with formatting/lint issues to keep Git history clean
 
 # Run ESLint + Prettier on staged files
 npx lint-staged
@@ -12,7 +12,7 @@ if git grep -I -n --cached "$CR" -- . >/dev/null; then
   exit 1
 fi
 
-# Run related unit tests for staged files (fast feedback)
+# Run crucial math and business logic tests, *NOTE doesn't currently block on fails*
 STAGED_TS=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.ts$' | head -5)
 if [ -n "$STAGED_TS" ]; then
   echo "Running unit tests for staged files..."

@@ -2,10 +2,10 @@
 
 ## 1. Technical Design Verification
 
-- [x] **Test Pyramid**: Counts (20+/84/189) verified against architecture description.
+- [x] **Test Pyramid**: Counts (20+/71/189) verified against architecture description.
 - [x] **Loan Scenarios**: Count (34) aligned with README.
 - [x] **Financial Helper**: Count (62) verified.
-- [x] **CI Diagram**: Updated to include `@regression`, `@a11y`, and `@heartbeat` lanes.
+- [x] **CI Diagram**: Updated to include `@regression` and `@a11y` lanes.
 - [x] **Execution Commands**: Added missing CLI commands for scheduled lanes, audit, and loans.
 - [x] **Reporting Commands**: Verified `report:stakeholder` and Allure commands.
 

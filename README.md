@@ -47,7 +47,7 @@ We utilize a **5-Tag Taxonomy** to ensure the right tests run at the right time.
 
 | Lane | Trigger | Purpose | Business Impact |
 | :--- | :--- | :--- | :--- |
-| **@smoke** | Every PR | Connectivity & Auth | "Is the bank open?" |
+| **@smoke** | Push & PR | Connectivity & Auth | "Is the bank open?" |
 | **@critical** | Every PR | Core Financial Logic | "Can we process a loan?" |
 | **@regression** | Nightly | Full Feature Parity | "Did we break legacy features?" |
 | **@a11y** | Nightly | Accessibility Audit | "Are we legally compliant?" |

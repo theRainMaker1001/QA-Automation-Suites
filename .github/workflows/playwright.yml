@@ -20,7 +20,7 @@ on:
 
 jobs:
   # ════════════════════════════════════════════════════════════════════════════
-  # SMOKE LANE: Fast connectivity checks
+  # SMOKE LANE: UI Smoke
   # ════════════════════════════════════════════════════════════════════════════
   smoke:
     name: Smoke Lane
@@ -63,7 +63,7 @@ jobs:
           retention-days: 7
 
   # ════════════════════════════════════════════════════════════════════════════
-  # CRITICAL LANE: Auth + State Transitions
+  # CRITICAL LANE: UI Critical Only
   # ════════════════════════════════════════════════════════════════════════════
   critical:
     name: Critical Lane
@@ -115,7 +115,7 @@ jobs:
           retention-days: 7
 
   # ════════════════════════════════════════════════════════════════════════════
-  # NIGHTLY DEEP AUDIT: @regression + @a11y (Too slow for PRs)
+  # NIGHTLY DEEP AUDIT: @regression (none critical UI) + @a11y [Overall too slow for PRs]
   # ════════════════════════════════════════════════════════════════════════════
   nightly-audit:
     name: Nightly Deep Audit

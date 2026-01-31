@@ -1,5 +1,6 @@
 # Pre-Push Gate: Smoke Tests for Integration Breaking Changes
 # Catches connectivity issues before they reach PR
+# Hard Gate - Will block any fails
 
 echo "Pre-push: typecheck + smoke tests"
 

@@ -170,7 +170,7 @@ jobs:
           ls -la allure-results-merged/ || echo "No results to merge"
 
       # ════════════════════════════════════════════════════════════════════════
-      # GENERATE ALLURE REPORT
+      # CONVERT INTO NEW ALLURE REPORT
       # ════════════════════════════════════════════════════════════════════════
       - name: Generate Allure report
         run: |

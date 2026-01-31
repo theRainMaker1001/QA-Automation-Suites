@@ -9,7 +9,7 @@ on:
 
 jobs:
   # ════════════════════════════════════════════════════════════════════════════
-  # COMMIT GATE: Lint + Unit Tests (Fail Fast)
+  # COMMIT GATE: Lint + Unit Tests (Code Quality and Logic)
   # ════════════════════════════════════════════════════════════════════════════
   commit-gate:
     name: Commit Gate (Lint + Unit)
@@ -59,7 +59,7 @@ jobs:
           retention-days: 7
 
   # ════════════════════════════════════════════════════════════════════════════
-  # SMOKE LANE: UI + API Connectivity ("Are the basics working?")
+  # SMOKE LANE: UI + API Connectivity
   # ════════════════════════════════════════════════════════════════════════════
   smoke-lane:
     name: Smoke Lane (@smoke)
@@ -108,7 +108,7 @@ jobs:
           retention-days: 7
 
   # ════════════════════════════════════════════════════════════════════════════
-  # CRITICAL LANE: Decision Tables + BVA + Auth ("Can we process money safely?")
+  # CRITICAL LANE: Decision Tables + BVA + Auth (Deeper API and Test Loan Function)
   # ════════════════════════════════════════════════════════════════════════════
   critical-lane:
     name: Critical Lane (@critical)

@@ -41,13 +41,13 @@ We use **Husky** and **Lint-Staged** to enforce quality before commits.
 
 When writing new tests, use these tags in test names/descriptions:
 
-| Tag           | Purpose                  | Runs In  |
-| :------------ | :----------------------- | :------- |
-| `@smoke`      | Fast connectivity checks | Every PR |
-| `@critical`   | Business-critical paths  | Every PR |
-| `@regression` | Full feature coverage    | Nightly  |
-| `@a11y`       | Accessibility compliance | Nightly  |
-| `@negative`   | Error handling scenarios | Manual   |
+| Tag           | Purpose                  | Runs In   |
+| :------------ | :----------------------- | :-------- |
+| `@smoke`      | Fast connectivity checks | Push & PR |
+| `@critical`   | Business-critical paths  | Every PR  |
+| `@regression` | Full feature coverage    | Nightly   |
+| `@a11y`       | Accessibility compliance | Nightly   |
+| `@negative`   | Error handling scenarios | Manual    |
 
 ## 🔄 CI/CD Pipeline
 
@@ -58,7 +58,7 @@ Commit Gate → Smoke Lane → Critical Lane → Report Deploy
 ```
 
 - **Commit Gate**: Lint, typecheck, unit tests (every push)
-- **Smoke Lane**: API + E2E connectivity (PRs only)
+- **Smoke Lane**: API + E2E connectivity (Push & PR)
 - **Critical Lane**: Business logic validation (PRs only)
 - **Nightly Audit**: @regression + @a11y at 2 AM UTC
 

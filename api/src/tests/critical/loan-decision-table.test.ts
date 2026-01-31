@@ -31,13 +31,18 @@ import {
   combinedBoundaryTests,
   getCriticalTests,
 } from './loan-decision-table.js';
-import type { LoanResponse, LoanRequestParams, LoanDecisionTestCase } from '../../types/index.js';
+import { env } from '../_env.js';
+import type {
+  LoanResponse,
+  LoanRequestParams,
+  LoanDecisionTestCase,
+} from '../../types/loan.types.js';
 
 // ============================================================================
 // TEST CONFIGURATION
 // ============================================================================
 
-const BASE_URL = 'https://parabank.parasoft.com/parabank/services/bank';
+const BASE_URL = `${env.BANK_BASE_URL}/services/bank`;
 
 /** Known test customer ID from ParaBank's demo data */
 const TEST_CUSTOMER_ID = 12212;

@@ -406,7 +406,7 @@ The loan approval tests are part of the **critical lane** in the risk-based test
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
 │  COMMIT GATE    │────▶│   SMOKE LANE    │────▶│  CRITICAL LANE  │
-│  (Every Push)   │     │  (PR/Dispatch)  │     │  (PR/Dispatch)  │
+│  (Every Push)   │     │ (Push/PR/Disp)  │     │  (PR/Dispatch)  │
 ├─────────────────┤     ├─────────────────┤     ├─────────────────┤
 │ • Type check    │     │ • API @smoke    │     │ • API @critical │
 │ • Lint          │     │ • E2E @smoke    │     │ • E2E @critical │
@@ -416,11 +416,11 @@ The loan approval tests are part of the **critical lane** in the risk-based test
 
 ### 7.2 GitHub Actions Workflows
 
-| Workflow             | Trigger                 | Loan Tests Run?  |
-| -------------------- | ----------------------- | ---------------- |
-| `ci.yml`             | Push to main, PR        | ✅ Critical lane |
-| `playwright.yml`     | Push, nightly, dispatch | ❌ E2E only      |
-| `deploy-reports.yml` | On workflow completion  | ✅ For reporting |
+| Workflow             | Trigger                | Loan Tests Run?        |
+| -------------------- | ---------------------- | ---------------------- |
+| `ci.yml`             | Push to main, PR       | ✅ Critical (PRs only) |
+| `playwright.yml`     | Nightly, dispatch      | ❌ E2E only            |
+| `deploy-reports.yml` | On workflow completion | ✅ For reporting       |
 
 ### 7.3 Environment Variables
 

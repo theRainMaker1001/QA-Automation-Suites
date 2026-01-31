@@ -11,17 +11,17 @@ To prevent the "Ice Cream Cone" anti-pattern, this suite is weighted toward fast
                   / \
                  /   \
                 /  E2E  \             👉 Playwright (46 Tests)
-               /---------\               "User Journeys"
+               /---------\               "User Journeys & A11y"
               /           \
-             / Integration \          👉 Vitest + Fetch (84 Tests)
-            /---------------\            "API Contracts"
+             / Integration \          👉 Vitest + Fetch (71 Tests)
+            /---------------\            "API & Business Rules"
            /                 \
           /       Unit        \       👉 Vitest (189 Tests)
-         /---------------------\         "Math & Logic"
+         /---------------------\         "Isolated Logic"
 ```
 
 * **E2E (~46 Tests):** High-fidelity user simulation covering smoke, critical, regression, and accessibility scenarios.
-* **Integration (84 Tests):** API contract validation via Equivalence Partitioning (20), schema integrity (14), loan Decision Table + BVA (47), and heartbeat monitoring (3).
+* **Integration (71 Tests):** API contract validation via Equivalence Partitioning (20), schema integrity (14), loan Decision Table + BVA (34), and heartbeat monitoring (3).
 * **Unit (189 Tests):** Sub-millisecond validation of financial utilities and isolated business logic.
 
 ---
@@ -67,7 +67,7 @@ The decision table below represents all logical combinations of the two conditio
 
 3-value BVA is more rigorous than 2-value BVA as it may detect defects overlooked by 2-value BVA. For example, if the decision `if (x <= 10) ...` is incorrectly implemented as `if (x == 10) ...`, no test data derived from the 2-value BVA (x=10, x=11) can detect the defect. However, x=9, derived from the 3-value BVA, is likely to detect it.
 
-To ensure absolute rigor for this financial system, we 3-Value BVA test cases covering the **Invalid Partition (-2, -1)**, the **Boundary (0)**, and the **Valid Partition (+1, +2)**.
+To ensure absolute rigor for this financial system, we **implement** 3-Value BVA test cases covering the **Invalid Partition (-2, -1)**, the **Boundary (0)**, and the **Valid Partition (+1, +2)**.
 
 #### **Boundary 1: Funds Check**
 **Boundary Definition**: `availableFunds = downPayment`
@@ -118,13 +118,13 @@ stateDiagram-v2
     [*] --> Guest
     Guest --> LoggedIn : Login Success
     Guest --> Guest : Login Fail
+    Guest --> LockedOut : 3x Bad Attempts
     
     state LoggedIn {
         [*] --> Active
         Active --> Idle : No Activity
     }
 
-    LoggedIn --> LockedOut : 3x Bad Attempts
     LoggedIn --> Guest : Logout
     Idle --> Guest : Timeout
 ```
@@ -140,11 +140,11 @@ graph LR
     Gate1 -->|Pass| Push[🚀 Push Remote]
     Push -->|Trigger| CI[GitHub Actions]
 
-    subgraph "PR Pipeline (ci.yml)"
+    subgraph "CI Pipeline (ci.yml)"
     direction TB
     CI --> CommitGate[Commit Gate]
     CommitGate -->|Pass| Smoke[Running @smoke]
-    Smoke -->|Pass| Critical[Running @critical]
+    Smoke -->|Pass| Critical[Running @critical <br/>(PR Only)]
     end
 
     subgraph "Nightly Audit (playwright.yml)"
@@ -172,7 +172,7 @@ $$0.1 + 0.2 = 0.30000000000000004$$
 
 Our framework includes a dedicated helper library validated by **62 specific tests** to ensure absolute integrity:
 * **Banker's Rounding:** Implemented to reduce statistical bias in interest calculations by rounding to the nearest even number.
-* **Cent-to-Dollar Logic:** All internal arithmetic is performed in integer space (cents) to avoid precision loss.
+* **Integer Math (Cents):** All internal arithmetic is performed in integer space (cents) to avoid precision loss.
 * **Zero-Tolerance Validation:** Strict guards against `NaN`, `Infinity`, and invalid currency formats.
 
 ---
@@ -203,7 +203,7 @@ npm run test:loans      # Run Loan Decision Table scenarios (34 tests)
 
 # Running by Architectural Layer
 npm run test:unit       # 189 tests (Logic & Math)
-npm run test:api        # 84 tests (Contract & Integration)
+npm run test:api        # 71 tests (Contract & Integration)
 npm run test:e2e        # ~46 tests (Full User Journeys)
 ```
 
