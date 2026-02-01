@@ -70,6 +70,7 @@
  * - T4: S3 + E5 → S1 (LOGIN_ERROR + Refresh → GUEST)
  * - T5: S1 + E5 → S1 (GUEST + Refresh → GUEST)
  * - T6: S1 + E6 → S1 (GUEST + Navigate → GUEST)
+ * - T7: S2 + E4 → S1 (LOGGED_IN + Logout → GUEST)
  *
  * Invalid Transitions (marked with -):
  * - S1 + E4: Cannot logout when not logged in
@@ -188,9 +189,10 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
     });
   });
 
-  // veryify log out works as expected
-
   test.describe('Transition: LOGGED_IN → GUEST (Logout)', () => {
+    // Force video recording for these security tests, even if they pass (as expected failures)
+    test.use({ video: 'on' });
+
     test('logout clears session and returns to guest state', async ({ page }) => {
       const loginPage = new LoginPage(page);
       await loginPage.goto();
@@ -198,8 +200,7 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
       await page.waitForLoadState('networkidle');
 
       // Trigger logout
-      await page.getByRole('link', { name: 'Log Out' }).click();
-      await page.waitForLoadState('networkidle');
+      await loginPage.logout();
 
       // Verify state
       await loginPage.expectLoginFormVisible();
@@ -212,17 +213,20 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
       await loginPage.login('john', 'demo');
       await page.waitForLoadState('networkidle');
 
-      await expect(page.getByRole('link', { name: 'Log Out' })).toBeVisible();
+      await loginPage.expectLoggedIn();
     });
 
     test('browser back button after logout does not restore session', async ({ page }) => {
+      test.fail(
+        true,
+        'Security Defect: ParaBank allows back-navigation to authenticated state (Cache-Control missing)',
+      );
       const loginPage = new LoginPage(page);
       await loginPage.goto();
       await loginPage.login('john', 'demo');
       await page.waitForLoadState('networkidle');
 
-      await page.getByRole('link', { name: 'Log Out' }).click();
-      await page.waitForLoadState('networkidle');
+      await loginPage.logout();
 
       // Attempt to go back to protected area
       await page.goBack();
@@ -236,12 +240,16 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
     test('direct navigation to protected page after logout redirects to login', async ({
       page,
     }) => {
+      test.fail(
+        true,
+        'Security Defect: ParaBank does not invalidate server-side session on logout',
+      );
       const loginPage = new LoginPage(page);
       await loginPage.goto();
       await loginPage.login('john', 'demo');
       await page.waitForLoadState('networkidle');
 
-      await page.getByRole('link', { name: 'Log Out' }).click();
+      await loginPage.logout();
 
       // Try to access overview directly
       await page.goto('https://parabank.parasoft.com/parabank/overview.htm');
