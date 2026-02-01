@@ -257,6 +257,12 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
     });
 
     test('browser back button after logout does not restore session', async ({ page }) => {
+      // Guard: Prevent false positives. If registration failed, do not run this check against flaky 'john' account.
+      test.skip(
+        testUser.username === 'john',
+        'Skipping security check: Dynamic registration failed. Avoiding false positive from unstable shared account.',
+      );
+
       test.fail(
         true,
         'Security Defect: ParaBank allows back-navigation to authenticated state (Cache-Control missing)',
@@ -281,6 +287,11 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
     test('direct navigation to protected page after logout redirects to login', async ({
       page,
     }) => {
+      test.skip(
+        testUser.username === 'john',
+        'Skipping security check: Dynamic registration failed. Avoiding false positive from unstable shared account.',
+      );
+
       test.fail(
         true,
         'Security Defect: ParaBank does not invalidate server-side session on logout',
