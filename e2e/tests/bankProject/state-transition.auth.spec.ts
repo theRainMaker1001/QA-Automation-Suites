@@ -84,7 +84,44 @@ import { LoginPage } from '../../pages/login.page.js';
 // Force video recording for this file to capture evidence of security defects (expected failures)
 test.use({ video: 'on' });
 
+// Store dynamic credentials to bypass unstable 'john/demo' account
+let testUser = { username: 'john', password: 'demo' };
+
 test.describe('@critical @state-transition Authentication State Machine', () => {
+  test.beforeAll(async ({ browser }) => {
+    // Best Practice: Register a fresh user to avoid "Internal Error" from corrupted shared accounts
+    const page = await browser.newPage();
+    const uniqueId = Date.now();
+    const newUser = {
+      username: `auto_${uniqueId}`,
+      password: 'password123',
+    };
+
+    await page.goto('https://parabank.parasoft.com/parabank/register.htm');
+    await page.locator('input[id="customer.firstName"]').fill('Test');
+    await page.locator('input[id="customer.lastName"]').fill('User');
+    await page.locator('input[id="customer.address.street"]').fill('123 Logic Lane');
+    await page.locator('input[id="customer.address.city"]').fill('Quality City');
+    await page.locator('input[id="customer.address.state"]').fill('TS');
+    await page.locator('input[id="customer.address.zipCode"]').fill('90210');
+    await page.locator('input[id="customer.ssn"]').fill('999-99-9999');
+    await page.locator('input[id="customer.username"]').fill(newUser.username);
+    await page.locator('input[id="customer.password"]').fill(newUser.password);
+    await page.locator('input[id="repeatedPassword"]').fill(newUser.password);
+    await page.locator('input[value="Register"]').click();
+    await page.waitForLoadState('networkidle');
+
+    // If registration successful, use these credentials
+    if (
+      (await page.locator('text=Welcome').isVisible()) ||
+      (await page.locator('text=created').isVisible())
+    ) {
+      testUser = newUser;
+      console.log(`[Setup] Registered dynamic user: ${testUser.username}`);
+    }
+    await page.close();
+  });
+
   test.describe('Transition: GUEST → LOGGED_IN (T1)', () => {
     test('valid credentials transition to logged in state', async ({ page }) => {
       const loginPage = new LoginPage(page);
@@ -95,7 +132,7 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
       expect(await loginPage.getCurrentState()).toBe('GUEST');
 
       // Trigger transition: valid login
-      await loginPage.login('john', 'demo');
+      await loginPage.login(testUser.username, testUser.password);
 
       // Wait for state change
       await page.waitForLoadState('networkidle');
@@ -196,8 +233,11 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
     test('logout clears session and returns to guest state', async ({ page }) => {
       const loginPage = new LoginPage(page);
       await loginPage.goto();
-      await loginPage.login('john', 'demo');
+      await loginPage.login(testUser.username, testUser.password);
       await page.waitForLoadState('networkidle');
+
+      // Ensure login succeeded before attempting logout (fails fast if john/demo is down)
+      await loginPage.expectLoggedIn();
 
       // Trigger logout
       await loginPage.logout();
@@ -210,7 +250,7 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
     test('logout button is visible only when logged in', async ({ page }) => {
       const loginPage = new LoginPage(page);
       await loginPage.goto();
-      await loginPage.login('john', 'demo');
+      await loginPage.login(testUser.username, testUser.password);
       await page.waitForLoadState('networkidle');
 
       await loginPage.expectLoggedIn();
@@ -223,8 +263,9 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
       );
       const loginPage = new LoginPage(page);
       await loginPage.goto();
-      await loginPage.login('john', 'demo');
+      await loginPage.login(testUser.username, testUser.password);
       await page.waitForLoadState('networkidle');
+      await loginPage.expectLoggedIn();
 
       await loginPage.logout();
 
@@ -246,8 +287,9 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
       );
       const loginPage = new LoginPage(page);
       await loginPage.goto();
-      await loginPage.login('john', 'demo');
+      await loginPage.login(testUser.username, testUser.password);
       await page.waitForLoadState('networkidle');
+      await loginPage.expectLoggedIn();
 
       await loginPage.logout();
 

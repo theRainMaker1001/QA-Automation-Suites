@@ -123,7 +123,7 @@ We avoid the 'Ice Cream Cone' anti-pattern. This suite is built on a stable foun
 tombpcunningham@icloud.com
 
 *   **Contract Availability:** Available to start from **Feb 16th**.
-*   **Limited time offer!:** *Discounted day rates are available for contracts booked for the remainder of the 2025/2026 financial year (Feb 16th – April 5th, 2026 - Inclusive).*
+*   **Limited time offer!** *Discounted day rates are available for contracts booked for the remainder of the 2025/2026 financial year (Feb 16th – April 5th, 2026 - Inclusive).*
 
 **Connect on LinkedIn**
 https://www.linkedin.com/in/tom-cunningham-5a1869297/
