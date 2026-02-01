@@ -9,6 +9,7 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { RegisterPage } from '../../pages/register.page.js';
 
 const PARABANK_URL = 'https://parabank.parasoft.com/parabank';
 
@@ -17,42 +18,44 @@ test.describe('@regression Form Validation: Registration', () => {
   // Form validation logic is browser-agnostic, so Chromium/Firefox coverage is sufficient
   test.skip(({ browserName }) => browserName === 'webkit', 'ParaBank flaky on WebKit');
 
+  let registerPage: RegisterPage;
+
   test.beforeEach(async ({ page }) => {
-    await page.goto(`${PARABANK_URL}/register.htm`);
+    registerPage = new RegisterPage(page);
+    await registerPage.goto();
     // Wait for form to load
-    await expect(page.locator('input[id="customer.firstName"]')).toBeVisible({ timeout: 10000 });
+    await expect(registerPage.firstNameInput).toBeVisible({ timeout: 10000 });
   });
 
   test('FV-REG-01: Empty form submission shows required field errors', async ({ page }) => {
     // Submit empty form
-    await page.locator('input[value="Register"]').click();
+    await registerPage.registerButton.click();
 
     // Wait for validation response
     await page.waitForLoadState('networkidle');
 
     // ParaBank shows error spans next to fields - check that errors appear
-    const errors = page.locator('span.error, td.error, .error');
-    await expect(errors.first()).toBeVisible({ timeout: 5000 });
+    await expect(registerPage.errorMessages.first()).toBeVisible({ timeout: 5000 });
 
     // Count visible errors - should have multiple for empty form
-    const errorCount = await errors.count();
+    const errorCount = await registerPage.errorMessages.count();
     expect(errorCount).toBeGreaterThan(0);
   });
 
   test('FV-REG-02: Password mismatch shows specific error', async ({ page }) => {
     // Fill all fields with mismatched passwords
-    await page.locator('input[id="customer.firstName"]').fill('Test');
-    await page.locator('input[id="customer.lastName"]').fill('User');
-    await page.locator('input[id="customer.address.street"]').fill('123 Test St');
-    await page.locator('input[id="customer.address.city"]').fill('TestCity');
-    await page.locator('input[id="customer.address.state"]').fill('TS');
-    await page.locator('input[id="customer.address.zipCode"]').fill('12345');
-    await page.locator('input[id="customer.ssn"]').fill('123-45-6789');
-    await page.locator('input[id="customer.username"]').fill(`testuser_${Date.now()}`);
-    await page.locator('input[id="customer.password"]').fill('password123');
-    await page.locator('input[id="repeatedPassword"]').fill('differentpassword');
+    await registerPage.firstNameInput.fill('Test');
+    await registerPage.lastNameInput.fill('User');
+    await registerPage.streetInput.fill('123 Test St');
+    await registerPage.cityInput.fill('TestCity');
+    await registerPage.stateInput.fill('TS');
+    await registerPage.zipCodeInput.fill('12345');
+    await registerPage.ssnInput.fill('123-45-6789');
+    await registerPage.usernameInput.fill(`testuser_${Date.now()}`);
+    await registerPage.passwordInput.fill('password123');
+    await registerPage.repeatedPasswordInput.fill('differentpassword');
 
-    await page.locator('input[value="Register"]').click();
+    await registerPage.registerButton.click();
     await page.waitForLoadState('networkidle');
 
     // Verify password mismatch error appears
@@ -60,25 +63,25 @@ test.describe('@regression Form Validation: Registration', () => {
     const hasPasswordError =
       pageContent.toLowerCase().includes('passwords did not match') ||
       pageContent.toLowerCase().includes('password') ||
-      (await page.locator('span.error, .error').count()) > 0;
+      (await registerPage.errorMessages.count()) > 0;
 
     expect(hasPasswordError).toBe(true);
   });
 
   test('FV-REG-03: Duplicate username shows already exists error', async ({ page }) => {
     // Use known existing username (john is a common test user in ParaBank)
-    await page.locator('input[id="customer.firstName"]').fill('Test');
-    await page.locator('input[id="customer.lastName"]').fill('User');
-    await page.locator('input[id="customer.address.street"]').fill('123 Test St');
-    await page.locator('input[id="customer.address.city"]').fill('TestCity');
-    await page.locator('input[id="customer.address.state"]').fill('TS');
-    await page.locator('input[id="customer.address.zipCode"]').fill('12345');
-    await page.locator('input[id="customer.ssn"]').fill('123-45-6789');
-    await page.locator('input[id="customer.username"]').fill('john');
-    await page.locator('input[id="customer.password"]').fill('password123');
-    await page.locator('input[id="repeatedPassword"]').fill('password123');
+    await registerPage.firstNameInput.fill('Test');
+    await registerPage.lastNameInput.fill('User');
+    await registerPage.streetInput.fill('123 Test St');
+    await registerPage.cityInput.fill('TestCity');
+    await registerPage.stateInput.fill('TS');
+    await registerPage.zipCodeInput.fill('12345');
+    await registerPage.ssnInput.fill('123-45-6789');
+    await registerPage.usernameInput.fill('john');
+    await registerPage.passwordInput.fill('password123');
+    await registerPage.repeatedPasswordInput.fill('password123');
 
-    await page.locator('input[value="Register"]').click();
+    await registerPage.registerButton.click();
     await page.waitForLoadState('networkidle');
 
     // Verify duplicate username error - check for error indicator
@@ -87,7 +90,7 @@ test.describe('@regression Form Validation: Registration', () => {
       pageContent.toLowerCase().includes('already exists') ||
       pageContent.toLowerCase().includes('taken') ||
       pageContent.toLowerCase().includes('username') ||
-      (await page.locator('span.error, .error').count()) > 0;
+      (await registerPage.errorMessages.count()) > 0;
 
     expect(hasUsernameError).toBe(true);
   });
@@ -96,18 +99,18 @@ test.describe('@regression Form Validation: Registration', () => {
     const uniqueUsername = `qatest_${Date.now()}`;
 
     // Fill all fields correctly
-    await page.locator('input[id="customer.firstName"]').fill('QA');
-    await page.locator('input[id="customer.lastName"]').fill('Tester');
-    await page.locator('input[id="customer.address.street"]').fill('456 Automation Ave');
-    await page.locator('input[id="customer.address.city"]').fill('TestVille');
-    await page.locator('input[id="customer.address.state"]').fill('QA');
-    await page.locator('input[id="customer.address.zipCode"]').fill('99999');
-    await page.locator('input[id="customer.ssn"]').fill('999-99-9999');
-    await page.locator('input[id="customer.username"]').fill(uniqueUsername);
-    await page.locator('input[id="customer.password"]').fill('securepass123');
-    await page.locator('input[id="repeatedPassword"]').fill('securepass123');
+    await registerPage.firstNameInput.fill('QA');
+    await registerPage.lastNameInput.fill('Tester');
+    await registerPage.streetInput.fill('456 Automation Ave');
+    await registerPage.cityInput.fill('TestVille');
+    await registerPage.stateInput.fill('QA');
+    await registerPage.zipCodeInput.fill('99999');
+    await registerPage.ssnInput.fill('999-99-9999');
+    await registerPage.usernameInput.fill(uniqueUsername);
+    await registerPage.passwordInput.fill('securepass123');
+    await registerPage.repeatedPasswordInput.fill('securepass123');
 
-    await page.locator('input[value="Register"]').click();
+    await registerPage.registerButton.click();
     await page.waitForLoadState('networkidle');
 
     // Verify success - either welcome message, success text, or redirected to logged-in state
@@ -124,16 +127,15 @@ test.describe('@regression Form Validation: Registration', () => {
 
   test('FV-REG-05: Partial form submission shows only missing field errors', async ({ page }) => {
     // Fill only some fields
-    await page.locator('input[id="customer.firstName"]').fill('Partial');
-    await page.locator('input[id="customer.lastName"]').fill('User');
+    await registerPage.firstNameInput.fill('Partial');
+    await registerPage.lastNameInput.fill('User');
     // Leave other fields empty
 
-    await page.locator('input[value="Register"]').click();
+    await registerPage.registerButton.click();
     await page.waitForLoadState('networkidle');
 
     // Should show errors for empty required fields
-    const errors = page.locator('span.error, td.error, .error');
-    const errorCount = await errors.count();
+    const errorCount = await registerPage.errorMessages.count();
 
     // Should have errors but not for first/last name which were filled
     expect(errorCount).toBeGreaterThan(0);

@@ -80,6 +80,7 @@
 
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../../pages/login.page.js';
+import { RegisterPage } from '../../pages/register.page.js';
 
 // Force video recording for this file to capture evidence of security defects (expected failures)
 test.use({ video: 'on' });
@@ -97,25 +98,13 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
       password: 'password123',
     };
 
-    await page.goto('https://parabank.parasoft.com/parabank/register.htm');
-    await page.locator('input[id="customer.firstName"]').fill('Test');
-    await page.locator('input[id="customer.lastName"]').fill('User');
-    await page.locator('input[id="customer.address.street"]').fill('123 Logic Lane');
-    await page.locator('input[id="customer.address.city"]').fill('Quality City');
-    await page.locator('input[id="customer.address.state"]').fill('TS');
-    await page.locator('input[id="customer.address.zipCode"]').fill('90210');
-    await page.locator('input[id="customer.ssn"]').fill('999-99-9999');
-    await page.locator('input[id="customer.username"]').fill(newUser.username);
-    await page.locator('input[id="customer.password"]').fill(newUser.password);
-    await page.locator('input[id="repeatedPassword"]').fill(newUser.password);
-    await page.locator('input[value="Register"]').click();
+    const registerPage = new RegisterPage(page);
+    await registerPage.goto();
+    await registerPage.registerNewUser(newUser);
     await page.waitForLoadState('networkidle');
 
     // If registration successful, use these credentials
-    if (
-      (await page.locator('text=Welcome').isVisible()) ||
-      (await page.locator('text=created').isVisible())
-    ) {
+    if (await registerPage.isRegistrationSuccess()) {
       testUser = newUser;
       console.log(`[Setup] Registered dynamic user: ${testUser.username}`);
     }
