@@ -81,6 +81,9 @@
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../../pages/login.page.js';
 
+// Force video recording for this file to capture evidence of security defects (expected failures)
+test.use({ video: 'on' });
+
 test.describe('@critical @state-transition Authentication State Machine', () => {
   test.describe('Transition: GUEST → LOGGED_IN (T1)', () => {
     test('valid credentials transition to logged in state', async ({ page }) => {
@@ -190,9 +193,6 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
   });
 
   test.describe('Transition: LOGGED_IN → GUEST (Logout)', () => {
-    // Force video recording for these security tests, even if they pass (as expected failures)
-    test.use({ video: 'on' });
-
     test('logout clears session and returns to guest state', async ({ page }) => {
       const loginPage = new LoginPage(page);
       await loginPage.goto();
