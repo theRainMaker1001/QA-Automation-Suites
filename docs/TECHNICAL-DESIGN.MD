@@ -13,7 +13,7 @@ To prevent the "Ice Cream Cone" anti-pattern, this suite is weighted toward fast
                 /  E2E  \             👉 Playwright (46 Tests)
                /---------\               "User Journeys & A11y"
               /           \
-             / Integration \          👉 Vitest + Fetch (71 Tests)
+             / Integration \          👉 Vitest + Fetch (84 Tests)
             /---------------\            "API & Business Rules"
            /                 \
           /       Unit        \       👉 Vitest (189 Tests)
@@ -21,7 +21,7 @@ To prevent the "Ice Cream Cone" anti-pattern, this suite is weighted toward fast
 ```
 
 * **E2E (~46 Tests):** High-fidelity user simulation covering smoke, critical, regression, and accessibility scenarios.
-* **Integration (71 Tests):** API contract validation via Equivalence Partitioning (20), schema integrity (14), loan Decision Table + BVA (34), and heartbeat monitoring (3).
+* **Integration (84 Tests):** API contract validation via Equivalence Partitioning (21), schema integrity (17), loan Decision Table + BVA (43), and heartbeat monitoring (3).
 * **Unit (189 Tests):** Sub-millisecond validation of financial utilities and isolated business logic.
 
 ---
