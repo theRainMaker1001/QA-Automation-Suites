@@ -11,8 +11,6 @@
 import { test, expect } from '@playwright/test';
 import { RegisterPage } from '../../pages/register.page.js';
 
-const PARABANK_URL = 'https://parabank.parasoft.com/parabank';
-
 test.describe('@regression Form Validation: Registration', () => {
   // Skip on WebKit - ParaBank registration page loads inconsistently on WebKit
   // Form validation logic is browser-agnostic, so Chromium/Firefox coverage is sufficient

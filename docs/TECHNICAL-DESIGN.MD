@@ -33,7 +33,7 @@ To prevent the "Ice Cream Cone" anti-pattern, this suite is weighted toward fast
 > **Risk Level**: Critical (Financial transaction logic)
 
 ### 1. Executive Summary
-This document details the test design for ParaBank's loan approval functionality using **Decision Table Testing** combined with **3-Value Boundary Value Analysis (BVA)**. The loan approval process is critical to any banking system—incorrect approvals risk financial loss; incorrect denials damage customer relationships.
+This document details the test design for ParaBank's loan approval functionality using **Decision Table Testing** combined with **3-Value Boundary Value Analysis (BVA)**. The loan approval process is critical to any banking system - incorrect approvals risk financial loss; incorrect denials damage customer relationships.
 
 **Coverage achieved**: 34 test cases providing complete combinatorial coverage of business rules plus 5-point boundary testing (-2, -1, 0, +1, +2) at every decision point.
 
@@ -132,7 +132,7 @@ stateDiagram-v2
 ---
 
 ## 🚀 CI/CD Pipeline Orchestration
-The pipeline utilizes **GitHub Actions** with strict quality gates. This multi-lane approach provides rapid feedback for developers while maintaining full regression confidence.
+The pipeline uses **GitHub Actions** with strict quality gates. This multi-lane approach provides rapid feedback for developers while maintaining full regression confidence.
 
 ```mermaid
 graph LR

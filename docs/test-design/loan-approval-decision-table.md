@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-This document details the test design for ParaBank's loan approval functionality using **Decision Table Testing** combined with **3-Value Boundary Value Analysis (BVA)**. The loan approval process is critical to any banking system—incorrect approvals risk financial loss; incorrect denials damage customer relationships.
+This document details the test design for ParaBank's loan approval functionality using **Decision Table Testing** combined with **3-Value Boundary Value Analysis (BVA)**. The loan approval process is critical to any banking system - incorrect approvals risk financial loss; incorrect denials damage customer relationships.
 
 **Coverage achieved**: 34 test cases providing complete combinatorial coverage of business rules plus 5-point boundary testing (-2, -1, 0, +1, +2) at every decision point.
 
@@ -89,7 +89,7 @@ The decision table below represents all logical combinations of the two conditio
 |  R3  |   FALSE    |    TRUE    | **Denied** - Insufficient funds        | Ratio would be OK but can't cover payment |
 |  R4  |   FALSE    |   FALSE    | **Denied** - Insufficient funds        | Fails both, but funds checked first       |
 
-> **Note**: R3 and R4 produce the same error message because Rule 1 (funds check) is evaluated first. This is correct behaviour—the system fails fast on the first unmet condition.
+> **Note**: R3 and R4 produce the same error message because Rule 1 (funds check) is evaluated first. This is correct behaviour - the system fails fast on the first unmet condition.
 
 ### 2.3 Decision Table Test Cases
 
@@ -202,7 +202,7 @@ When **both** conditions are near their boundaries simultaneously:
 | BVA-COMBINED-BOTH-PLUS-1           | [+1,+1]  |      $100.01 |         $100.02 | ✅ Approved          |
 | BVA-COMBINED-BOTH-MINUS-1          | [-1,-1]  |       $99.99 |          $99.98 | ❌ Denied (funds)    |
 
-> **Critical Test**: BVA-COMBINED-BOTH-AT-0 represents the minimum qualifying loan—exactly 10% down payment with exactly enough funds. This is the highest-risk approval scenario.
+> **Critical Test**: BVA-COMBINED-BOTH-AT-0 represents the minimum qualifying loan - exactly 10% down payment with exactly enough funds. This is the highest-risk approval scenario.
 
 ---
 

@@ -1,4 +1,4 @@
-# Daily Heartbeat — Parabank Product Summary
+# Daily Heartbeat - Parabank Product Summary
 
 **Status:** # # ✅ All heartbeat checks passed!
 API reachable, latency within budget, basic safety gates held.

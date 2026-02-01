@@ -118,7 +118,7 @@ We avoid the 'Ice Cream Cone' anti-pattern. This suite is built on a stable foun
 ```
 ---
 
-## 📬 Contact & Avaiibility
+## 📬 Contact & Availability
 **Tom Cunningham** – *Quality Engineer, Automation*
 tombpcunningham@icloud.com
 
