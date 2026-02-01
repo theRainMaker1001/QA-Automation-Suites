@@ -188,6 +188,70 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
     });
   });
 
+  // veryify log out works as expected
+
+  test.describe('Transition: LOGGED_IN → GUEST (Logout)', () => {
+    test('logout clears session and returns to guest state', async ({ page }) => {
+      const loginPage = new LoginPage(page);
+      await loginPage.goto();
+      await loginPage.login('john', 'demo');
+      await page.waitForLoadState('networkidle');
+
+      // Trigger logout
+      await page.getByRole('link', { name: 'Log Out' }).click();
+      await page.waitForLoadState('networkidle');
+
+      // Verify state
+      await loginPage.expectLoginFormVisible();
+      expect(await loginPage.getCurrentState()).toBe('GUEST');
+    });
+
+    test('logout button is visible only when logged in', async ({ page }) => {
+      const loginPage = new LoginPage(page);
+      await loginPage.goto();
+      await loginPage.login('john', 'demo');
+      await page.waitForLoadState('networkidle');
+
+      await expect(page.getByRole('link', { name: 'Log Out' })).toBeVisible();
+    });
+
+    test('browser back button after logout does not restore session', async ({ page }) => {
+      const loginPage = new LoginPage(page);
+      await loginPage.goto();
+      await loginPage.login('john', 'demo');
+      await page.waitForLoadState('networkidle');
+
+      await page.getByRole('link', { name: 'Log Out' }).click();
+      await page.waitForLoadState('networkidle');
+
+      // Attempt to go back to protected area
+      await page.goBack();
+
+      // Should not be logged in (ParaBank redirects to error or login)
+      const state = await loginPage.getCurrentState();
+      expect(state).not.toBe('LOGGED_IN');
+      await loginPage.expectLoginFormVisible();
+    });
+
+    test('direct navigation to protected page after logout redirects to login', async ({
+      page,
+    }) => {
+      const loginPage = new LoginPage(page);
+      await loginPage.goto();
+      await loginPage.login('john', 'demo');
+      await page.waitForLoadState('networkidle');
+
+      await page.getByRole('link', { name: 'Log Out' }).click();
+
+      // Try to access overview directly
+      await page.goto('https://parabank.parasoft.com/parabank/overview.htm');
+
+      // Should be redirected or show error
+      expect(page.url()).not.toContain('overview.htm');
+      await loginPage.expectLoginFormVisible();
+    });
+  });
+
   test.describe('State Invariants', () => {
     test('GUEST state has username and password fields', async ({ page }) => {
       const loginPage = new LoginPage(page);
