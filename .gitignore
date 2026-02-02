@@ -38,9 +38,34 @@ reports/
 allure-results/
 allure-report/
 
-# Claude settings
+# Claude / AI assistant settings
+.claude/
 .claude
+CLAUDE.md
+claude.json
+.anthropic/
+.aider*
+.cursor/
 
 # Document audit
 DOCUMENTATION_AUDIT_PLAN.md
 AUDIT_TODO.md
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Coverage
+coverage/
+
+# Backup and swap files
+*.swp
+*.swo
+*~
+*.orig
+*.bak

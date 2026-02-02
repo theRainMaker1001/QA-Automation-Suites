@@ -36,6 +36,9 @@ jobs:
       - name: Prettier format check
         run: npx prettier --check .
 
+      - name: Validate E2E test tags
+        run: npm run validate:tags
+
       - name: Unit Tests
         run: |
           mkdir -p reports

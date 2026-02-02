@@ -1,7 +1,7 @@
 # 🏦 FinTech Quality Engineering - Reduce Quality Costs and Risks
 ### *High-Confidence Automation & Risk-Based Testing for a banking system*
 
-[![CI/CD Quality Gates](https://img.shields.io/badge/CI%2FCD_Quality_Gates-Passing-success?style=for-the-badge&logo=github)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions)
+[![CI Status](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml/badge.svg)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml)
 [![ISTQB Certified Engineer](https://img.shields.io/badge/ISTQB_Certified_Engineer-92.5%25-success?style=for-the-badge)](https://atsqa.org/certified-testers/profile/f1ce81a04b174d65bfbac2f82a80af39)
 [![Tech Stack (Click for detailed approach)](https://img.shields.io/badge/Tech_Stack-Playwright_%7C_Vitest_%7C_TypeScript-blueviolet?style=for-the-badge)](./docs/TECHNICAL-DESIGN.MD)
 [![Engineer Available](https://img.shields.io/badge/Engineer_Available-Feb_16th-orange?style=for-the-badge)](https://www.linkedin.com/in/tom-cunningham-5a1869297/)
@@ -23,8 +23,6 @@ See the system in action. These dashboards provide real-time visibility into the
 
 🧱 [**Technical Design & Architecture**](./docs/TECHNICAL-DESIGN.MD)  
 🧰 [**Loan Approval Decision Tables / 3-Value BVA**](./docs/test-design/loan-approval-decision-table.md)
-
----
 
 ---
 
