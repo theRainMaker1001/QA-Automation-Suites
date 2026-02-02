@@ -48,6 +48,19 @@ jobs:
         run: npx playwright install chromium --with-deps
 
       # ════════════════════════════════════════════════════════════════════════
+      # RESTORE ALLURE HISTORY FROM CACHE (More reliable than artifacts)
+      # ════════════════════════════════════════════════════════════════════════
+      - name: Restore Allure history from cache
+        uses: actions/cache/restore@v4
+        id: allure-cache
+        with:
+          path: allure-history-cache
+          key: allure-history-${{ github.ref_name }}
+          restore-keys: |
+            allure-history-main
+            allure-history-
+
+      # ════════════════════════════════════════════════════════════════════════
       # GENERATE TEST DATA (produces fresh Allure results)
       # ════════════════════════════════════════════════════════════════════════
       - name: Generate test reports
@@ -171,10 +184,19 @@ jobs:
             fi
           done
 
-          # Copy history specifically to a 'history' subdirectory so Allure recognizes it
-          if [ -d "allure-results/history" ]; then
+          # Priority 1: Use cached history (most reliable)
+          if [ -d "allure-history-cache" ] && [ "$(ls -A allure-history-cache 2>/dev/null)" ]; then
+            echo "Restoring history from cache..."
+            mkdir -p allure-results-merged/history
+            cp -r allure-history-cache/* allure-results-merged/history/
+            echo "Cached history files: $(ls allure-results-merged/history/ | wc -l)"
+          # Priority 2: Fallback to artifact-based history
+          elif [ -d "allure-results/history" ] && [ "$(ls -A allure-results/history 2>/dev/null)" ]; then
+            echo "Restoring history from artifact..."
             mkdir -p allure-results-merged/history
             cp -r allure-results/history/* allure-results-merged/history/
+          else
+            echo "No previous history found - this will be the first run with trends"
           fi
 
           echo "Merged Allure results:"
@@ -347,9 +369,16 @@ jobs:
           EOF
 
       # ════════════════════════════════════════════════════════════════════════
-      # PRESERVE ALLURE HISTORY FOR NEXT RUN
+      # PRESERVE ALLURE HISTORY FOR NEXT RUN (Cache + Artifact backup)
       # ════════════════════════════════════════════════════════════════════════
-      - name: Upload Allure history
+      - name: Save Allure history to cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: public/allure/history/
+          key: allure-history-${{ github.ref_name }}-${{ github.run_id }}
+
+      - name: Upload Allure history (backup)
         uses: actions/upload-artifact@v4
         with:
           name: allure-history

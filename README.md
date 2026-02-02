@@ -51,10 +51,10 @@ Technical product owners need reliability. This suite ensures the **financial lo
 *   **RISK:** Edge-case money leaks where invalid loans might be approved due to boundary errors (e.g., $0.00 down payment).
 *   **SOLUTION:** We don't guess; we prove. Using **Decision Table Testing and 3-Value BVA** this suite validates **34 unique loan approval scenarios**.
 
-### 🔐 State Machine Security Rigour
+### 🔐 State Transition Test Coverage
 
 *   **RISK:** Users bypassing security screens or accessing protected data while in a `Guest` or `LockedOut` state.
-*   **SOLUTION:** Authentication is modelled as a **Finite State Machine**, mathematically guaranteeing that illegal access is impossible.
+*   **SOLUTION:** Authentication flows are validated using **ISTQB State Transition Testing**, systematically verifying that all valid state changes behave correctly and invalid transitions are properly rejected.
 
 ### ⚖️ Legal & Compliance Guardrails
 
