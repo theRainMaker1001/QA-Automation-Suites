@@ -106,13 +106,13 @@ We avoid the 'Ice Cream Cone' anti-pattern. This suite is built on a stable foun
                   / \
                  /   \
                 /  E2E  \             👉 Playwright (46 Tests)
-               /---------\               "User Journeys & A11y"
+               /---------\               User Journeys & A11y
               /           \
              / Integration \          👉 Vitest + Fetch (84 Tests)
-            /---------------\            "API & Business Rules"
+            /---------------\            API & Business Rules
            /                 \
           /       Unit        \       👉 Vitest (189 Tests)
-         /---------------------\         "Isolated Maths & Logic"
+         /---------------------\         Isolated Maths & Logic
 ```
 ---
 

@@ -33,6 +33,7 @@ interface DashboardData {
   lanes: {
     unit: LaneMetrics;
     critical: LaneMetrics;
+    regression: LaneMetrics;
     a11y: A11yMetrics;
   };
   summary: {
@@ -63,8 +64,8 @@ function calculateStatus(passRate: number): LaneMetrics['status'] {
 }
 
 function calculateConfidence(lanes: DashboardData['lanes']): number {
-  // Weighted: critical (50%), unit (30%), a11y (20%)
-  const weights = { unit: 0.3, critical: 0.5, a11y: 0.2 };
+  // Weighted: critical (40%), regression (25%), unit (20%), a11y (15%)
+  const weights = { unit: 0.2, critical: 0.4, regression: 0.25, a11y: 0.15 };
   let confidence = 0;
 
   for (const [lane, weight] of Object.entries(weights)) {
@@ -154,6 +155,71 @@ function buildA11yMetrics(data: any): A11yMetrics {
     wcagCompliance,
     criticalViolations,
     seriousViolations,
+  };
+}
+
+function buildRegressionMetrics(data: any): LaneMetrics {
+  // Playwright JSON report structure has suites with specs
+  if (!data || !data.suites) {
+    return {
+      passRate: 0,
+      totalTests: 0,
+      passed: 0,
+      failed: 0,
+      lastRun: new Date().toISOString(),
+      status: 'FAILING',
+    };
+  }
+
+  // Count tests recursively through suites
+  let passed = 0;
+  let failed = 0;
+  let skipped = 0;
+
+  function countTests(suites: any[]): void {
+    for (const suite of suites) {
+      // Count specs in this suite
+      if (suite.specs) {
+        for (const spec of suite.specs) {
+          // Filter for @regression tagged tests
+          const isRegression =
+            spec.title?.includes('@regression') ||
+            spec.tags?.includes('@regression') ||
+            suite.title?.includes('@regression');
+
+          if (!isRegression) continue;
+
+          for (const test of spec.tests || []) {
+            const status = test.status || test.results?.[0]?.status;
+            if (status === 'passed' || status === 'expected') {
+              passed++;
+            } else if (status === 'failed' || status === 'unexpected') {
+              failed++;
+            } else if (status === 'skipped') {
+              skipped++;
+            }
+          }
+        }
+      }
+      // Recurse into nested suites
+      if (suite.suites) {
+        countTests(suite.suites);
+      }
+    }
+  }
+
+  countTests(data.suites);
+
+  const total = passed + failed;
+  const passRate = total > 0 ? (passed / total) * 100 : 0;
+
+  return {
+    passRate: Math.round(passRate * 10) / 10,
+    totalTests: total,
+    passed,
+    failed,
+    lastRun: data.stats?.startTime || new Date().toISOString(),
+    status: calculateStatus(passRate),
   };
 }
 
@@ -379,6 +445,32 @@ function generateHTML(data: DashboardData): string {
         </div>
       </div>
 
+      <!-- Regression Tests (E2E) -->
+      <div class="card lane-card">
+        <h3>
+          Regression (E2E)
+          <span class="status-dot" style="background: ${statusColors[data.lanes.regression.status]}"></span>
+        </h3>
+        <div class="lane-stats">
+          <div class="stat-item">
+            <div class="stat-value">${data.lanes.regression.passRate}%</div>
+            <div class="stat-label">Pass Rate</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">${data.lanes.regression.totalTests}</div>
+            <div class="stat-label">Total Tests</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" style="color: #22c55e">${data.lanes.regression.passed}</div>
+            <div class="stat-label">Passed</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" style="color: ${data.lanes.regression.failed > 0 ? '#ef4444' : '#22c55e'}">${data.lanes.regression.failed}</div>
+            <div class="stat-label">Failed</div>
+          </div>
+        </div>
+      </div>
+
       <!-- Accessibility -->
       <div class="card lane-card">
         <h3>
@@ -427,12 +519,14 @@ function generateDashboard(): void {
   // Read data sources with fallbacks
   const unitSummary = readJsonSafe(path.join(reportsDir, 'unit-summary.json'), { overview: {} });
   const loanResults = readJsonSafe(path.join(reportsDir, 'loan-results.json'), {});
+  const e2eResults = readJsonSafe(path.join(reportsDir, 'e2e-results.json'), {});
   const a11yResults = readJsonSafe(path.join(reportsDir, 'a11y-results.json'), {});
 
   // Build lane metrics
   const lanes: DashboardData['lanes'] = {
     unit: buildUnitMetrics(unitSummary),
     critical: buildCriticalMetrics(loanResults),
+    regression: buildRegressionMetrics(e2eResults),
     a11y: buildA11yMetrics(a11yResults),
   };
 
@@ -447,9 +541,9 @@ function generateDashboard(): void {
     riskLevel,
     lanes,
     summary: {
-      totalTests: lanes.unit.totalTests + lanes.critical.totalTests,
-      totalPassed: lanes.unit.passed + lanes.critical.passed,
-      totalFailed: lanes.unit.failed + lanes.critical.failed,
+      totalTests: lanes.unit.totalTests + lanes.critical.totalTests + lanes.regression.totalTests,
+      totalPassed: lanes.unit.passed + lanes.critical.passed + lanes.regression.passed,
+      totalFailed: lanes.unit.failed + lanes.critical.failed + lanes.regression.failed,
     },
   };
 
@@ -477,6 +571,9 @@ function generateDashboard(): void {
   );
   console.log(
     `  Critical Tests: ${lanes.critical.passed}/${lanes.critical.totalTests} (${lanes.critical.passRate}%)`,
+  );
+  console.log(
+    `  Regression Tests: ${lanes.regression.passed}/${lanes.regression.totalTests} (${lanes.regression.passRate}%)`,
   );
   console.log(`  A11y: ${lanes.a11y.wcagCompliance} compliance`);
 }

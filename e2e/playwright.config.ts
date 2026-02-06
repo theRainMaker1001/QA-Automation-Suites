@@ -30,6 +30,7 @@ export default defineConfig({
   reporter: [
     ['list'],
     ['html', { open: 'never' }],
+    ['json', { outputFile: '../reports/e2e-results.json' }],
     [
       'allure-playwright',
       {

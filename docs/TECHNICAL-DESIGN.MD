@@ -11,13 +11,13 @@ To prevent the "Ice Cream Cone" anti-pattern, this suite is weighted toward fast
                   / \
                  /   \
                 /  E2E  \             👉 Playwright (46 Tests)
-               /---------\               "User Journeys & A11y"
+               /---------\               User Journeys & A11y
               /           \
              / Integration \          👉 Vitest + Fetch (84 Tests)
-            /---------------\            "API & Business Rules"
+            /---------------\            API & Business Rules
            /                 \
           /       Unit        \       👉 Vitest (189 Tests)
-         /---------------------\         "Isolated Maths & Logic"
+         /---------------------\         Isolated Maths & Logic
 ```
 
 * **E2E (~46 Tests):** High-fidelity user simulation covering smoke, critical, regression, and accessibility scenarios.
@@ -269,6 +269,7 @@ The reporting system provides two distinct views tailored to different audiences
 | Failures | Stack traces, screenshots, video | Pass/fail counts only |
 | WCAG | Individual violations listed | Compliance badge (AA/A/NC) |
 | Risk | Per-test severity labels | Overall risk level |
+| Lanes Shown | All test suites | Unit, Critical, Regression, A11y |
 
 ### Report Generation Commands
 

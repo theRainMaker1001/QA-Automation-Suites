@@ -9,11 +9,13 @@
 
 import { chromium, type FullConfig } from '@playwright/test';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PARABANK_URL = 'https://parabank.parasoft.com/parabank';
-const STORAGE_STATE_PATH = path.join(__dirname, '.auth', 'user.json');
+const AUTH_DIR = path.join(__dirname, '.auth');
+const STORAGE_STATE_PATH = path.join(AUTH_DIR, 'user.json');
 
 // Test credentials from ParaBank demo
 const TEST_USER = {
@@ -23,6 +25,12 @@ const TEST_USER = {
 
 async function globalSetup(_config: FullConfig): Promise<void> {
   console.log('[Global Setup] Creating authenticated session...');
+
+  // Ensure auth directory exists
+  if (!fs.existsSync(AUTH_DIR)) {
+    fs.mkdirSync(AUTH_DIR, { recursive: true });
+    console.log(`[Global Setup] Created auth directory: ${AUTH_DIR}`);
+  }
 
   const browser = await chromium.launch();
   const context = await browser.newContext();
@@ -50,11 +58,17 @@ async function globalSetup(_config: FullConfig): Promise<void> {
       await context.storageState({ path: STORAGE_STATE_PATH });
       console.log(`[Global Setup] Storage state saved to ${STORAGE_STATE_PATH}`);
     } else {
-      console.warn('[Global Setup] Login may have failed - proceeding without storage state');
+      console.warn('[Global Setup] Login may have failed - creating empty storage state');
+      // Create empty storage state so chromium-auth project doesn't fail on missing file
+      fs.writeFileSync(STORAGE_STATE_PATH, JSON.stringify({ cookies: [], origins: [] }));
     }
   } catch (error) {
     console.error('[Global Setup] Error during authentication:', error);
-    // Don't fail setup - tests will handle auth individually if needed
+    // Create empty storage state as fallback so tests don't fail on missing file
+    if (!fs.existsSync(STORAGE_STATE_PATH)) {
+      fs.writeFileSync(STORAGE_STATE_PATH, JSON.stringify({ cookies: [], origins: [] }));
+      console.log('[Global Setup] Created empty storage state as fallback');
+    }
   } finally {
     await browser.close();
   }
