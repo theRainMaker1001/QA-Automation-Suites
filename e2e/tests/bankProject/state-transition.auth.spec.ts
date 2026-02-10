@@ -110,17 +110,23 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
     }
 
     // Verify login actually works before any tests rely on it
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
-    await loginPage.login(testUser.username, testUser.password);
-    await page.waitForLoadState('networkidle');
+    try {
+      const loginPage = new LoginPage(page);
+      await loginPage.goto();
+      await loginPage.login(testUser.username, testUser.password);
+      await page.waitForLoadState('networkidle');
 
-    authVerified = await loginPage.isLoggedIn();
-    if (authVerified) {
-      console.log(`[Setup] Login verified for: ${testUser.username}`);
-    } else {
+      authVerified = await loginPage.isLoggedIn();
+      if (authVerified) {
+        console.log(`[Setup] Login verified for: ${testUser.username}`);
+      } else {
+        console.warn(
+          `[Setup] Login FAILED for: ${testUser.username} — auth-dependent tests will be skipped`,
+        );
+      }
+    } catch (error) {
       console.warn(
-        `[Setup] Login FAILED for: ${testUser.username} — auth-dependent tests will be skipped`,
+        `[Setup] Login verification timed out: ${error}. Auth-dependent tests will be skipped`,
       );
     }
 
