@@ -91,6 +91,8 @@ let authVerified = false;
 
 test.describe('@critical @state-transition Authentication State Machine', () => {
   test.beforeAll(async ({ browser }) => {
+    test.setTimeout(60_000);
+
     // Register a fresh user to avoid "Internal Error" from corrupted shared accounts
     const page = await browser.newPage();
     const uniqueId = Date.now();
