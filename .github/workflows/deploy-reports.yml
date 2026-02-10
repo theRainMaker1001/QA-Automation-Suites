@@ -46,6 +46,7 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
+        if: github.event_name == 'workflow_dispatch'
         run: npx playwright install chromium --with-deps
 
       # ════════════════════════════════════════════════════════════════════════
@@ -62,9 +63,10 @@ jobs:
             allure-history-
 
       # ════════════════════════════════════════════════════════════════════════
-      # GENERATE TEST DATA (produces fresh Allure results)
+      # GENERATE TEST DATA (only on manual dispatch; workflow_run already has artifacts)
       # ════════════════════════════════════════════════════════════════════════
-      - name: Generate test reports
+      - name: Generate test reports (manual dispatch only)
+        if: github.event_name == 'workflow_dispatch'
         run: |
           mkdir -p reports allure-results
           npm run test:unit:report || true
@@ -77,6 +79,7 @@ jobs:
           BANK_CUSTOMER_ID: ${{ vars.BANK_CUSTOMER_ID }}
 
       - name: Copy local Allure results to merged
+        if: github.event_name == 'workflow_dispatch'
         run: |
           mkdir -p allure-results-merged
           if [ -d "allure-results" ]; then
@@ -86,70 +89,90 @@ jobs:
       # ════════════════════════════════════════════════════════════════════════
       # DOWNLOAD ALLURE RESULTS FROM TEST WORKFLOWS
       # ════════════════════════════════════════════════════════════════════════
-      - name: Determine Run ID
-        id: get_run_id
+      - name: Determine artifact source run IDs
+        id: get_run_ids
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            RUN_ID=$(gh run list --workflow "Testing Lanes - Risk-Based Orchestration" --branch main --status success --limit 1 --json databaseId --jq '.[0].databaseId')
-            echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
-            echo "Manual trigger: Using latest CI run ID: $RUN_ID"
+            # Manual trigger: fetch latest successful run from both workflows
+            CI_RUN_ID=$(gh run list --workflow "ci.yml" --branch main --status success --limit 1 --json databaseId --jq '.[0].databaseId')
+            E2E_RUN_ID=$(gh run list --workflow "playwright.yml" --branch main --limit 1 --json databaseId --jq '.[0].databaseId')
+            echo "Manual trigger: CI run=$CI_RUN_ID, E2E run=$E2E_RUN_ID"
+          elif [ "${{ github.event.workflow_run.name }}" == "Testing Lanes - Risk-Based Orchestration" ]; then
+            # Triggered by CI: use triggering run for CI artifacts, latest E2E for E2E artifacts
+            CI_RUN_ID=${{ github.event.workflow_run.id }}
+            E2E_RUN_ID=$(gh run list --workflow "playwright.yml" --branch main --limit 1 --json databaseId --jq '.[0].databaseId')
+            echo "CI trigger: CI run=$CI_RUN_ID, E2E run=$E2E_RUN_ID"
           else
-            echo "run_id=${{ github.event.workflow_run.id }}" >> $GITHUB_OUTPUT
+            # Triggered by E2E: use triggering run for E2E artifacts, latest CI for CI artifacts
+            E2E_RUN_ID=${{ github.event.workflow_run.id }}
+            CI_RUN_ID=$(gh run list --workflow "ci.yml" --branch main --status success --limit 1 --json databaseId --jq '.[0].databaseId')
+            echo "E2E trigger: CI run=$CI_RUN_ID, E2E run=$E2E_RUN_ID"
           fi
 
+          echo "ci_run_id=${CI_RUN_ID}" >> $GITHUB_OUTPUT
+          echo "e2e_run_id=${E2E_RUN_ID}" >> $GITHUB_OUTPUT
+
+      # CI workflow artifacts (unit, smoke, critical)
       - name: Download Allure results (unit)
+        if: steps.get_run_ids.outputs.ci_run_id != ''
         uses: actions/download-artifact@v4
         with:
           name: allure-results-unit
           path: allure-results/unit/
-          run-id: ${{ steps.get_run_id.outputs.run_id }}
+          run-id: ${{ steps.get_run_ids.outputs.ci_run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
       - name: Download Allure results (smoke)
+        if: steps.get_run_ids.outputs.ci_run_id != ''
         uses: actions/download-artifact@v4
         with:
           name: allure-results-smoke
           path: allure-results/smoke/
-          run-id: ${{ steps.get_run_id.outputs.run_id }}
+          run-id: ${{ steps.get_run_ids.outputs.ci_run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
       - name: Download Allure results (critical)
+        if: steps.get_run_ids.outputs.ci_run_id != ''
         uses: actions/download-artifact@v4
         with:
           name: allure-results-critical
           path: allure-results/critical/
-          run-id: ${{ steps.get_run_id.outputs.run_id }}
+          run-id: ${{ steps.get_run_ids.outputs.ci_run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
+      # E2E workflow artifacts (smoke, critical, nightly)
       - name: Download Allure results (E2E smoke)
+        if: steps.get_run_ids.outputs.e2e_run_id != ''
         uses: actions/download-artifact@v4
         with:
           name: allure-results-e2e-smoke
           path: allure-results/e2e-smoke/
-          run-id: ${{ steps.get_run_id.outputs.run_id }}
+          run-id: ${{ steps.get_run_ids.outputs.e2e_run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
       - name: Download Allure results (E2E critical)
+        if: steps.get_run_ids.outputs.e2e_run_id != ''
         uses: actions/download-artifact@v4
         with:
           name: allure-results-e2e-critical
           path: allure-results/e2e-critical/
-          run-id: ${{ steps.get_run_id.outputs.run_id }}
+          run-id: ${{ steps.get_run_ids.outputs.e2e_run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
       - name: Download Allure results (E2E nightly)
+        if: steps.get_run_ids.outputs.e2e_run_id != ''
         uses: actions/download-artifact@v4
         with:
           name: allure-results-e2e-nightly
           path: allure-results/e2e-nightly/
-          run-id: ${{ steps.get_run_id.outputs.run_id }}
+          run-id: ${{ steps.get_run_ids.outputs.e2e_run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
