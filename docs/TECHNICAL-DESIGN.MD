@@ -123,7 +123,7 @@ stateDiagram-v2
     Guest --> Guest : E5 Refresh
     Guest --> Guest : E6 Navigate
 
-    LoginError --> Guest : E5 Refresh
+    LoginError --> LoginError : E5 Refresh
 
     LoggedIn --> Guest : E4 Logout
 ```
