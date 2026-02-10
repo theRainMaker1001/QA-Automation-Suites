@@ -68,7 +68,7 @@ jobs:
   critical:
     name: Critical Lane
     needs: smoke
-    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.test_lane == 'critical' || github.event.inputs.test_lane == 'regression' || github.event.inputs.test_lane == 'audit'))
+    if: github.event_name == 'workflow_dispatch' && (github.event.inputs.test_lane == 'critical' || github.event.inputs.test_lane == 'regression' || github.event.inputs.test_lane == 'audit')
     runs-on: ubuntu-latest
     timeout-minutes: 30
 

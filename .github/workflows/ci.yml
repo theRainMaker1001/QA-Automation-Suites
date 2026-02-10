@@ -14,6 +14,7 @@ jobs:
   commit-gate:
     name: Commit Gate (Lint + Unit)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -69,6 +70,7 @@ jobs:
     needs: commit-gate
     if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.event_name == 'push'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -118,6 +120,7 @@ jobs:
     needs: smoke-lane
     if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       API_LATENCY_MS: 5000
     steps:
