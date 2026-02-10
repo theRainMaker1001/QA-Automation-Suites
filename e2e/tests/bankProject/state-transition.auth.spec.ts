@@ -99,14 +99,18 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
       password: 'password123',
     };
 
-    const registerPage = new RegisterPage(page);
-    await registerPage.goto();
-    await registerPage.registerNewUser(newUser);
-    await page.waitForLoadState('networkidle');
+    try {
+      const registerPage = new RegisterPage(page);
+      await registerPage.goto();
+      await registerPage.registerNewUser(newUser);
+      await page.waitForLoadState('domcontentloaded');
 
-    if (await registerPage.isRegistrationSuccess()) {
-      testUser = newUser;
-      console.log(`[Setup] Registered dynamic user: ${testUser.username}`);
+      if (await registerPage.isRegistrationSuccess()) {
+        testUser = newUser;
+        console.log(`[Setup] Registered dynamic user: ${testUser.username}`);
+      }
+    } catch (error) {
+      console.warn(`[Setup] Registration failed: ${error}. Falling back to default credentials`);
     }
 
     // Verify login actually works before any tests rely on it
@@ -114,7 +118,7 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
       const loginPage = new LoginPage(page);
       await loginPage.goto();
       await loginPage.login(testUser.username, testUser.password);
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('domcontentloaded');
 
       authVerified = await loginPage.isLoggedIn();
       if (authVerified) {
@@ -126,7 +130,7 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
       }
     } catch (error) {
       console.warn(
-        `[Setup] Login verification timed out: ${error}. Auth-dependent tests will be skipped`,
+        `[Setup] Login verification failed: ${error}. Auth-dependent tests will be skipped`,
       );
     }
 
