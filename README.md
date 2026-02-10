@@ -12,10 +12,10 @@
 
 See the system in action. These dashboards provide real-time visibility into the current health of the application.
 
-| Dashboard | Audience | Link |
-|-----------|----------|------|
-| **Stakeholder Dashboard** | **PMs & Leadership** | [View Executive Summary](https://therainmaker1001.github.io/QA-Automation-Suites/stakeholder/) |
-| **Developer Dashboard** | **QA & Engineering** | [View Technical Allure Report](https://therainmaker1001.github.io/QA-Automation-Suites/allure/) |
+| Dashboard | Audience | Shows | Link |
+|-----------|----------|-------|------|
+| **Stakeholder Dashboard** | **PMs & Leadership** | Confidence score, risk level, known defects, WCAG compliance | [View Executive Summary](https://therainmaker1001.github.io/QA-Automation-Suites/stakeholder/) |
+| **Developer Dashboard** | **QA & Engineering** | Full test details, failure categories, history trends, screenshots | [View Technical Allure Report](https://therainmaker1001.github.io/QA-Automation-Suites/allure/) |
 
 ---
 

@@ -177,6 +177,44 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
+      # ════════════════════════════════════════════════════════════════════════
+      # DOWNLOAD STAKEHOLDER REPORT DATA
+      # ════════════════════════════════════════════════════════════════════════
+      - name: Download unit reports (stakeholder data)
+        if: steps.get_run_ids.outputs.ci_run_id != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: unit-reports
+          path: reports/
+          run-id: ${{ steps.get_run_ids.outputs.ci_run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Download critical reports (stakeholder data)
+        if: steps.get_run_ids.outputs.ci_run_id != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: reports-critical
+          path: reports/
+          run-id: ${{ steps.get_run_ids.outputs.ci_run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Download nightly reports (stakeholder data)
+        if: steps.get_run_ids.outputs.e2e_run_id != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: reports-nightly
+          path: reports/
+          run-id: ${{ steps.get_run_ids.outputs.e2e_run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: List available stakeholder data
+        run: |
+          echo "Stakeholder report data:"
+          ls -la reports/ 2>/dev/null || echo "No report data available"
+
       - name: Get previous history run ID
         id: get_history_run_id
         env:
@@ -202,13 +240,11 @@ jobs:
         run: |
           mkdir -p allure-results-merged
 
-          # Copy test results (flattening subdirectories like unit, smoke, etc.)
-          for dir in allure-results/*/; do
-            dirname=$(basename "$dir")
-            if [ -d "$dir" ] && [ "$dirname" != "history" ]; then
-              cp -r "$dir"* allure-results-merged/ 2>/dev/null || true
-            fi
-          done
+          # Flatten all Allure result files from nested subdirectories into a single directory.
+          # Each test run produces UUID-named files so collisions are not a concern.
+          find allure-results/ -type f \
+            -not -path "allure-results/history/*" \
+            -exec cp {} allure-results-merged/ \;
 
           # Priority 1: Use cached history (most reliable)
           if [ -d "allure-history-cache" ] && [ "$(ls -A allure-history-cache 2>/dev/null)" ]; then
@@ -229,6 +265,25 @@ jobs:
           ls -la allure-results-merged/ || echo "No results to merge"
 
       # ════════════════════════════════════════════════════════════════════════
+      # ALLURE METADATA (categories + environment for developer dashboard)
+      # ════════════════════════════════════════════════════════════════════════
+      - name: Add Allure categories and environment
+        run: |
+          # Categories define how failures are grouped in the Allure Categories tab
+          cp allure-config/categories.json allure-results-merged/categories.json 2>/dev/null || true
+
+          # Environment metadata shown in Allure Environment section
+          cat > allure-results-merged/environment.properties << ENVEOF
+          Base.URL=${BANK_BASE_URL:-https://parabank.parasoft.com/parabank}
+          Node.Version=$(node --version)
+          Trigger=${{ github.event_name }}
+          CI.Run=${{ github.run_id }}
+          Branch=${{ github.ref_name }}
+          ENVEOF
+        env:
+          BANK_BASE_URL: ${{ vars.BANK_BASE_URL }}
+
+      # ════════════════════════════════════════════════════════════════════════
       # CONVERT INTO NEW ALLURE REPORT
       # ════════════════════════════════════════════════════════════════════════
       - name: Generate Allure report
@@ -247,7 +302,9 @@ jobs:
       # ════════════════════════════════════════════════════════════════════════
       - name: Generate Stakeholder dashboard
         run: |
-          npm run report:stakeholder || true
+          echo "Available report data for stakeholder dashboard:"
+          ls -la reports/*.json 2>/dev/null || echo "  No JSON files found"
+          npm run report:stakeholder
           mkdir -p public/stakeholder
           if [ -f "reports/stakeholder-dashboard.html" ]; then
             cp reports/stakeholder-dashboard.html public/stakeholder/index.html

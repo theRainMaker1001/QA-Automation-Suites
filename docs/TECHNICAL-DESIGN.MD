@@ -143,23 +143,32 @@ graph LR
     direction TB
     CI --> CommitGate[Commit Gate]
     CommitGate -->|Pass| Smoke[Running @smoke]
-    Smoke -->|Pass| Critical["Running @critical <br/>(PR Only)"]
+    Smoke -->|Pass| Critical["Running @critical + Loans<br/>(PR Only)"]
     end
 
     subgraph "Nightly Audit (playwright.yml)"
     direction TB
     Nightly[🕐 2 AM UTC] --> Regression[Running @regression]
-    Nightly --> A11y[Running @a11y]
+    Regression --> A11y[Running @a11y]
     end
 
-    Critical -->|Pass| Report[📊 Allure Report]
-    Regression --> Report
-    A11y --> Report
-    Report -->|Deploy| Pages[GitHub Pages]
+    subgraph "Deploy Reports (deploy-reports.yml)"
+    direction TB
+    Merge[Merge Allure Results] --> Generate[Generate Reports]
+    Generate --> Stakeholder[Stakeholder Dashboard]
+    Generate --> Allure[Developer Dashboard]
+    end
+
+    Critical -->|Artifacts| Merge
+    Regression -->|Artifacts| Merge
+    A11y -->|Artifacts| Merge
+    Stakeholder -->|Deploy| Pages[GitHub Pages]
+    Allure -->|Deploy| Pages
 
     style Local fill:#f9f9f9,stroke:#333,stroke-width:2px,color:black
     style Critical fill:#ffcccc,stroke:#ff0000,stroke-width:2px,color:black
-    style Report fill:#ccffcc,stroke:#00aa00,stroke-width:2px,color:black
+    style Stakeholder fill:#ccffcc,stroke:#00aa00,stroke-width:2px,color:black
+    style Allure fill:#ccffcc,stroke:#00aa00,stroke-width:2px,color:black
 ```
 
 ---
@@ -220,21 +229,29 @@ npm run report:stakeholder
 
 ## 📊 Dual Dashboard Architecture
 
-The reporting system provides two distinct views tailored to different audiences:
+The reporting system provides two audience-specific views. Each test lane feeds JSON data into both dashboards via CI artefacts, with zero overlap between lanes.
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
 │                     TEST EXECUTION                               │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐        │
 │  │  Vitest  │  │  Vitest  │  │Playwright│  │Playwright│        │
-│  │   Unit   │  │   API    │  │   E2E    │  │   A11y   │        │
+│  │   Unit   │  │   Loans  │  │   E2E    │  │   A11y   │        │
 │  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘        │
+│       │             │             │             │               │
+│       ▼             ▼             ▼             ▼               │
+│  unit-summary  loan-results  e2e-critical   a11y-results       │
+│    .json         .json       -results.json    .json            │
+│                              e2e-regression                    │
+│                              -results.json                     │
 │       │             │             │             │               │
 │       └──────┬──────┴──────┬──────┴──────┬──────┘               │
 │              │             │             │                      │
 │              ▼             ▼             ▼                      │
 │      ┌───────────────────────────────────────────┐              │
-│      │           ALLURE RESULTS (JSON)           │              │
+│      │        CI ARTEFACTS (per workflow)         │              │
+│      │   unit-reports / reports-critical /        │              │
+│      │   reports-nightly / allure-results-*       │              │
 │      └───────────────────┬───────────────────────┘              │
 └──────────────────────────┼──────────────────────────────────────┘
                            │
@@ -244,6 +261,9 @@ The reporting system provides two distinct views tailored to different audiences
 ┌─────────────────────┐        ┌─────────────────────┐
 │  ALLURE GENERATOR   │        │ STAKEHOLDER SCRIPT  │
 │   (allure-cli)      │        │ (TypeScript)        │
+│                     │        │                     │
+│ + categories.json   │        │ Reads all 4 JSON    │
+│ + environment.props │        │ files, merges E2E   │
 └──────────┬──────────┘        └──────────┬──────────┘
            │                               │
            ▼                               ▼
@@ -253,22 +273,40 @@ The reporting system provides two distinct views tailored to different audiences
 │                     │        │                     │
 │ • Full test details │        │ • Confidence score  │
 │ • History & trends  │        │ • Risk level badge  │
-│ • Video/screenshots │        │ • WCAG compliance   │
-│ • Failure analysis  │        │ • Lane summaries    │
+│ • Video/screenshots │        │ • Known defects     │
+│ • Failure categories│        │ • Lane summaries    │
+│ • Environment info  │        │ • WCAG compliance   │
 └─────────────────────┘        └─────────────────────┘
 ```
 
+### Stakeholder Dashboard Lanes
+
+The stakeholder dashboard presents four non-overlapping quality lanes:
+
+| Lane | Source Data | What It Shows |
+|------|-----------|---------------|
+| **Code Quality** | `unit-summary.json` (189 unit tests) | Pass rate for isolated logic and financial maths |
+| **Financial Accuracy** | `loan-results.json` (34 loan tests) | Decision table + BVA coverage of loan approval rules |
+| **User Journey Coverage** | `e2e-critical-results.json` + `e2e-regression-results.json` (33 E2E tests) | Known defects (amber), unexpected failures (red), skipped (grey) |
+| **WCAG Compliance** | `a11y-results.json` | Violation count and AA/A/Non-Compliant badge |
+
+E2E metrics distinguish between outcomes using Playwright's `test.status` and `results[0].status`:
+- **Known defect**: `test.fail()` tests that failed as expected (tracked, not alarming)
+- **Unexpected failure**: Tests expected to pass that failed (requires investigation)
+- **Skipped**: Conditionally skipped tests (e.g. auth-dependent)
+
 ### Dashboard Features Comparison
 
-| Feature | Developer Dashboard | Stakeholder Dashboard |
+| Feature | Developer Dashboard (Allure) | Stakeholder Dashboard |
 |---------|--------------------|-----------------------|
 | Audience | QA Engineers, Developers | PMs, Leadership |
 | Detail Level | Full test execution data | Aggregated metrics |
 | History | 90-day trend analysis | Current run summary |
-| Failures | Stack traces, screenshots, video | Pass/fail counts only |
+| Failures | Stack traces, screenshots, video | Known defects vs unexpected breakdown |
+| Categories | Known Defects, Unexpected, Infrastructure | N/A (aggregated into lane status) |
 | WCAG | Individual violations listed | Compliance badge (AA/A/NC) |
-| Risk | Per-test severity labels | Overall risk level |
-| Lanes Shown | All test suites | Unit, Critical, Regression, A11y |
+| Risk | Per-test severity labels | Overall confidence score + risk level |
+| Data Source | Allure result XML/JSON | Report JSON artefacts (4 files) |
 
 ### Report Generation Commands
 

@@ -108,7 +108,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: allure-results-smoke
-          path: allure-results/
+          path: |
+            allure-results/integration/
+            allure-results/e2e/
           if-no-files-found: ignore
           retention-days: 7
 
@@ -142,8 +144,18 @@ jobs:
       - name: Run @critical API tests (with SLA)
         run: npm run test:api -- --testNamePattern @critical
 
+      - name: Generate loan decision table report
+        run: |
+          mkdir -p reports
+          npm run test:loans || true
+
       - name: Run @critical E2E tests
         run: npx playwright test -c e2e/playwright.config.ts --grep @critical --project=chromium
+
+      - name: Preserve E2E results for stakeholder dashboard
+        if: always()
+        run: |
+          mv reports/e2e-results.json reports/e2e-critical-results.json 2>/dev/null || true
 
       - name: Upload critical artifacts
         if: always()
@@ -153,14 +165,24 @@ jobs:
           path: |
             e2e/test-results/
             e2e/playwright-report/
-            reports/
           retention-days: 7
+
+      - name: Upload stakeholder report data
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports-critical
+          path: reports/
+          if-no-files-found: warn
+          retention-days: 30
 
       - name: Upload Allure results (critical)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: allure-results-critical
-          path: allure-results/
+          path: |
+            allure-results/integration/
+            allure-results/e2e/
           if-no-files-found: ignore
           retention-days: 7

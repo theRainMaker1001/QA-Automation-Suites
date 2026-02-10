@@ -5,19 +5,33 @@
  * Aggregates test results into executive-friendly metrics.
  * Generates both JSON data and styled HTML dashboard.
  *
+ * Data sources (all read from reports/):
+ *   - unit-summary.json        -> Code Quality lane
+ *   - loan-results.json        -> Financial Accuracy lane
+ *   - e2e-critical-results.json + e2e-regression-results.json -> User Journey lane
+ *   - a11y-results.json        -> WCAG Compliance lane
+ *
  * Usage: tsx scripts/generate-stakeholder-dashboard.ts
  */
 import * as fs from 'fs';
 import * as path from 'path';
 
-// Types
+// ─── Types ───────────────────────────────────────────────────────────────────
+
 interface LaneMetrics {
   passRate: number;
   totalTests: number;
   passed: number;
   failed: number;
   lastRun: string;
-  status: 'HEALTHY' | 'DEGRADED' | 'FAILING';
+  status: 'HEALTHY' | 'DEGRADED' | 'FAILING' | 'NO_DATA';
+  dataAvailable: boolean;
+}
+
+interface E2eMetrics extends LaneMetrics {
+  knownDefects: number;
+  unexpectedFailures: number;
+  skipped: number;
 }
 
 interface A11yMetrics extends LaneMetrics {
@@ -33,7 +47,7 @@ interface DashboardData {
   lanes: {
     unit: LaneMetrics;
     critical: LaneMetrics;
-    regression: LaneMetrics;
+    e2e: E2eMetrics;
     a11y: A11yMetrics;
   };
   summary: {
@@ -43,54 +57,70 @@ interface DashboardData {
   };
 }
 
-// Helpers
-function readJsonSafe<T>(filePath: string, fallback: T): T {
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function readJsonSafe<T>(filePath: string, fallback: T): { data: T; found: boolean } {
   try {
     if (!fs.existsSync(filePath)) {
-      console.log(`File not found: ${filePath} - using fallback`);
-      return fallback;
+      console.log(`  Not found: ${path.basename(filePath)}`);
+      return { data: fallback, found: false };
     }
-    return JSON.parse(fs.readFileSync(filePath, 'utf-8')) as T;
+    const raw = fs.readFileSync(filePath, 'utf-8');
+    const parsed = JSON.parse(raw) as T;
+    console.log(`  Loaded: ${path.basename(filePath)}`);
+    return { data: parsed, found: true };
   } catch (error) {
-    console.error(`Error reading ${filePath}:`, error);
-    return fallback;
+    console.error(`  Error reading ${path.basename(filePath)}:`, error);
+    return { data: fallback, found: false };
   }
 }
 
-function calculateStatus(passRate: number): LaneMetrics['status'] {
+function calculateStatus(passRate: number, dataAvailable: boolean): LaneMetrics['status'] {
+  if (!dataAvailable) return 'NO_DATA';
   if (passRate >= 98) return 'HEALTHY';
   if (passRate >= 90) return 'DEGRADED';
   return 'FAILING';
 }
 
 function calculateConfidence(lanes: DashboardData['lanes']): number {
-  // Weighted: critical (40%), regression (25%), unit (20%), a11y (15%)
-  const weights = { unit: 0.2, critical: 0.4, regression: 0.25, a11y: 0.15 };
+  // Weighted: critical/loans (40%), e2e (25%), unit (20%), a11y (15%)
+  const weights = { unit: 0.2, critical: 0.4, e2e: 0.25, a11y: 0.15 };
   let confidence = 0;
+  let totalWeight = 0;
 
   for (const [lane, weight] of Object.entries(weights)) {
     const metrics = lanes[lane as keyof typeof lanes];
-    confidence += metrics.passRate * weight;
+    if (metrics.dataAvailable) {
+      confidence += metrics.passRate * weight;
+      totalWeight += weight;
+    }
   }
 
-  return Math.round(confidence * 10) / 10;
+  // Normalise if some lanes have no data (so available lanes still produce a meaningful score)
+  if (totalWeight === 0) return 0;
+  return Math.round((confidence / totalWeight) * 10) / 10;
 }
 
 function determineRiskLevel(
   confidence: number,
   criticalPassRate: number,
+  criticalDataAvailable: boolean,
 ): DashboardData['riskLevel'] {
+  if (!criticalDataAvailable) return 'HIGH';
   if (criticalPassRate < 90 || confidence < 70) return 'CRITICAL';
   if (criticalPassRate < 95 || confidence < 85) return 'HIGH';
   if (criticalPassRate < 98 || confidence < 95) return 'MEDIUM';
   return 'LOW';
 }
 
-function buildUnitMetrics(data: any): LaneMetrics {
+// ─── Lane Builders ───────────────────────────────────────────────────────────
+
+function buildUnitMetrics(data: any, found: boolean): LaneMetrics {
   const overview = data?.overview || {};
   const passed = overview.passed || 0;
   const total = overview.totalTests || 0;
   const passRate = total > 0 ? (passed / total) * 100 : 0;
+  const dataAvailable = found && total > 0;
 
   return {
     passRate: Math.round(passRate * 10) / 10,
@@ -98,14 +128,16 @@ function buildUnitMetrics(data: any): LaneMetrics {
     passed,
     failed: total - passed,
     lastRun: overview.runDate || new Date().toISOString(),
-    status: calculateStatus(passRate),
+    status: calculateStatus(passRate, dataAvailable),
+    dataAvailable,
   };
 }
 
-function buildCriticalMetrics(data: any): LaneMetrics {
+function buildCriticalMetrics(data: any, found: boolean): LaneMetrics {
   const passed = data?.numPassedTests || 0;
   const total = data?.numTotalTests || 0;
   const passRate = total > 0 ? (passed / total) * 100 : 0;
+  const dataAvailable = found && total > 0;
 
   return {
     passRate: Math.round(passRate * 10) / 10,
@@ -113,17 +145,123 @@ function buildCriticalMetrics(data: any): LaneMetrics {
     passed,
     failed: total - passed,
     lastRun: data?.startTime ? new Date(data.startTime).toISOString() : new Date().toISOString(),
-    status: calculateStatus(passRate),
+    status: calculateStatus(passRate, dataAvailable),
+    dataAvailable,
   };
 }
 
-function buildA11yMetrics(data: any): A11yMetrics {
+/**
+ * Parses a single Playwright JSON report and extracts test outcome counts.
+ * Distinguishes between:
+ *   - normal passes (status=expected, result=passed)
+ *   - known defects (status=expected, result=failed - test.fail() behaving as expected)
+ *   - unexpected failures (status=unexpected - real bugs)
+ *   - skipped (status=skipped - test.skip() conditional)
+ */
+function countPlaywrightTests(data: any): {
+  passed: number;
+  knownDefects: number;
+  unexpectedFailures: number;
+  skipped: number;
+  lastRun: string;
+} {
+  let passed = 0;
+  let knownDefects = 0;
+  let unexpectedFailures = 0;
+  let skipped = 0;
+
+  if (!data?.suites) {
+    return { passed, knownDefects, unexpectedFailures, skipped, lastRun: new Date().toISOString() };
+  }
+
+  function walkSuites(suites: any[]): void {
+    for (const suite of suites) {
+      if (suite.specs) {
+        for (const spec of suite.specs) {
+          for (const test of spec.tests || []) {
+            const outcome = test.status; // expected | unexpected | skipped | flaky
+            const resultStatus = test.results?.[0]?.status; // passed | failed | timedOut | skipped
+
+            if (outcome === 'skipped') {
+              skipped++;
+            } else if (outcome === 'unexpected') {
+              unexpectedFailures++;
+            } else if (outcome === 'expected' && resultStatus === 'failed') {
+              // test.fail() that correctly failed - a tracked known defect
+              knownDefects++;
+            } else {
+              // expected + passed, or flaky (passed on retry)
+              passed++;
+            }
+          }
+        }
+      }
+      if (suite.suites) {
+        walkSuites(suite.suites);
+      }
+    }
+  }
+
+  walkSuites(data.suites);
+
+  return {
+    passed,
+    knownDefects,
+    unexpectedFailures,
+    skipped,
+    lastRun: data.stats?.startTime || new Date().toISOString(),
+  };
+}
+
+function buildE2eMetrics(
+  criticalData: any,
+  criticalFound: boolean,
+  regressionData: any,
+  regressionFound: boolean,
+): E2eMetrics {
+  const critical = countPlaywrightTests(criticalData);
+  const regression = countPlaywrightTests(regressionData);
+
+  const passed = critical.passed + regression.passed;
+  const knownDefects = critical.knownDefects + regression.knownDefects;
+  const unexpectedFailures = critical.unexpectedFailures + regression.unexpectedFailures;
+  const skipped = critical.skipped + regression.skipped;
+
+  // For pass rate: known defects count as "handled" (not failures), unexpected failures are real
+  const total = passed + knownDefects + unexpectedFailures;
+  const passRate = total > 0 ? ((passed + knownDefects) / total) * 100 : 0;
+  const dataAvailable = (criticalFound || regressionFound) && total > 0;
+
+  const lastRun =
+    criticalFound && regressionFound
+      ? new Date(
+          Math.max(new Date(critical.lastRun).getTime(), new Date(regression.lastRun).getTime()),
+        ).toISOString()
+      : criticalFound
+        ? critical.lastRun
+        : regression.lastRun;
+
+  return {
+    passRate: Math.round(passRate * 10) / 10,
+    totalTests: total,
+    passed,
+    failed: unexpectedFailures,
+    knownDefects,
+    unexpectedFailures,
+    skipped,
+    lastRun,
+    status: calculateStatus(passRate, dataAvailable),
+    dataAvailable,
+  };
+}
+
+function buildA11yMetrics(data: any, found: boolean): A11yMetrics {
   const totalViolations = data?.totalViolations || 0;
   const totalPasses = data?.totalPasses || 0;
   const total = totalViolations + totalPasses;
   const passRate = total > 0 ? (totalPasses / total) * 100 : 0;
+  const dataAvailable = found && total > 0;
 
-  // Count violations by impact
   let criticalViolations = 0;
   let seriousViolations = 0;
 
@@ -136,11 +274,10 @@ function buildA11yMetrics(data: any): A11yMetrics {
     }
   }
 
-  // Determine WCAG compliance
   let wcagCompliance: A11yMetrics['wcagCompliance'] = 'NON_COMPLIANT';
-  if (criticalViolations === 0 && seriousViolations === 0) {
+  if (dataAvailable && criticalViolations === 0 && seriousViolations === 0) {
     wcagCompliance = 'AA';
-  } else if (criticalViolations === 0) {
+  } else if (dataAvailable && criticalViolations === 0) {
     wcagCompliance = 'A';
   }
 
@@ -150,98 +287,44 @@ function buildA11yMetrics(data: any): A11yMetrics {
     passed: totalPasses,
     failed: totalViolations,
     lastRun: data?.runDate || new Date().toISOString(),
-    status:
-      criticalViolations === 0 ? (seriousViolations === 0 ? 'HEALTHY' : 'DEGRADED') : 'FAILING',
+    status: dataAvailable
+      ? criticalViolations === 0
+        ? seriousViolations === 0
+          ? 'HEALTHY'
+          : 'DEGRADED'
+        : 'FAILING'
+      : 'NO_DATA',
+    dataAvailable,
     wcagCompliance,
     criticalViolations,
     seriousViolations,
   };
 }
 
-function buildRegressionMetrics(data: any): LaneMetrics {
-  // Playwright JSON report structure has suites with specs
-  if (!data || !data.suites) {
-    return {
-      passRate: 0,
-      totalTests: 0,
-      passed: 0,
-      failed: 0,
-      lastRun: new Date().toISOString(),
-      status: 'FAILING',
-    };
-  }
-
-  // Count tests recursively through suites
-  let passed = 0;
-  let failed = 0;
-  let skipped = 0;
-
-  function countTests(suites: any[]): void {
-    for (const suite of suites) {
-      // Count specs in this suite
-      if (suite.specs) {
-        for (const spec of suite.specs) {
-          // Filter for @regression tagged tests
-          const isRegression =
-            spec.title?.includes('@regression') ||
-            spec.tags?.includes('@regression') ||
-            suite.title?.includes('@regression');
-
-          if (!isRegression) continue;
-
-          for (const test of spec.tests || []) {
-            const status = test.status || test.results?.[0]?.status;
-            if (status === 'passed' || status === 'expected') {
-              passed++;
-            } else if (status === 'failed' || status === 'unexpected') {
-              failed++;
-            } else if (status === 'skipped') {
-              skipped++;
-            }
-          }
-        }
-      }
-      // Recurse into nested suites
-      if (suite.suites) {
-        countTests(suite.suites);
-      }
-    }
-  }
-
-  countTests(data.suites);
-
-  const total = passed + failed;
-  const passRate = total > 0 ? (passed / total) * 100 : 0;
-
-  return {
-    passRate: Math.round(passRate * 10) / 10,
-    totalTests: total,
-    passed,
-    failed,
-    lastRun: data.stats?.startTime || new Date().toISOString(),
-    status: calculateStatus(passRate),
-  };
-}
+// ─── HTML Generator ──────────────────────────────────────────────────────────
 
 function generateHTML(data: DashboardData): string {
-  const riskColors = {
-    LOW: '#22c55e',
-    MEDIUM: '#eab308',
-    HIGH: '#f97316',
-    CRITICAL: '#ef4444',
-  };
-
+  const riskColors = { LOW: '#22c55e', MEDIUM: '#eab308', HIGH: '#f97316', CRITICAL: '#ef4444' };
   const statusColors = {
     HEALTHY: '#22c55e',
     DEGRADED: '#eab308',
     FAILING: '#ef4444',
+    NO_DATA: '#8b949e',
   };
+  const wcagColors = { AA: '#22c55e', A: '#eab308', NON_COMPLIANT: '#ef4444' };
 
-  const wcagColors = {
-    AA: '#22c55e',
-    A: '#eab308',
-    NON_COMPLIANT: '#ef4444',
-  };
+  const e2e = data.lanes.e2e as E2eMetrics;
+
+  function noDataOverlay(available: boolean): string {
+    if (available) return '';
+    return `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(13,17,23,0.85);border-radius:12px;z-index:1;"><span style="color:#8b949e;font-size:0.95rem;">Awaiting first run</span></div>`;
+  }
+
+  function statValue(value: string | number, available: boolean, color?: string): string {
+    const display = available ? String(value) : '-';
+    const style = color ? ` style="color: ${color}"` : '';
+    return `<div class="stat-value"${style}>${display}</div>`;
+  }
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -274,17 +357,11 @@ function generateHTML(data: DashboardData): string {
       border: 1px solid #30363d;
       border-radius: 12px;
       padding: 1.5rem;
+      position: relative;
     }
 
-    .confidence-card {
-      text-align: center;
-      padding: 2rem;
-    }
-    .confidence-value {
-      font-size: 4rem;
-      font-weight: bold;
-      color: #58a6ff;
-    }
+    .confidence-card { text-align: center; padding: 2rem; }
+    .confidence-value { font-size: 4rem; font-weight: bold; color: #58a6ff; }
     .confidence-label { color: #8b949e; font-size: 0.9rem; }
 
     .risk-card { text-align: center; padding: 2rem; }
@@ -317,9 +394,20 @@ function generateHTML(data: DashboardData): string {
       grid-template-columns: 1fr 1fr;
       gap: 1rem;
     }
-    .stat-item { }
     .stat-value { font-size: 1.5rem; font-weight: bold; color: #f0f6fc; }
     .stat-label { font-size: 0.8rem; color: #8b949e; }
+
+    .defect-row {
+      margin-top: 1rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid #30363d;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.5rem;
+      text-align: center;
+    }
+    .defect-value { font-size: 1.1rem; font-weight: bold; }
+    .defect-label { font-size: 0.7rem; color: #8b949e; }
 
     .wcag-badge {
       display: inline-block;
@@ -393,105 +481,123 @@ function generateHTML(data: DashboardData): string {
 
     <!-- Lane Cards -->
     <div class="metrics-row">
-      <!-- Unit Tests -->
+      <!-- Code Quality (Unit Tests) -->
       <div class="card lane-card">
+        ${noDataOverlay(data.lanes.unit.dataAvailable)}
         <h3>
-          Unit Tests
+          Code Quality
           <span class="status-dot" style="background: ${statusColors[data.lanes.unit.status]}"></span>
         </h3>
         <div class="lane-stats">
           <div class="stat-item">
-            <div class="stat-value">${data.lanes.unit.passRate}%</div>
+            ${statValue(data.lanes.unit.passRate + '%', data.lanes.unit.dataAvailable)}
             <div class="stat-label">Pass Rate</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value">${data.lanes.unit.totalTests}</div>
-            <div class="stat-label">Total Tests</div>
+            ${statValue(data.lanes.unit.totalTests, data.lanes.unit.dataAvailable)}
+            <div class="stat-label">Unit Tests</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value" style="color: #22c55e">${data.lanes.unit.passed}</div>
+            ${statValue(data.lanes.unit.passed, data.lanes.unit.dataAvailable, '#22c55e')}
             <div class="stat-label">Passed</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value" style="color: ${data.lanes.unit.failed > 0 ? '#ef4444' : '#22c55e'}">${data.lanes.unit.failed}</div>
+            ${statValue(data.lanes.unit.failed, data.lanes.unit.dataAvailable, data.lanes.unit.failed > 0 ? '#ef4444' : '#22c55e')}
             <div class="stat-label">Failed</div>
           </div>
         </div>
       </div>
 
-      <!-- Critical Tests -->
+      <!-- Financial Accuracy (Loan Decision Table) -->
       <div class="card lane-card">
+        ${noDataOverlay(data.lanes.critical.dataAvailable)}
         <h3>
-          Critical Path (Financial)
+          Financial Accuracy
           <span class="status-dot" style="background: ${statusColors[data.lanes.critical.status]}"></span>
         </h3>
         <div class="lane-stats">
           <div class="stat-item">
-            <div class="stat-value">${data.lanes.critical.passRate}%</div>
+            ${statValue(data.lanes.critical.passRate + '%', data.lanes.critical.dataAvailable)}
             <div class="stat-label">Pass Rate</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value">${data.lanes.critical.totalTests}</div>
-            <div class="stat-label">Total Tests</div>
+            ${statValue(data.lanes.critical.totalTests, data.lanes.critical.dataAvailable)}
+            <div class="stat-label">Decision Table Tests</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value" style="color: #22c55e">${data.lanes.critical.passed}</div>
+            ${statValue(data.lanes.critical.passed, data.lanes.critical.dataAvailable, '#22c55e')}
             <div class="stat-label">Passed</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value" style="color: ${data.lanes.critical.failed > 0 ? '#ef4444' : '#22c55e'}">${data.lanes.critical.failed}</div>
+            ${statValue(data.lanes.critical.failed, data.lanes.critical.dataAvailable, data.lanes.critical.failed > 0 ? '#ef4444' : '#22c55e')}
             <div class="stat-label">Failed</div>
           </div>
         </div>
       </div>
 
-      <!-- Regression Tests (E2E) -->
+      <!-- User Journey Coverage (E2E Browser Tests) -->
       <div class="card lane-card">
+        ${noDataOverlay(e2e.dataAvailable)}
         <h3>
-          Regression (E2E)
-          <span class="status-dot" style="background: ${statusColors[data.lanes.regression.status]}"></span>
+          User Journey Coverage
+          <span class="status-dot" style="background: ${statusColors[e2e.status]}"></span>
         </h3>
         <div class="lane-stats">
           <div class="stat-item">
-            <div class="stat-value">${data.lanes.regression.passRate}%</div>
+            ${statValue(e2e.passRate + '%', e2e.dataAvailable)}
             <div class="stat-label">Pass Rate</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value">${data.lanes.regression.totalTests}</div>
-            <div class="stat-label">Total Tests</div>
+            ${statValue(e2e.totalTests, e2e.dataAvailable)}
+            <div class="stat-label">E2E Tests</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value" style="color: #22c55e">${data.lanes.regression.passed}</div>
+            ${statValue(e2e.passed, e2e.dataAvailable, '#22c55e')}
             <div class="stat-label">Passed</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value" style="color: ${data.lanes.regression.failed > 0 ? '#ef4444' : '#22c55e'}">${data.lanes.regression.failed}</div>
-            <div class="stat-label">Failed</div>
+            ${statValue(e2e.unexpectedFailures, e2e.dataAvailable, e2e.unexpectedFailures > 0 ? '#ef4444' : '#22c55e')}
+            <div class="stat-label">Unexpected Failures</div>
+          </div>
+        </div>
+        <div class="defect-row">
+          <div>
+            <div class="defect-value" style="color: #eab308">${e2e.dataAvailable ? e2e.knownDefects : '-'}</div>
+            <div class="defect-label">Known Defects</div>
+          </div>
+          <div>
+            <div class="defect-value" style="color: ${e2e.unexpectedFailures > 0 ? '#ef4444' : '#22c55e'}">${e2e.dataAvailable ? e2e.unexpectedFailures : '-'}</div>
+            <div class="defect-label">Action Required</div>
+          </div>
+          <div>
+            <div class="defect-value" style="color: #8b949e">${e2e.dataAvailable ? e2e.skipped : '-'}</div>
+            <div class="defect-label">Skipped</div>
           </div>
         </div>
       </div>
 
-      <!-- Accessibility -->
+      <!-- WCAG Compliance (Accessibility) -->
       <div class="card lane-card">
+        ${noDataOverlay(data.lanes.a11y.dataAvailable)}
         <h3>
-          Accessibility (WCAG)
-          <span class="wcag-badge" style="background: ${wcagColors[data.lanes.a11y.wcagCompliance]}">${data.lanes.a11y.wcagCompliance}</span>
+          WCAG Compliance
+          <span class="wcag-badge" style="background: ${data.lanes.a11y.dataAvailable ? wcagColors[data.lanes.a11y.wcagCompliance] : '#8b949e'}">${data.lanes.a11y.dataAvailable ? data.lanes.a11y.wcagCompliance : 'N/A'}</span>
         </h3>
         <div class="lane-stats">
           <div class="stat-item">
-            <div class="stat-value">${data.lanes.a11y.passRate}%</div>
+            ${statValue(data.lanes.a11y.passRate + '%', data.lanes.a11y.dataAvailable)}
             <div class="stat-label">Pass Rate</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value">${data.lanes.a11y.totalTests}</div>
+            ${statValue(data.lanes.a11y.totalTests, data.lanes.a11y.dataAvailable)}
             <div class="stat-label">Pages Scanned</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value" style="color: ${data.lanes.a11y.criticalViolations > 0 ? '#ef4444' : '#22c55e'}">${data.lanes.a11y.criticalViolations}</div>
+            ${statValue(data.lanes.a11y.criticalViolations, data.lanes.a11y.dataAvailable, data.lanes.a11y.criticalViolations > 0 ? '#ef4444' : '#22c55e')}
             <div class="stat-label">Critical Issues</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value" style="color: ${data.lanes.a11y.seriousViolations > 0 ? '#eab308' : '#22c55e'}">${data.lanes.a11y.seriousViolations}</div>
+            ${statValue(data.lanes.a11y.seriousViolations, data.lanes.a11y.dataAvailable, data.lanes.a11y.seriousViolations > 0 ? '#eab308' : '#22c55e')}
             <div class="stat-label">Serious Issues</div>
           </div>
         </div>
@@ -502,37 +608,48 @@ function generateHTML(data: DashboardData): string {
     </div>
 
     <div class="footer">
-      <p>QA Automation Suite | <a href="../allure/">View Detailed Developer Report</a> | <a href="../">Dashboard Hub</a></p>
+      <p>QA Automation Suite | <a href="../allure/">View Detailed Developer Report (Allure)</a> | <a href="../">Dashboard Hub</a></p>
     </div>
   </div>
 </body>
 </html>`;
 }
 
-// Main
+// ─── Main ────────────────────────────────────────────────────────────────────
+
 function generateDashboard(): void {
   console.log('Stakeholder Dashboard Generator');
   console.log('================================');
 
   const reportsDir = path.join(process.cwd(), 'reports');
 
-  // Read data sources with fallbacks
+  console.log('\nReading data sources:');
   const unitSummary = readJsonSafe(path.join(reportsDir, 'unit-summary.json'), { overview: {} });
   const loanResults = readJsonSafe(path.join(reportsDir, 'loan-results.json'), {});
-  const e2eResults = readJsonSafe(path.join(reportsDir, 'e2e-results.json'), {});
+  const e2eCritical = readJsonSafe(path.join(reportsDir, 'e2e-critical-results.json'), {});
+  const e2eRegression = readJsonSafe(path.join(reportsDir, 'e2e-regression-results.json'), {});
   const a11yResults = readJsonSafe(path.join(reportsDir, 'a11y-results.json'), {});
 
   // Build lane metrics
   const lanes: DashboardData['lanes'] = {
-    unit: buildUnitMetrics(unitSummary),
-    critical: buildCriticalMetrics(loanResults),
-    regression: buildRegressionMetrics(e2eResults),
-    a11y: buildA11yMetrics(a11yResults),
+    unit: buildUnitMetrics(unitSummary.data, unitSummary.found),
+    critical: buildCriticalMetrics(loanResults.data, loanResults.found),
+    e2e: buildE2eMetrics(
+      e2eCritical.data,
+      e2eCritical.found,
+      e2eRegression.data,
+      e2eRegression.found,
+    ),
+    a11y: buildA11yMetrics(a11yResults.data, a11yResults.found),
   };
 
   // Calculate overall metrics
   const overallConfidence = calculateConfidence(lanes);
-  const riskLevel = determineRiskLevel(overallConfidence, lanes.critical.passRate);
+  const riskLevel = determineRiskLevel(
+    overallConfidence,
+    lanes.critical.passRate,
+    lanes.critical.dataAvailable,
+  );
 
   // Build dashboard data
   const dashboard: DashboardData = {
@@ -541,9 +658,9 @@ function generateDashboard(): void {
     riskLevel,
     lanes,
     summary: {
-      totalTests: lanes.unit.totalTests + lanes.critical.totalTests + lanes.regression.totalTests,
-      totalPassed: lanes.unit.passed + lanes.critical.passed + lanes.regression.passed,
-      totalFailed: lanes.unit.failed + lanes.critical.failed + lanes.regression.failed,
+      totalTests: lanes.unit.totalTests + lanes.critical.totalTests + lanes.e2e.totalTests,
+      totalPassed: lanes.unit.passed + lanes.critical.passed + lanes.e2e.passed,
+      totalFailed: lanes.unit.failed + lanes.critical.failed + lanes.e2e.failed,
     },
   };
 
@@ -555,7 +672,7 @@ function generateDashboard(): void {
   // Write JSON
   const jsonPath = path.join(reportsDir, 'stakeholder-dashboard.json');
   fs.writeFileSync(jsonPath, JSON.stringify(dashboard, null, 2));
-  console.log(`JSON written: ${jsonPath}`);
+  console.log(`\nJSON written: ${jsonPath}`);
 
   // Write HTML
   const htmlPath = path.join(reportsDir, 'stakeholder-dashboard.html');
@@ -567,15 +684,17 @@ function generateDashboard(): void {
   console.log(`  Confidence: ${dashboard.overallConfidence}%`);
   console.log(`  Risk Level: ${dashboard.riskLevel}`);
   console.log(
-    `  Unit Tests: ${lanes.unit.passed}/${lanes.unit.totalTests} (${lanes.unit.passRate}%)`,
+    `  Code Quality: ${lanes.unit.passed}/${lanes.unit.totalTests} (${lanes.unit.passRate}%)${lanes.unit.dataAvailable ? '' : ' [no data]'}`,
   );
   console.log(
-    `  Critical Tests: ${lanes.critical.passed}/${lanes.critical.totalTests} (${lanes.critical.passRate}%)`,
+    `  Financial Accuracy: ${lanes.critical.passed}/${lanes.critical.totalTests} (${lanes.critical.passRate}%)${lanes.critical.dataAvailable ? '' : ' [no data]'}`,
   );
   console.log(
-    `  Regression Tests: ${lanes.regression.passed}/${lanes.regression.totalTests} (${lanes.regression.passRate}%)`,
+    `  User Journeys: ${lanes.e2e.passed}/${lanes.e2e.totalTests} (${lanes.e2e.passRate}%) | ${(lanes.e2e as E2eMetrics).knownDefects} known defects | ${(lanes.e2e as E2eMetrics).unexpectedFailures} unexpected${lanes.e2e.dataAvailable ? '' : ' [no data]'}`,
   );
-  console.log(`  A11y: ${lanes.a11y.wcagCompliance} compliance`);
+  console.log(
+    `  WCAG: ${lanes.a11y.wcagCompliance} compliance${lanes.a11y.dataAvailable ? '' : ' [no data]'}`,
+  );
 }
 
 // Run

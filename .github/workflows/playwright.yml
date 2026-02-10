@@ -140,6 +140,11 @@ jobs:
       - name: Run @regression tests
         run: npx playwright test -c e2e/playwright.config.ts --grep @regression --project=chromium --project=firefox --project=webkit
 
+      - name: Preserve regression results before a11y overwrites
+        if: always()
+        run: |
+          cp reports/e2e-results.json reports/e2e-regression-results.json 2>/dev/null || true
+
       - name: Run @a11y tests
         run: npx playwright test -c e2e/playwright.config.ts --grep @a11y --project=chromium
 
@@ -158,6 +163,15 @@ jobs:
           name: nightly-artifacts
           path: e2e/test-results/
           retention-days: 14
+
+      - name: Upload stakeholder report data (nightly)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports-nightly
+          path: reports/
+          if-no-files-found: warn
+          retention-days: 30
 
       - name: Upload Allure results (nightly E2E)
         if: always()

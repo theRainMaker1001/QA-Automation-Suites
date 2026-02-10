@@ -64,6 +64,11 @@ Commit Gate → Smoke Lane → Critical Lane → Report Deploy
 
 ## 📊 Reporting
 
+Two dashboards are generated from test data, each targeting a different audience:
+
+- **Stakeholder Dashboard**: Reads `reports/*.json` artefacts (unit-summary, loan-results, e2e-critical/regression-results, a11y-results) and produces a single-page executive summary with confidence scoring, risk level, and known defect tracking.
+- **Developer Dashboard (Allure)**: Merges all `allure-results/` data with `allure-config/categories.json` for failure categorisation (Known Defects, Unexpected Failures, Infrastructure Issues) and 90-day trend history.
+
 ```bash
 # Generate Allure Report (requires Java)
 npm run report:generate
@@ -79,6 +84,8 @@ npm run report:stakeholder
 api/src/tests/     # Vitest tests (unit, integration, critical)
 e2e/tests/         # Playwright specs
 scripts/           # Report generation scripts
+allure-config/     # Allure categories and metadata
+reports/           # JSON test result data (generated)
 .github/workflows/ # CI/CD pipelines
 ```
 

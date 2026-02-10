@@ -1,0 +1,23 @@
+[
+  {
+    "name": "Known Defects",
+    "description": "Tests marked with test.fail() that failed as expected. These are tracked, documented defects.",
+    "messageRegex": ".*",
+    "matchedStatuses": ["failed"],
+    "flaky": false
+  },
+  {
+    "name": "Unexpected Failures",
+    "description": "Tests that were expected to pass but failed. These require immediate investigation.",
+    "messageRegex": ".*",
+    "matchedStatuses": ["broken"],
+    "flaky": false
+  },
+  {
+    "name": "Infrastructure Issues",
+    "description": "Timeouts, network errors, or environment problems unrelated to application logic.",
+    "messageRegex": ".*(timeout|ECONNREFUSED|ECONNRESET|net::ERR|Navigation failed|Target closed|browser has been closed).*",
+    "matchedStatuses": ["broken", "failed"],
+    "flaky": false
+  }
+]
