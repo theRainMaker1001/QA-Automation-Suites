@@ -110,23 +110,22 @@ To ensure absolute rigor for this financial system, we **implement** 3-Value BVA
 ---
 
 ## 🔄 State Transition Testing (Authentication)
-The authentication flow is modeled as a finite state machine. This prevents unauthorized access via URL manipulation or session hijacking by strictly controlling the valid paths between states.
+The authentication flow is modelled as a finite state machine with three observable states. Each transition is verified by asserting the starting state, triggering the event, and confirming the resulting state via the Page Object Model.
 
 ```mermaid
 stateDiagram-v2
     direction LR
     [*] --> Guest
-    Guest --> LoggedIn : Login Success
-    Guest --> Guest : Login Fail
-    Guest --> LockedOut : 3x Bad Attempts
-    
-    state LoggedIn {
-        [*] --> Active
-        Active --> Idle : No Activity
-    }
 
-    LoggedIn --> Guest : Logout
-    Idle --> Guest : Timeout
+    Guest --> LoggedIn : E1 Valid Login
+    Guest --> LoginError : E2 Invalid Login
+    Guest --> LoginError : E3 Empty Submit
+    Guest --> Guest : E5 Refresh
+    Guest --> Guest : E6 Navigate
+
+    LoginError --> Guest : E5 Refresh
+
+    LoggedIn --> Guest : E4 Logout
 ```
 
 ---

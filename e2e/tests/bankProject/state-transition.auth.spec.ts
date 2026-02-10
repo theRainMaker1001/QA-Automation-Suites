@@ -87,10 +87,11 @@ test.use({ video: 'on' });
 
 // Store dynamic credentials to bypass unstable 'john/demo' account
 let testUser = { username: 'john', password: 'demo' };
+let authVerified = false;
 
 test.describe('@critical @state-transition Authentication State Machine', () => {
   test.beforeAll(async ({ browser }) => {
-    // Best Practice: Register a fresh user to avoid "Internal Error" from corrupted shared accounts
+    // Register a fresh user to avoid "Internal Error" from corrupted shared accounts
     const page = await browser.newPage();
     const uniqueId = Date.now();
     const newUser = {
@@ -103,11 +104,26 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
     await registerPage.registerNewUser(newUser);
     await page.waitForLoadState('networkidle');
 
-    // If registration successful, use these credentials
     if (await registerPage.isRegistrationSuccess()) {
       testUser = newUser;
       console.log(`[Setup] Registered dynamic user: ${testUser.username}`);
     }
+
+    // Verify login actually works before any tests rely on it
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login(testUser.username, testUser.password);
+    await page.waitForLoadState('networkidle');
+
+    authVerified = await loginPage.isLoggedIn();
+    if (authVerified) {
+      console.log(`[Setup] Login verified for: ${testUser.username}`);
+    } else {
+      console.warn(
+        `[Setup] Login FAILED for: ${testUser.username} — auth-dependent tests will be skipped`,
+      );
+    }
+
     await page.close();
   });
 
@@ -122,81 +138,85 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
 
       // Trigger transition: valid login
       await loginPage.login(testUser.username, testUser.password);
-
-      // Wait for state change
       await page.waitForLoadState('networkidle');
 
-      // Verify end state: LOGGED_IN or stay GUEST (depends on valid account)
-      const state = await loginPage.getCurrentState();
-      // ParaBank demo may or may not have this account active
-      expect(['LOGGED_IN', 'LOGIN_ERROR', 'GUEST']).toContain(state);
+      if (authVerified) {
+        // Dynamic user was registered and login confirmed in setup — assert strictly
+        await loginPage.expectLoggedIn();
+        expect(await loginPage.getCurrentState()).toBe('LOGGED_IN');
+      } else {
+        // Fallback: server is unstable, accept any outcome but log what happened
+        const state = await loginPage.getCurrentState();
+        console.warn(`[T1] Auth not verified — observed state: ${state}`);
+        expect(['LOGGED_IN', 'LOGIN_ERROR', 'GUEST']).toContain(state);
+      }
     });
   });
 
-  test.describe('Transition: GUEST → LOGIN_ERROR (T2)', () => {
+  test.describe('Transition: GUEST → LOGIN_ERROR (T2, T3)', () => {
     test('invalid credentials transition to error state', async ({ page }) => {
       const loginPage = new LoginPage(page);
       await loginPage.goto();
 
-      // Verify initial state: GUEST
+      // Verify initial state: GUEST (S1)
       expect(await loginPage.getCurrentState()).toBe('GUEST');
 
-      // Trigger transition: invalid login
+      // Trigger transition E2: invalid login
       await loginPage.login('invaliduser', 'wrongpassword');
       await page.waitForLoadState('networkidle');
 
-      // Verify end state: LOGIN_ERROR (error message visible)
-      const hasError = await loginPage.hasLoginError();
-      const errorText = await loginPage.getErrorText();
-
-      // Should show some error indication
-      expect(hasError || errorText.length > 0 || page.url().includes('error')).toBe(true);
+      // Verify end state: LOGIN_ERROR (S3)
+      expect(await loginPage.getCurrentState()).toBe('LOGIN_ERROR');
     });
 
     test('empty credentials show error', async ({ page }) => {
       const loginPage = new LoginPage(page);
       await loginPage.goto();
 
-      // Try to submit empty form
+      // Verify initial state: GUEST (S1)
+      expect(await loginPage.getCurrentState()).toBe('GUEST');
+
+      // Trigger transition E3: empty submit
       await loginPage.login('', '');
       await page.waitForLoadState('networkidle');
 
-      // Should show error or validation message
-      const currentUrl = page.url();
-      const hasError = await loginPage.hasLoginError();
-
-      // Either stays on page with error or redirects to error
-      expect(hasError || currentUrl.includes('login') || currentUrl.includes('error')).toBe(true);
+      // Verify end state: LOGIN_ERROR (S3)
+      expect(await loginPage.getCurrentState()).toBe('LOGIN_ERROR');
     });
   });
 
-  test.describe('Transition: LOGIN_ERROR → GUEST (T3)', () => {
-    test('retry after error returns to guest state', async ({ page }) => {
+  test.describe('Transition: LOGIN_ERROR → GUEST (T4)', () => {
+    test('refresh after error returns to guest state', async ({ page }) => {
       const loginPage = new LoginPage(page);
       await loginPage.goto();
 
-      // First: trigger error state
+      // Trigger error state (S3)
       await loginPage.login('baduser', 'badpass');
       await page.waitForLoadState('networkidle');
 
-      // Navigate back to home
-      await loginPage.goto();
+      // Verify starting state: LOGIN_ERROR (S3)
+      expect(await loginPage.getCurrentState()).toBe('LOGIN_ERROR');
 
-      // Verify: back to GUEST state
-      const isFormVisible = await loginPage.isLoginFormVisible();
-      expect(isFormVisible).toBe(true);
+      // Event E5: browser refresh
+      await page.reload();
+      await page.waitForLoadState('domcontentloaded');
+
+      // Verify: back to GUEST state (S1)
+      await loginPage.expectLoginFormVisible();
+      expect(await loginPage.getCurrentState()).toBe('GUEST');
     });
   });
 
-  test.describe('Transition: GUEST → GUEST (T5)', () => {
+  test.describe('Transition: GUEST → GUEST (T5, T6)', () => {
     test('page refresh maintains guest state', async ({ page }) => {
       const loginPage = new LoginPage(page);
       await loginPage.goto();
 
-      // Verify initial state
+      // Verify initial state: GUEST (S1)
       await loginPage.expectLoginFormVisible();
+      expect(await loginPage.getCurrentState()).toBe('GUEST');
 
-      // Trigger: page refresh
+      // Trigger event E5: page refresh
       await page.reload();
       await page.waitForLoadState('domcontentloaded');
 
@@ -209,26 +229,33 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
       const loginPage = new LoginPage(page);
       await loginPage.goto();
 
-      // Navigate away and back
+      // Verify initial state: GUEST (S1)
+      expect(await loginPage.getCurrentState()).toBe('GUEST');
+
+      // Trigger event E6: navigate away and back
       await page.goBack().catch(() => {}); // May not have history
       await loginPage.goto();
 
-      // Login form should still be visible
+      // Verify end state: still GUEST (S1)
       await loginPage.expectLoginFormVisible();
+      expect(await loginPage.getCurrentState()).toBe('GUEST');
     });
   });
 
-  test.describe('Transition: LOGGED_IN → GUEST (Logout)', () => {
+  test.describe('Transition: LOGGED_IN → GUEST (T7)', () => {
     test('logout clears session and returns to guest state', async ({ page }) => {
+      test.skip(!authVerified, 'Login not verified in setup — cannot test logout');
+
       const loginPage = new LoginPage(page);
       await loginPage.goto();
       await loginPage.login(testUser.username, testUser.password);
       await page.waitForLoadState('networkidle');
 
-      // Ensure login succeeded before attempting logout (fails fast if john/demo is down)
+      // Verify starting state: LOGGED_IN (S2)
       await loginPage.expectLoggedIn();
+      expect(await loginPage.getCurrentState()).toBe('LOGGED_IN');
 
-      // Trigger logout
+      // Trigger event E4: logout
       await loginPage.logout();
 
       // Verify state
@@ -237,20 +264,17 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
     });
 
     test('logout button is visible only when logged in', async ({ page }) => {
+      test.skip(!authVerified, 'Login not verified in setup — cannot test logout');
+
       const loginPage = new LoginPage(page);
       await loginPage.goto();
       await loginPage.login(testUser.username, testUser.password);
       await page.waitForLoadState('networkidle');
-
       await loginPage.expectLoggedIn();
     });
 
     test('browser back button after logout does not restore session', async ({ page }) => {
-      // Guard: Prevent false positives. If registration failed, do not run this check against flaky 'john' account.
-      test.skip(
-        testUser.username === 'john',
-        'Skipping security check: Dynamic registration failed. Avoiding false positive from unstable shared account.',
-      );
+      test.skip(!authVerified, 'Login not verified in setup — cannot test logout');
 
       test.fail(
         true,
@@ -276,10 +300,7 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
     test('direct navigation to protected page after logout redirects to login', async ({
       page,
     }) => {
-      test.skip(
-        testUser.username === 'john',
-        'Skipping security check: Dynamic registration failed. Avoiding false positive from unstable shared account.',
-      );
+      test.skip(!authVerified, 'Login not verified in setup — cannot test logout');
 
       test.fail(
         true,

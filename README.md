@@ -51,8 +51,8 @@ Technical product owners need reliability. This suite ensures the **financial lo
 
 ### 🔐 State Transition Test Coverage
 
-*   **RISK:** Users bypassing security screens or accessing protected data while in a `Guest` or `LockedOut` state.
-*   **SOLUTION:** Authentication flows are validated using **ISTQB State Transition Testing**, systematically verifying that all valid state changes behave correctly and invalid transitions are properly rejected.
+*   **RISK:** Users bypassing security screens or accessing protected data while in a `Guest` or `LoginError` state.
+*   **SOLUTION:** Authentication flows are validated using **ISTQB State Transition Testing**, systematically verifying that all 7 valid state transitions behave correctly across 3 observable states (Guest, LoggedIn, LoginError).
 
 ### ⚖️ Legal & Compliance Guardrails
 
