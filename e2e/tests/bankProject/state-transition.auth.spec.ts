@@ -91,8 +91,6 @@ let authVerified = false;
 
 test.describe('@critical @state-transition Authentication State Machine', () => {
   test.beforeAll(async ({ browser }) => {
-    test.setTimeout(60_000);
-
     // Register a fresh user to avoid "Internal Error" from corrupted shared accounts
     const page = await browser.newPage();
     const uniqueId = Date.now();
@@ -110,6 +108,10 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
       if (await registerPage.isRegistrationSuccess()) {
         testUser = newUser;
         console.log(`[Setup] Registered dynamic user: ${testUser.username}`);
+
+        // ParaBank auto-logs in after registration — log out to return to GUEST state
+        await page.getByRole('link', { name: /log\s*out/i }).click();
+        await page.waitForLoadState('domcontentloaded');
       }
     } catch (error) {
       console.warn(`[Setup] Registration failed: ${error}. Falling back to default credentials`);
