@@ -74,7 +74,7 @@ jobs:
           npm run test:api || true
           npm run test:loans || true
           npx playwright test -c e2e/playwright.config.ts --grep @regression --project=chromium || true
-          npx ts-node scripts/run-a11y-tests.ts || true
+          npx tsx scripts/run-a11y-tests.ts || true
         env:
           BANK_BASE_URL: ${{ vars.BANK_BASE_URL }}
           BANK_CUSTOMER_ID: ${{ vars.BANK_CUSTOMER_ID }}

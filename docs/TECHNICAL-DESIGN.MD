@@ -141,9 +141,9 @@ graph LR
 
     subgraph "CI Pipeline (ci.yml)"
     direction TB
-    CI --> CommitGate[Commit Gate]
+    CI --> CommitGate["Commit Gate<br/>(Lint + Unit + Loans)"]
     CommitGate -->|Pass| Smoke[Running @smoke]
-    Smoke -->|Pass| Critical["Running @critical + Loans<br/>(PR Only)"]
+    Smoke -->|Pass| Critical["Running @critical E2E<br/>(PR + Dispatch Only)"]
     end
 
     subgraph "Nightly Audit (playwright.yml)"
@@ -159,6 +159,7 @@ graph LR
     Generate --> Allure[Developer Dashboard]
     end
 
+    CommitGate -->|Artifacts| Merge
     Critical -->|Artifacts| Merge
     Regression -->|Artifacts| Merge
     A11y -->|Artifacts| Merge
@@ -207,7 +208,7 @@ npm run test:regression # Full Feature Parity (Nightly)
 npm run test:a11y       # Accessibility Audit (Nightly)
 npm run test:heartbeat  # API Health Monitor
 npm run test:audit      # Run Regression + A11y (Full Audit)
-npm run test:loans      # Run Loan Decision Table scenarios (34 tests)
+npm run test:loans      # Run Loan Decision Table scenarios (41 tests)
 
 # Running by Architectural Layer
 npm run test:unit       # 189 tests (Logic & Math)
@@ -286,8 +287,8 @@ The stakeholder dashboard presents four non-overlapping quality lanes:
 | Lane | Source Data | What It Shows |
 |------|-----------|---------------|
 | **Code Quality** | `unit-summary.json` (189 unit tests) | Pass rate for isolated logic and financial maths |
-| **Financial Accuracy** | `loan-results.json` (34 loan tests) | Decision table + BVA coverage of loan approval rules |
-| **User Journey Coverage** | `e2e-critical-results.json` + `e2e-regression-results.json` (33 E2E tests) | Known defects (amber), unexpected failures (red), skipped (grey) |
+| **Financial Accuracy** | `loan-results.json` (41 loan tests) | Decision table + BVA coverage of loan approval rules (34 core scenarios + 6 critical path + 1 coverage) |
+| **User Journey Coverage** | `e2e-critical-results.json` + `e2e-regression-results.json` | Known defects (amber), unexpected failures (red), skipped (grey). Critical = 31 tests (chromium), regression = 12 tests (3 browsers) |
 | **WCAG Compliance** | `a11y-results.json` | Violation count and AA/A/Non-Compliant badge |
 
 E2E metrics distinguish between outcomes using Playwright's `test.status` and `results[0].status`:

@@ -33,7 +33,7 @@ We use **Husky** and **Lint-Staged** to enforce quality before commits.
 | `npm run test:smoke`     | Fast connectivity check (API + E2E) |
 | `npm run test:critical`  | Core loan logic + auth flows        |
 | `npm run test:heartbeat` | API health monitor                  |
-| `npm run test:loans`     | Loan Decision Table - 34 tests      |
+| `npm run test:loans`     | Loan Decision Table - 41 tests      |
 | `npm run test:a11y`      | Accessibility audit (WCAG 2.1 AA)   |
 | `npm run test:audit`     | Full Regression + Accessibility     |
 
@@ -57,9 +57,9 @@ Pull requests trigger the following sequential gates:
 Commit Gate → Smoke Lane → Critical Lane → Report Deploy
 ```
 
-- **Commit Gate**: Lint, typecheck, unit tests (every push)
+- **Commit Gate**: Lint, typecheck, unit tests, loan report generation (every push)
 - **Smoke Lane**: API + E2E connectivity (Push & PR)
-- **Critical Lane**: Business logic validation (PRs only)
+- **Critical Lane**: @critical API + E2E validation (PR + dispatch only)
 - **Nightly Audit**: @regression + @a11y at 2 AM UTC
 
 ## 📊 Reporting
