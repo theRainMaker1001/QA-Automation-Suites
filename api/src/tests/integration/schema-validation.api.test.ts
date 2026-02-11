@@ -19,7 +19,7 @@ const client = new HttpClient({
   },
 });
 
-describe('API Schema Validation - Integration', () => {
+describe('@smoke API Schema Validation - Integration', () => {
   describe('Loan API', () => {
     it('loan approval response matches LoanResponseSchema', async () => {
       const params = new URLSearchParams({

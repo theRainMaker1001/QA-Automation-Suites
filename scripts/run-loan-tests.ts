@@ -172,7 +172,7 @@ function main(): void {
   try {
     // Run vitest with both JSON and Allure reporters
     execSync(
-      `npx vitest run api/src/tests/critical/loan-decision-table.test.ts --reporter=json --reporter=allure-vitest/reporter --outputFile=${JSON_REPORT_PATH}`,
+      `npx vitest run api/src/tests/critical/loan-decision-table.test.ts --reporter=json --reporter=allure-vitest/reporter --outputFile=${JSON_REPORT_PATH} --allureResultsDir=allure-results/unit`,
       { stdio: 'inherit' },
     );
   } catch (e) {

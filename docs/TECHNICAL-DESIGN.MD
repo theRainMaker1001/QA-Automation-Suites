@@ -21,7 +21,7 @@ To prevent the "Ice Cream Cone" anti-pattern, this suite is weighted toward fast
 ```
 
 * **E2E (~46 Tests):** High-fidelity user simulation covering smoke, critical, regression, and accessibility scenarios.
-* **Integration (84 Tests):** API contract validation via Equivalence Partitioning (21), schema integrity (17), loan Decision Table + BVA (43), and heartbeat monitoring (3).
+* **Integration (84 Tests):** API contract validation via Equivalence Partitioning (20), schema integrity (14), loan Decision Table + BVA (47), and heartbeat monitoring (3).
 * **Unit (189 Tests):** Sub-millisecond validation of financial utilities and isolated business logic.
 
 ---
@@ -160,6 +160,7 @@ graph LR
     end
 
     CommitGate -->|Artifacts| Merge
+    Smoke -->|Artifacts| Merge
     Critical -->|Artifacts| Merge
     Regression -->|Artifacts| Merge
     A11y -->|Artifacts| Merge
@@ -208,11 +209,11 @@ npm run test:regression # Full Feature Parity (Nightly)
 npm run test:a11y       # Accessibility Audit (Nightly)
 npm run test:heartbeat  # API Health Monitor
 npm run test:audit      # Run Regression + A11y (Full Audit)
-npm run test:loans      # Run Loan Decision Table scenarios (41 tests)
+npm run test:loans      # Run Loan Decision Table scenarios (47 tests)
 
 # Running by Architectural Layer
 npm run test:unit       # 189 tests (Logic & Math)
-npm run test:api        # 71 tests (Contract & Integration)
+npm run test:api        # 84 tests (Contract & Integration)
 npm run test:e2e        # ~46 tests (Full User Journeys)
 ```
 
@@ -287,7 +288,7 @@ The stakeholder dashboard presents four non-overlapping quality lanes:
 | Lane | Source Data | What It Shows |
 |------|-----------|---------------|
 | **Code Quality** | `unit-summary.json` (189 unit tests) | Pass rate for isolated logic and financial maths |
-| **Financial Accuracy** | `loan-results.json` (41 loan tests) | Decision table + BVA coverage of loan approval rules (34 core scenarios + 6 critical path + 1 coverage) |
+| **Financial Accuracy** | `loan-results.json` (47 loan tests) | Decision table + BVA coverage of loan approval rules (34 core scenarios + 6 critical path + 1 coverage + 6 negative) |
 | **User Journey Coverage** | `e2e-critical-results.json` + `e2e-regression-results.json` | Known defects (amber), unexpected failures (red), skipped (grey). Critical = 31 tests (chromium), regression = 12 tests (3 browsers) |
 | **WCAG Compliance** | `a11y-results.json` | Violation count and AA/A/Non-Compliant badge |
 

@@ -454,11 +454,22 @@ jobs:
       # ════════════════════════════════════════════════════════════════════════
       # PRESERVE ALLURE HISTORY FOR NEXT RUN (Cache + Artifact backup)
       # ════════════════════════════════════════════════════════════════════════
+      - name: Prepare Allure history for cache
+        if: always()
+        run: |
+          mkdir -p allure-history-cache
+          if [ -d "public/allure/history" ]; then
+            cp -r public/allure/history/* allure-history-cache/ 2>/dev/null || true
+            echo "History files staged for cache: $(ls allure-history-cache/ | wc -l)"
+          else
+            echo "No history directory found in generated report"
+          fi
+
       - name: Save Allure history to cache
         if: always()
         uses: actions/cache/save@v4
         with:
-          path: public/allure/history/
+          path: allure-history-cache
           key: allure-history-${{ github.ref_name }}-${{ github.run_id }}
 
       - name: Upload Allure history (backup)

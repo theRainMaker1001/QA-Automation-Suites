@@ -33,7 +33,7 @@ We use **Husky** and **Lint-Staged** to enforce quality before commits.
 | `npm run test:smoke`     | Fast connectivity check (API + E2E) |
 | `npm run test:critical`  | Core loan logic + auth flows        |
 | `npm run test:heartbeat` | API health monitor                  |
-| `npm run test:loans`     | Loan Decision Table - 41 tests      |
+| `npm run test:loans`     | Loan Decision Table - 47 tests      |
 | `npm run test:a11y`      | Accessibility audit (WCAG 2.1 AA)   |
 | `npm run test:audit`     | Full Regression + Accessibility     |
 
