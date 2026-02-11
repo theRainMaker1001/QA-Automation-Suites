@@ -14,10 +14,30 @@ import * as path from 'path';
 const REPORTS_DIR = path.join(process.cwd(), 'reports');
 const REPORT_PATH = path.join(REPORTS_DIR, 'loan-api-report.md');
 const JSON_REPORT_PATH = path.join(REPORTS_DIR, 'loan-results.json');
+const ALLURE_DEFAULT_DIR = path.join(process.cwd(), 'allure-results');
+const ALLURE_UNIT_DIR = path.join(ALLURE_DEFAULT_DIR, 'unit');
 
 function ensureReportsDir(): void {
   if (!fs.existsSync(REPORTS_DIR)) {
     fs.mkdirSync(REPORTS_DIR, { recursive: true });
+  }
+}
+
+function moveAllureResults(): void {
+  // allure-vitest writes to the default allure-results/ when no config is used.
+  // CI uploads from allure-results/unit/, so move the files there.
+  if (!fs.existsSync(ALLURE_DEFAULT_DIR)) return;
+
+  if (!fs.existsSync(ALLURE_UNIT_DIR)) {
+    fs.mkdirSync(ALLURE_UNIT_DIR, { recursive: true });
+  }
+
+  const entries = fs.readdirSync(ALLURE_DEFAULT_DIR);
+  for (const entry of entries) {
+    const fullPath = path.join(ALLURE_DEFAULT_DIR, entry);
+    if (fs.statSync(fullPath).isFile()) {
+      fs.renameSync(fullPath, path.join(ALLURE_UNIT_DIR, entry));
+    }
   }
 }
 
@@ -172,13 +192,16 @@ function main(): void {
   try {
     // Run vitest with both JSON and Allure reporters
     execSync(
-      `npx vitest run api/src/tests/critical/loan-decision-table.test.ts --reporter=json --reporter=allure-vitest/reporter --outputFile=${JSON_REPORT_PATH} --allureResultsDir=allure-results/unit`,
+      `npx vitest run api/src/tests/critical/loan-decision-table.test.ts --reporter=json --reporter=allure-vitest/reporter --outputFile=${JSON_REPORT_PATH}`,
       { stdio: 'inherit' },
     );
   } catch (e) {
     // Tests failed but we still want to generate report
     exitCode = 1;
   }
+
+  // Move allure results to allure-results/unit/ for CI upload
+  moveAllureResults();
 
   // Generate markdown report
   if (fs.existsSync(JSON_REPORT_PATH)) {
