@@ -306,9 +306,8 @@ ParaBank's loan API uses **account balance** as `availableFunds`. This means:
 api/
 ├── src/
 │   ├── helpers/
-│   │   └── generate-unit-summary.ts
-│   ├── services/
-│   │   └── bank-api.ts
+│   │   ├── generate-unit-summary.ts
+│   │   └── http.ts
 │   ├── tests/
 │   │   ├── unit/                           # Fast, isolated tests
 │   │   │   ├── env.test.ts
@@ -409,18 +408,19 @@ The loan approval tests are part of the **critical lane** in the risk-based test
 │  (Every Push)   │     │ (Push/PR/Disp)  │     │  (PR/Dispatch)  │
 ├─────────────────┤     ├─────────────────┤     ├─────────────────┤
 │ • Type check    │     │ • API @smoke    │     │ • API @critical │
-│ • Lint          │     │ • E2E @smoke    │     │ • E2E @critical │
-│ • Unit tests    │     │                 │     │ • Loan tests    │
+│ • Lint + Format │     │ • E2E @smoke    │     │ • E2E @critical │
+│ • Unit tests    │     │                 │     │                 │
+│ • Loan report   │     │                 │     │                 │
 └─────────────────┘     └─────────────────┘     └─────────────────┘
 ```
 
 ### 7.2 GitHub Actions Workflows
 
-| Workflow             | Trigger                | Loan Tests Run?        |
-| -------------------- | ---------------------- | ---------------------- |
-| `ci.yml`             | Push to main, PR       | ✅ Critical (PRs only) |
-| `playwright.yml`     | Nightly, dispatch      | ❌ E2E only            |
-| `deploy-reports.yml` | On workflow completion | ✅ For reporting       |
+| Workflow             | Trigger                    | Loan Tests Run?                                           |
+| -------------------- | -------------------------- | --------------------------------------------------------- |
+| `ci.yml`             | Push to main, PR, Dispatch | ✅ Commit gate (every push) + Critical lane (PR/Dispatch) |
+| `playwright.yml`     | Nightly, dispatch          | ❌ E2E only                                               |
+| `deploy-reports.yml` | On workflow completion     | ✅ For reporting                                          |
 
 ### 7.3 Environment Variables
 
@@ -457,7 +457,7 @@ Test results are published to Allure for trend tracking:
 
 ```
 allure-results/
-├── integration/          # Loan tests land here
+├── unit/                 # Loan tests land here (via moveAllureResults)
 └── ...
 
 # Generated report
@@ -469,7 +469,7 @@ allure-report/
 
 Executive-level metrics are aggregated via `scripts/generate-stakeholder-dashboard.ts`:
 
-- **Confidence Score**: Weighted average (critical 50%, unit 30%, a11y 20%)
+- **Confidence Score**: Weighted average (critical/loans 40%, e2e 25%, unit 20%, a11y 15%)
 - **Risk Level**: LOW | MEDIUM | HIGH | CRITICAL
 - **Lane Health**: Per-lane pass/fail indicators
 

@@ -102,6 +102,7 @@ To ensure absolute rigor for this financial system, we **implement** 3-Value BVA
     Ratio Check BVA (-2..+2)   ████████    5 tests
     Loan Amt BVA (-2..+2)      ████████    5 tests
     Down Pmt BVA (-2..+2)      ████████    5 tests
+    Avail Funds BVA (-2..+2)   ████████    5 tests
     Combined Boundaries        ████████    5 tests
     ────────────────────────────────────────────
     TOTAL                                 34 tests
@@ -135,8 +136,9 @@ The pipeline uses **GitHub Actions** with strict quality gates. This multi-lane 
 
 ```mermaid
 graph LR
-    Local(💻 Local Dev) -->|Husky| Gate1{Lint & Unit}
-    Gate1 -->|Pass| Push[🚀 Push Remote]
+    Local(💻 Local Dev) -->|Husky pre-commit| Gate1{Lint & Format}
+    Gate1 -->|Pass| Gate2{Typecheck & Smoke}
+    Gate2 -->|Husky pre-push| Push[🚀 Push Remote]
     Push -->|Trigger| CI[GitHub Actions]
 
     subgraph "CI Pipeline (ci.yml)"
@@ -301,7 +303,7 @@ E2E metrics distinguish between outcomes using Playwright's `test.status` and `r
 
 | Feature | Developer Dashboard (Allure) | Stakeholder Dashboard |
 |---------|--------------------|-----------------------|
-| Audience | QA Engineers, Developers | PMs, Leadership |
+| Audience | QA Staff, Developers | PMs, Leadership |
 | Detail Level | Full test execution data | Aggregated metrics |
 | History | 90-day trend analysis | Current run summary |
 | Failures | Stack traces, screenshots, video | Known defects vs unexpected breakdown |

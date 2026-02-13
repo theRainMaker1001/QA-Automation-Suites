@@ -15,7 +15,7 @@ See the system in action. These dashboards provide real-time visibility into the
 | Dashboard | Audience | Shows | Link |
 |-----------|----------|-------|------|
 | **Stakeholder Dashboard** | **PMs & Leadership** | Confidence score, risk level, known defects, WCAG compliance | [View Executive Summary](https://therainmaker1001.github.io/QA-Automation-Suites/stakeholder/) |
-| **Developer Dashboard** | **QA & Engineering** | Full test details, failure categories, history trends, screenshots | [View Technical Allure Report](https://therainmaker1001.github.io/QA-Automation-Suites/allure/) |
+| **Developer Dashboard** | **QA Staff & Developers** | Full test details, failure categories, history trends, screenshots | [View Technical Allure Report](https://therainmaker1001.github.io/QA-Automation-Suites/allure/) |
 
 ---
 
@@ -70,7 +70,7 @@ Software development is expensive. Set this sort of framework up right and you h
 Instead of running every test on every change, we use intelligent tagging:
 
 *   `@smoke`: Fast connectivity checks (Push & PR).
-*   `@critical`: Core money logic (PRs only).
+*   `@critical`: Core money logic (PRs & Dispatch).
 *   `@regression`: Full suite (Nightly).
 
 *   **Impact:** Reduces CI/CD cloud costs by up to **40%** by running expensive tests only when necessary.

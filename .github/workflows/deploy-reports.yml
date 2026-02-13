@@ -95,21 +95,29 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # ── Resolve latest nightly (scheduled) run independently ──────────
+          # Nightly regression and a11y data must always come from the most
+          # recent scheduled playwright.yml run, regardless of what triggered
+          # this deploy.  Scanning the last 20 runs avoids picking up manual
+          # dispatches that only executed the smoke or critical jobs.
+          NIGHTLY_RUN_ID=$(gh run list --workflow "playwright.yml" --branch main \
+            --limit 20 --json databaseId,event \
+            --jq '[.[] | select(.event == "schedule")][0].databaseId')
+          echo "nightly_run_id=${NIGHTLY_RUN_ID}" >> $GITHUB_OUTPUT
+
+          # ── Resolve CI and general E2E run IDs ────────────────────────────
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            # Manual trigger: fetch latest successful run from both workflows
             CI_RUN_ID=$(gh run list --workflow "ci.yml" --branch main --status success --limit 1 --json databaseId --jq '.[0].databaseId')
             E2E_RUN_ID=$(gh run list --workflow "playwright.yml" --branch main --limit 1 --json databaseId --jq '.[0].databaseId')
-            echo "Manual trigger: CI run=$CI_RUN_ID, E2E run=$E2E_RUN_ID"
+            echo "Manual trigger: CI=$CI_RUN_ID, E2E=$E2E_RUN_ID, Nightly=$NIGHTLY_RUN_ID"
           elif [ "${{ github.event.workflow_run.name }}" == "Testing Lanes - Risk-Based Orchestration" ]; then
-            # Triggered by CI: use triggering run for CI artifacts, latest E2E for E2E artifacts
             CI_RUN_ID=${{ github.event.workflow_run.id }}
             E2E_RUN_ID=$(gh run list --workflow "playwright.yml" --branch main --limit 1 --json databaseId --jq '.[0].databaseId')
-            echo "CI trigger: CI run=$CI_RUN_ID, E2E run=$E2E_RUN_ID"
+            echo "CI trigger: CI=$CI_RUN_ID, E2E=$E2E_RUN_ID, Nightly=$NIGHTLY_RUN_ID"
           else
-            # Triggered by E2E: use triggering run for E2E artifacts, latest CI for CI artifacts
             E2E_RUN_ID=${{ github.event.workflow_run.id }}
             CI_RUN_ID=$(gh run list --workflow "ci.yml" --branch main --status success --limit 1 --json databaseId --jq '.[0].databaseId')
-            echo "E2E trigger: CI run=$CI_RUN_ID, E2E run=$E2E_RUN_ID"
+            echo "E2E trigger: CI=$CI_RUN_ID, E2E=$E2E_RUN_ID, Nightly=$NIGHTLY_RUN_ID"
           fi
 
           echo "ci_run_id=${CI_RUN_ID}" >> $GITHUB_OUTPUT
@@ -168,12 +176,12 @@ jobs:
         continue-on-error: true
 
       - name: Download Allure results (E2E nightly)
-        if: steps.get_run_ids.outputs.e2e_run_id != ''
+        if: steps.get_run_ids.outputs.nightly_run_id != ''
         uses: actions/download-artifact@v4
         with:
           name: allure-results-e2e-nightly
           path: allure-results/e2e-nightly/
-          run-id: ${{ steps.get_run_ids.outputs.e2e_run_id }}
+          run-id: ${{ steps.get_run_ids.outputs.nightly_run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
@@ -201,12 +209,12 @@ jobs:
         continue-on-error: true
 
       - name: Download nightly reports (stakeholder data)
-        if: steps.get_run_ids.outputs.e2e_run_id != ''
+        if: steps.get_run_ids.outputs.nightly_run_id != ''
         uses: actions/download-artifact@v4
         with:
           name: reports-nightly
           path: reports/
-          run-id: ${{ steps.get_run_ids.outputs.e2e_run_id }}
+          run-id: ${{ steps.get_run_ids.outputs.nightly_run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
@@ -437,7 +445,7 @@ jobs:
                 <a href="./allure/" class="card developer">
                   <div class="icon">🔬</div>
                   <h2>Developer Dashboard</h2>
-                  <p>Detailed Allure report with full test results, execution history, trends, and failure analysis. For QA and developers.</p>
+                  <p>Detailed Allure report with full test results, execution history, trends, and failure analysis. Ideal for QA staff alongside developers.</p>
                 </a>
               </div>
 
