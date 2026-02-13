@@ -175,8 +175,21 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
-      - name: Download Allure results (E2E nightly)
-        if: steps.get_run_ids.outputs.nightly_run_id != ''
+      # Nightly Allure: try the E2E trigger run first (catches manual dispatches),
+      # then fall back to the last scheduled nightly if the trigger had no nightly data.
+      - name: Download Allure results (E2E nightly - from trigger)
+        id: nightly_allure_trigger
+        if: steps.get_run_ids.outputs.e2e_run_id != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-results-e2e-nightly
+          path: allure-results/e2e-nightly/
+          run-id: ${{ steps.get_run_ids.outputs.e2e_run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Download Allure results (E2E nightly - scheduled fallback)
+        if: steps.nightly_allure_trigger.outcome != 'success' && steps.get_run_ids.outputs.nightly_run_id != ''
         uses: actions/download-artifact@v4
         with:
           name: allure-results-e2e-nightly
@@ -208,8 +221,20 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
-      - name: Download nightly reports (stakeholder data)
-        if: steps.get_run_ids.outputs.nightly_run_id != ''
+      # Nightly stakeholder: same try-trigger-then-scheduled pattern.
+      - name: Download nightly reports (stakeholder - from trigger)
+        id: nightly_reports_trigger
+        if: steps.get_run_ids.outputs.e2e_run_id != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: reports-nightly
+          path: reports/
+          run-id: ${{ steps.get_run_ids.outputs.e2e_run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Download nightly reports (stakeholder - scheduled fallback)
+        if: steps.nightly_reports_trigger.outcome != 'success' && steps.get_run_ids.outputs.nightly_run_id != ''
         uses: actions/download-artifact@v4
         with:
           name: reports-nightly
