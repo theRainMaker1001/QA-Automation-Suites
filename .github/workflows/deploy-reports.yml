@@ -107,7 +107,7 @@ jobs:
 
           # ── Resolve CI and general E2E run IDs ────────────────────────────
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            CI_RUN_ID=$(gh run list --workflow "ci.yml" --branch main --status success --limit 1 --json databaseId --jq '.[0].databaseId')
+            CI_RUN_ID=$(gh run list --workflow "ci.yml" --branch main --limit 1 --json databaseId --jq '.[0].databaseId')
             E2E_RUN_ID=$(gh run list --workflow "playwright.yml" --branch main --limit 1 --json databaseId --jq '.[0].databaseId')
             echo "Manual trigger: CI=$CI_RUN_ID, E2E=$E2E_RUN_ID, Nightly=$NIGHTLY_RUN_ID"
           elif [ "${{ github.event.workflow_run.name }}" == "Testing Lanes - Risk-Based Orchestration" ]; then
@@ -116,7 +116,7 @@ jobs:
             echo "CI trigger: CI=$CI_RUN_ID, E2E=$E2E_RUN_ID, Nightly=$NIGHTLY_RUN_ID"
           else
             E2E_RUN_ID=${{ github.event.workflow_run.id }}
-            CI_RUN_ID=$(gh run list --workflow "ci.yml" --branch main --status success --limit 1 --json databaseId --jq '.[0].databaseId')
+            CI_RUN_ID=$(gh run list --workflow "ci.yml" --branch main --limit 1 --json databaseId --jq '.[0].databaseId')
             echo "E2E trigger: CI=$CI_RUN_ID, E2E=$E2E_RUN_ID, Nightly=$NIGHTLY_RUN_ID"
           fi
 
