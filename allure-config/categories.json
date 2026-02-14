@@ -1,8 +1,15 @@
 [
   {
+    "name": "Infrastructure Issues",
+    "description": "Timeouts, network errors, or environment problems unrelated to application logic.",
+    "messageRegex": ".*(timeout|timed out|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ENOTFOUND|net::ERR|Navigation failed|Target closed|browser has been closed|status: 5[0-9]{2}).*",
+    "matchedStatuses": ["broken", "failed"],
+    "flaky": false
+  },
+  {
     "name": "Known Defects",
-    "description": "Tests marked with test.fail() that failed as expected. These are tracked, documented defects.",
-    "messageRegex": ".*",
+    "description": "Expected failures linked to known product defects (for example tests marked with test.fail()).",
+    "messageRegex": ".*(Security Defect|Known Defect|ParaBank uses POST|expected to fail|expected fail).*",
     "matchedStatuses": ["failed"],
     "flaky": false
   },
@@ -10,13 +17,6 @@
     "name": "Unexpected Failures",
     "description": "Tests that were expected to pass but failed. These require immediate investigation.",
     "messageRegex": ".*",
-    "matchedStatuses": ["broken"],
-    "flaky": false
-  },
-  {
-    "name": "Infrastructure Issues",
-    "description": "Timeouts, network errors, or environment problems unrelated to application logic.",
-    "messageRegex": ".*(timeout|ECONNREFUSED|ECONNRESET|net::ERR|Navigation failed|Target closed|browser has been closed).*",
     "matchedStatuses": ["broken", "failed"],
     "flaky": false
   }

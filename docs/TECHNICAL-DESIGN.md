@@ -323,7 +323,13 @@ E2E metrics distinguish between outcomes using Playwright's `test.status` and `r
 | Categories | Known Defects, Unexpected, Infrastructure | N/A (aggregated into lane status) |
 | WCAG | Individual violations listed | Compliance badge (AA/A/NC) |
 | Risk | Per-test severity labels | Overall confidence score + risk level |
-| Data Source | Allure result XML/JSON | Report JSON artefacts (4 files) |
+| Data Source | Allure result XML/JSON | Report JSON artefacts (5 files) |
+
+### Data Freshness and Completeness Controls
+
+- Each stakeholder lane card displays the source `lastRun` timestamp, so stale data is visible.
+- If required inputs are missing, the stakeholder page shows a partial-data warning banner listing missing files.
+- Deploy is blocked on `main` when required stakeholder inputs are incomplete, preventing publication of partial snapshots.
 
 ### Report Generation Commands
 

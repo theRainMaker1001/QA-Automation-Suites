@@ -283,6 +283,7 @@ jobs:
         continue-on-error: true
 
       - name: Validate stakeholder input files
+        id: validate_stakeholder_inputs
         run: |
           required_files=(
             "reports/unit-summary.json"
@@ -293,18 +294,33 @@ jobs:
           )
 
           missing=0
+          missing_files=()
           for f in "${required_files[@]}"; do
             if [ ! -s "$f" ]; then
               echo "::warning::Missing stakeholder input: $f"
               missing=$((missing + 1))
+              missing_files+=("$f")
             fi
           done
 
           if [ "$missing" -gt 0 ]; then
             echo "::warning::Stakeholder dashboard is partial (${missing} required files missing)."
+            missing_csv=$(IFS=, ; echo "${missing_files[*]}")
+            echo "missing_files=${missing_csv}" >> "$GITHUB_OUTPUT"
           else
             echo "Stakeholder dataset is complete."
+            echo "missing_files=" >> "$GITHUB_OUTPUT"
           fi
+          echo "missing_count=${missing}" >> "$GITHUB_OUTPUT"
+
+      - name: Enforce complete stakeholder dataset on main
+        if: github.ref_name == 'main' && steps.validate_stakeholder_inputs.outputs.missing_count != '0'
+        env:
+          MISSING_COUNT: ${{ steps.validate_stakeholder_inputs.outputs.missing_count }}
+          MISSING_FILES: ${{ steps.validate_stakeholder_inputs.outputs.missing_files }}
+        run: |
+          echo "::error::Stakeholder dashboard deployment blocked on main. Missing ${MISSING_COUNT} required files: ${MISSING_FILES}"
+          exit 1
 
       - name: List available stakeholder data
         run: |

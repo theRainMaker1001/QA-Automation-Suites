@@ -55,6 +55,10 @@ interface DashboardData {
     totalPassed: number;
     totalFailed: number;
   };
+  completeness: {
+    isPartial: boolean;
+    missingSources: string[];
+  };
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -375,6 +379,17 @@ function generateHTML(data: DashboardData): string {
     return `<div class="stat-value"${style}>${display}</div>`;
   }
 
+  function lastRunValue(lastRun: string, available: boolean): string {
+    if (!available) return '-';
+    const parsed = new Date(lastRun);
+    if (Number.isNaN(parsed.getTime())) return lastRun;
+    return parsed.toLocaleString();
+  }
+
+  const partialDataBanner = data.completeness.isPartial
+    ? `<div class="partial-banner"><strong>Partial dataset:</strong> missing ${data.completeness.missingSources.join(', ')}</div>`
+    : '';
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -393,6 +408,15 @@ function generateHTML(data: DashboardData): string {
     .container { max-width: 1200px; margin: 0 auto; }
     h1 { color: #f0f6fc; margin-bottom: 0.5rem; font-size: 2rem; }
     .subtitle { color: #8b949e; margin-bottom: 2rem; }
+    .partial-banner {
+      margin-bottom: 1.5rem;
+      padding: 0.85rem 1rem;
+      border-radius: 10px;
+      border: 1px solid rgba(234, 179, 8, 0.55);
+      background: rgba(234, 179, 8, 0.13);
+      color: #fde68a;
+      font-size: 0.9rem;
+    }
 
     .metrics-row {
       display: grid;
@@ -445,6 +469,14 @@ function generateHTML(data: DashboardData): string {
     }
     .stat-value { font-size: 1.5rem; font-weight: bold; color: #f0f6fc; }
     .stat-label { font-size: 0.8rem; color: #8b949e; }
+    .lane-meta {
+      margin-top: 0.85rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid #30363d;
+      color: #8b949e;
+      font-size: 0.78rem;
+      text-align: center;
+    }
 
     .defect-row {
       margin-top: 1rem;
@@ -499,6 +531,7 @@ function generateHTML(data: DashboardData): string {
   <div class="container">
     <h1>QA Automation Suite</h1>
     <p class="subtitle">Stakeholder Dashboard - Generated ${new Date(data.generatedAt).toLocaleString()}</p>
+    ${partialDataBanner}
 
     <!-- Summary Row -->
     <div class="summary-row">
@@ -555,6 +588,7 @@ function generateHTML(data: DashboardData): string {
             <div class="stat-label">Failed</div>
           </div>
         </div>
+        <div class="lane-meta">Last run: ${lastRunValue(data.lanes.unit.lastRun, data.lanes.unit.dataAvailable)}</div>
       </div>
 
       <!-- Financial Accuracy (Loan Decision Table) -->
@@ -582,6 +616,7 @@ function generateHTML(data: DashboardData): string {
             <div class="stat-label">Failed</div>
           </div>
         </div>
+        <div class="lane-meta">Last run: ${lastRunValue(data.lanes.critical.lastRun, data.lanes.critical.dataAvailable)}</div>
       </div>
 
       <!-- User Journey Coverage (E2E Browser Tests) -->
@@ -623,6 +658,7 @@ function generateHTML(data: DashboardData): string {
             <div class="defect-label">Skipped</div>
           </div>
         </div>
+        <div class="lane-meta">Last run: ${lastRunValue(e2e.lastRun, e2e.dataAvailable)}</div>
       </div>
 
       <!-- WCAG Compliance (Accessibility) -->
@@ -653,6 +689,7 @@ function generateHTML(data: DashboardData): string {
         <div style="margin-top: 1rem; text-align: center;">
           <a href="../a11y-compliance-report.html" style="color: #58a6ff; font-size: 0.85rem;">View Full WCAG Compliance Report</a>
         </div>
+        <div class="lane-meta">Last run: ${lastRunValue(data.lanes.a11y.lastRun, data.lanes.a11y.dataAvailable)}</div>
       </div>
     </div>
 
@@ -678,6 +715,17 @@ function generateDashboard(): void {
   const e2eCritical = readJsonSafe(path.join(reportsDir, 'e2e-critical-results.json'), {});
   const e2eRegression = readJsonSafe(path.join(reportsDir, 'e2e-regression-results.json'), {});
   const a11yResults = readJsonSafe(path.join(reportsDir, 'a11y-results.json'), {});
+
+  const requiredSources = [
+    { file: 'unit-summary.json', found: unitSummary.found },
+    { file: 'loan-results.json', found: loanResults.found },
+    { file: 'e2e-critical-results.json', found: e2eCritical.found },
+    { file: 'e2e-regression-results.json', found: e2eRegression.found },
+    { file: 'a11y-results.json', found: a11yResults.found },
+  ];
+  const missingSources = requiredSources
+    .filter((source) => !source.found)
+    .map((source) => source.file);
 
   // Build lane metrics
   const lanes: DashboardData['lanes'] = {
@@ -711,6 +759,10 @@ function generateDashboard(): void {
       totalPassed: lanes.unit.passed + lanes.critical.passed + lanes.e2e.passed,
       totalFailed: lanes.unit.failed + lanes.critical.failed + lanes.e2e.failed,
     },
+    completeness: {
+      isPartial: missingSources.length > 0,
+      missingSources,
+    },
   };
 
   // Ensure reports directory exists
@@ -732,6 +784,13 @@ function generateDashboard(): void {
   console.log('\nDashboard Summary:');
   console.log(`  Confidence: ${dashboard.overallConfidence}%`);
   console.log(`  Risk Level: ${dashboard.riskLevel}`);
+  if (dashboard.completeness.isPartial) {
+    console.log(
+      `  Data Completeness: PARTIAL (missing: ${dashboard.completeness.missingSources.join(', ')})`,
+    );
+  } else {
+    console.log('  Data Completeness: COMPLETE');
+  }
   console.log(
     `  Code Quality: ${lanes.unit.passed}/${lanes.unit.totalTests} (${lanes.unit.passRate}%)${lanes.unit.dataAvailable ? '' : ' [no data]'}`,
   );
