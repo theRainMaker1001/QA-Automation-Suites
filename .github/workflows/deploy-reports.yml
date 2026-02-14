@@ -533,8 +533,7 @@ jobs:
 
               <!-- Status Injection -->
               <div id="status-container">
-                <!-- JS will populate this based on env var, but we inject via bash sed below -->
-                <span class="status-badge status-unknown">Checking Status...</span>
+                {{STATUS_BADGE}}
               </div>
 
               <div class="cards">
@@ -563,10 +562,10 @@ jobs:
 
           # Inject status into the HTML
           if [ "$PIPELINE_STATUS" == "success" ]; then
-            sed -i 's|<span class="status-badge status-unknown">Checking Status...</span>|<span class="status-badge status-success">Pipeline Status: PASSING</span>|' public/index.html
+            sed -i 's|{{STATUS_BADGE}}|<span class="status-badge status-success">Pipeline Status: PASSING</span>|' public/index.html
           else
             # Treat cancelled/skipped/failure as failure/attention needed
-            sed -i 's|<span class="status-badge status-unknown">Checking Status...</span>|<span class="status-badge status-failure">Pipeline Status: FAILED</span>|' public/index.html
+            sed -i 's|{{STATUS_BADGE}}|<span class="status-badge status-failure">Pipeline Status: FAILED</span>|' public/index.html
           fi
 
       # ════════════════════════════════════════════════════════════════════════
