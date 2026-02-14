@@ -494,6 +494,35 @@ jobs:
               .container { max-width: 800px; text-align: center; }
               h1 { color: #f0f6fc; font-size: 2.5rem; margin-bottom: 0.5rem; }
               .subtitle { color: #8b949e; margin-bottom: 1.5rem; font-size: 1.1rem; }
+              #status-container {
+                margin-bottom: 1.75rem;
+                display: flex;
+                justify-content: center;
+              }
+              .status-badge {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 270px;
+                padding: 0.6rem 1rem;
+                border-radius: 999px;
+                border: 1px solid transparent;
+                font-size: 0.9rem;
+                font-weight: 700;
+                letter-spacing: 0.02em;
+              }
+              .status-success {
+                color: #e8fff0;
+                background: rgba(34, 197, 94, 0.2);
+                border-color: rgba(34, 197, 94, 0.65);
+                box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.12) inset;
+              }
+              .status-failure {
+                color: #ffecec;
+                background: rgba(239, 68, 68, 0.2);
+                border-color: rgba(239, 68, 68, 0.7);
+                box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.12) inset;
+              }
               .cards {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -563,9 +592,11 @@ jobs:
           # Inject status into the HTML
           if [ "$PIPELINE_STATUS" == "success" ]; then
             sed -i 's|{{STATUS_BADGE}}|<span class="status-badge status-success">Pipeline Status: PASSING</span>|' public/index.html
-          else
-            # Treat cancelled/skipped/failure as failure/attention needed
+          elif [ "$PIPELINE_STATUS" == "failure" ]; then
             sed -i 's|{{STATUS_BADGE}}|<span class="status-badge status-failure">Pipeline Status: FAILED</span>|' public/index.html
+          else
+            # Treat cancelled/skipped/neutral/timed_out/action_required as attention needed
+            sed -i 's|{{STATUS_BADGE}}|<span class="status-badge status-failure">Pipeline Status: ATTENTION REQUIRED</span>|' public/index.html
           fi
 
       # ════════════════════════════════════════════════════════════════════════
