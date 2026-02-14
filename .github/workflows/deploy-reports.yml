@@ -69,12 +69,13 @@ jobs:
       - name: Generate test reports (manual dispatch only)
         if: github.event_name == 'workflow_dispatch'
         run: |
+          echo "success" > run_status.txt
           mkdir -p reports allure-results
-          npm run test:unit:report || true
-          npm run test:api || true
-          npm run test:loans || true
-          npx playwright test -c e2e/playwright.config.ts --grep @regression --project=chromium || true
-          npx tsx scripts/run-a11y-tests.ts || true
+          npm run test:unit:report || echo "failure" > run_status.txt
+          npm run test:api || echo "failure" > run_status.txt
+          npm run test:loans || echo "failure" > run_status.txt
+          npx playwright test -c e2e/playwright.config.ts --grep @regression --project=chromium || echo "failure" > run_status.txt
+          npx tsx scripts/run-a11y-tests.ts || echo "failure" > run_status.txt
         env:
           BANK_BASE_URL: ${{ vars.BANK_BASE_URL }}
           BANK_CUSTOMER_ID: ${{ vars.BANK_CUSTOMER_ID }}
@@ -300,7 +301,7 @@ jobs:
             echo "Restoring history from cache..."
             mkdir -p allure-results-merged/history
             cp -r allure-history-cache/* allure-results-merged/history/
-            echo "Cached history files: $(ls allure-results-merged/history/ | wc -l)"
+            echo "History injected from cache: $(ls allure-results-merged/history/)"
           # Priority 2: Fallback to artifact-based history
           elif [ -d "allure-results/history" ] && [ "$(ls -A allure-results/history 2>/dev/null)" ]; then
             echo "Restoring history from artifact..."
@@ -460,6 +461,17 @@ jobs:
       # ════════════════════════════════════════════════════════════════════════
       - name: Create dashboard hub
         run: |
+          # Determine pipeline status for the badge
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            if [ -f run_status.txt ] && grep -q "failure" run_status.txt; then
+              PIPELINE_STATUS="failure"
+            else
+              PIPELINE_STATUS="success"
+            fi
+          else
+            PIPELINE_STATUS="${{ github.event.workflow_run.conclusion }}"
+          fi
+
           cat > public/index.html << 'EOF'
           <!DOCTYPE html>
           <html lang="en">
@@ -519,6 +531,12 @@ jobs:
               <h1>QA Automation Suite</h1>
               <p class="subtitle">FinTech Quality Engineering - Dashboard Hub</p>
 
+              <!-- Status Injection -->
+              <div id="status-container">
+                <!-- JS will populate this based on env var, but we inject via bash sed below -->
+                <span class="status-badge status-unknown">Checking Status...</span>
+              </div>
+
               <div class="cards">
                 <a href="./stakeholder/" class="card stakeholder">
                   <div class="icon">📊</div>
@@ -542,6 +560,14 @@ jobs:
           </body>
           </html>
           EOF
+
+          # Inject status into the HTML
+          if [ "$PIPELINE_STATUS" == "success" ]; then
+            sed -i 's|<span class="status-badge status-unknown">Checking Status...</span>|<span class="status-badge status-success">● Last Run: PASSING</span>|' public/index.html
+          else
+            # Treat cancelled/skipped/failure as failure/attention needed
+            sed -i 's|<span class="status-badge status-unknown">Checking Status...</span>|<span class="status-badge status-failure">● Last Run: FAILED</span>|' public/index.html
+          fi
 
       # ════════════════════════════════════════════════════════════════════════
       # PRESERVE ALLURE HISTORY FOR NEXT RUN (Cache + Artifact backup)
