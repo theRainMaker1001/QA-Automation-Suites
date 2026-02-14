@@ -11,7 +11,7 @@
 
 ## 2. General Maintenance
 
-- [x] **Typos**: Spellcheck passed for `README.md` and `TECHNICAL-DESIGN.MD`.
+- [x] **Typos**: Spellcheck passed for `README.md` and `TECHNICAL-DESIGN.md`.
 - [x] **Node Version**: Confirmed v24.11.1 requirement across `.nvmrc`, `package.json`, and docs.
 - [x] **Dependencies**: Verified Playwright (v1.57) and Vitest (v4.0) versions match.
 
@@ -22,5 +22,5 @@ The documentation ecosystem is now fully aligned with the `package.json` scripts
 ### Key Artifacts Updated
 
 - **README.md**: Accurate high-level overview and risk lanes.
-- **TECHNICAL-DESIGN.MD**: Accurate deep-dive specifications and execution commands.
+- **TECHNICAL-DESIGN.md**: Accurate deep-dive specifications and execution commands.
 - **CI/CD**: Workflows and Husky hooks are correctly documented.

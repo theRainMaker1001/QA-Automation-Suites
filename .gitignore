@@ -1,4 +1,4 @@
-# Windows /dev/null artefact
+# Windows /dev/null artifact
 nul
 
 # Local resources / artifacts / secrets
@@ -20,14 +20,12 @@ e2e/.auth/
 
 # Local configs
 .env
-resources/
-!resources/.gitkeep
 
 # IDE junk
 .vscode/
 .idea/
 
-# Ignore cache file
+# Cache files
 .eslintcache
 
 # Generated test reports (uploaded as CI artifacts, not committed)
@@ -40,13 +38,21 @@ allure-report/
 
 # Claude / AI assistant settings
 .claude/
-.claude
 CLAUDE.md
+AGENTS.md
+AGENTS.MD
 claude.json
 .anthropic/
 .aider*
 .cursor/
-AGENTS.MD
+
+# Codex files and config
+.codex/
+.codex
+.codexrc
+.codexrc.*
+codex.json
+codex.*.json
 
 # Document audit
 DOCUMENTATION_AUDIT_PLAN.md

@@ -89,4 +89,4 @@ reports/           # JSON test result data (generated)
 .github/workflows/ # CI/CD pipelines
 ```
 
-See [TECHNICAL-DESIGN.MD](../TECHNICAL-DESIGN.MD) for detailed architecture documentation.
+See [TECHNICAL-DESIGN.md](../TECHNICAL-DESIGN.md) for detailed architecture documentation.
