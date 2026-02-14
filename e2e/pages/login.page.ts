@@ -34,7 +34,9 @@ export class LoginPage extends BasePage {
     this.loginButton = this.loginPanel.getByRole('button', { name: /log\s*in/i });
 
     // Error message
-    this.errorMessage = page.locator('.error, [class*="error"]');
+    // ParaBank keeps hidden ".error" elements in authenticated views.
+    // Scope to visible errors to avoid false LOGIN_ERROR detection.
+    this.errorMessage = page.locator('.error:visible, [class*="error"]:visible');
 
     // Logged in state indicators
     this.logoutLink = page.getByRole('link', { name: /log\s*out/i });
