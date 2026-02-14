@@ -202,63 +202,109 @@ jobs:
       # ════════════════════════════════════════════════════════════════════════
       # DOWNLOAD STAKEHOLDER REPORT DATA
       # ════════════════════════════════════════════════════════════════════════
+      - name: Resolve stakeholder artifact run IDs (deterministic)
+        id: stakeholder_run_ids
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          has_artifact() {
+            local run_id="$1"
+            local artifact_name="$2"
+            gh api "repos/${REPO}/actions/runs/${run_id}/artifacts" \
+              --jq ".artifacts[]? | select(.name == \"${artifact_name}\" and .expired == false) | .id" \
+              | head -n 1
+          }
+
+          find_run_with_artifact() {
+            local workflow="$1"
+            local artifact_name="$2"
+            local allowed_events="$3"
+            local limit="${4:-40}"
+
+            gh run list --workflow "$workflow" --branch main --status success --limit "$limit" --json databaseId,event \
+              --jq '.[] | "\(.databaseId) \(.event)"' | while read -r run_id event; do
+                [ -z "${run_id:-}" ] && continue
+                if [ -n "$allowed_events" ] && ! grep -qw "$event" <<< "$allowed_events"; then
+                  continue
+                fi
+
+                artifact_id="$(has_artifact "$run_id" "$artifact_name" || true)"
+                if [ -n "${artifact_id:-}" ]; then
+                  echo "$run_id"
+                  break
+                fi
+              done
+          }
+
+          UNIT_RUN_ID="$(find_run_with_artifact "ci.yml" "unit-reports" "push pull_request workflow_dispatch" || true)"
+          CRITICAL_RUN_ID="$(find_run_with_artifact "ci.yml" "reports-critical" "pull_request workflow_dispatch" || true)"
+          NIGHTLY_RUN_ID="$(find_run_with_artifact "playwright.yml" "reports-nightly" "schedule workflow_dispatch" || true)"
+
+          echo "unit_run_id=${UNIT_RUN_ID}" >> "$GITHUB_OUTPUT"
+          echo "critical_run_id=${CRITICAL_RUN_ID}" >> "$GITHUB_OUTPUT"
+          echo "nightly_run_id=${NIGHTLY_RUN_ID}" >> "$GITHUB_OUTPUT"
+
+          echo "Resolved stakeholder runs:"
+          echo "  unit-reports   -> ${UNIT_RUN_ID:-none}"
+          echo "  reports-critical -> ${CRITICAL_RUN_ID:-none}"
+          echo "  reports-nightly  -> ${NIGHTLY_RUN_ID:-none}"
+
       - name: Download unit reports (stakeholder data)
-        if: steps.get_run_ids.outputs.ci_run_id != ''
+        if: steps.stakeholder_run_ids.outputs.unit_run_id != ''
         uses: actions/download-artifact@v4
         with:
           name: unit-reports
           path: reports/
-          run-id: ${{ steps.get_run_ids.outputs.ci_run_id }}
+          run-id: ${{ steps.stakeholder_run_ids.outputs.unit_run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
       - name: Download critical reports (stakeholder data)
-        id: critical_reports_primary
-        if: steps.get_run_ids.outputs.ci_run_id != ''
+        if: steps.stakeholder_run_ids.outputs.critical_run_id != ''
         uses: actions/download-artifact@v4
         with:
           name: reports-critical
           path: reports/
-          run-id: ${{ steps.get_run_ids.outputs.ci_run_id }}
+          run-id: ${{ steps.stakeholder_run_ids.outputs.critical_run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
-      - name: Download critical reports (fallback from latest dispatch/PR CI)
-        if: steps.critical_reports_primary.outcome != 'success'
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Download nightly reports (stakeholder data)
+        if: steps.stakeholder_run_ids.outputs.nightly_run_id != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: reports-nightly
+          path: reports/
+          run-id: ${{ steps.stakeholder_run_ids.outputs.nightly_run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Validate stakeholder input files
         run: |
-          CRITICAL_CI_ID=$(gh run list --workflow "ci.yml" --branch main \
-            --status success --limit 10 --json databaseId,event \
-            --jq '[.[] | select(.event == "pull_request" or .event == "workflow_dispatch")][0].databaseId')
-          if [ -n "$CRITICAL_CI_ID" ] && [ "$CRITICAL_CI_ID" != "null" ]; then
-            echo "Falling back to CI run $CRITICAL_CI_ID for critical reports..."
-            gh run download "$CRITICAL_CI_ID" --name reports-critical --dir reports/ || true
+          required_files=(
+            "reports/unit-summary.json"
+            "reports/loan-results.json"
+            "reports/e2e-critical-results.json"
+            "reports/e2e-regression-results.json"
+            "reports/a11y-results.json"
+          )
+
+          missing=0
+          for f in "${required_files[@]}"; do
+            if [ ! -s "$f" ]; then
+              echo "::warning::Missing stakeholder input: $f"
+              missing=$((missing + 1))
+            fi
+          done
+
+          if [ "$missing" -gt 0 ]; then
+            echo "::warning::Stakeholder dashboard is partial (${missing} required files missing)."
           else
-            echo "No recent dispatch/PR CI run found with critical reports"
+            echo "Stakeholder dataset is complete."
           fi
-
-      # Nightly stakeholder: same try-trigger-then-scheduled pattern.
-      - name: Download nightly reports (stakeholder - from trigger)
-        id: nightly_reports_trigger
-        if: steps.get_run_ids.outputs.e2e_run_id != ''
-        uses: actions/download-artifact@v4
-        with:
-          name: reports-nightly
-          path: reports/
-          run-id: ${{ steps.get_run_ids.outputs.e2e_run_id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
-
-      - name: Download nightly reports (stakeholder - scheduled fallback)
-        if: steps.nightly_reports_trigger.outcome != 'success' && steps.get_run_ids.outputs.nightly_run_id != ''
-        uses: actions/download-artifact@v4
-        with:
-          name: reports-nightly
-          path: reports/
-          run-id: ${{ steps.get_run_ids.outputs.nightly_run_id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
 
       - name: List available stakeholder data
         run: |

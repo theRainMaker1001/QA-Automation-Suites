@@ -159,45 +159,61 @@ function buildCriticalMetrics(data: any, found: boolean): LaneMetrics {
  *   - skipped (status=skipped - test.skip() conditional)
  */
 function countPlaywrightTests(data: any): {
-  passed: number;
-  knownDefects: number;
-  unexpectedFailures: number;
-  skipped: number;
+  observations: Array<{
+    key: string;
+    outcome: string;
+    resultStatus: string | undefined;
+  }>;
   lastRun: string;
 } {
-  let passed = 0;
-  let knownDefects = 0;
-  let unexpectedFailures = 0;
-  let skipped = 0;
+  const observations: Array<{ key: string; outcome: string; resultStatus: string | undefined }> =
+    [];
 
   if (!data?.suites) {
-    return { passed, knownDefects, unexpectedFailures, skipped, lastRun: new Date().toISOString() };
+    return { observations, lastRun: new Date().toISOString() };
   }
 
-  function walkSuites(suites: any[]): void {
-    for (const suite of suites) {
-      if (suite.specs) {
-        for (const spec of suite.specs) {
-          for (const test of spec.tests || []) {
-            const outcome = test.status; // expected | unexpected | skipped | flaky
-            const resultStatus = test.results?.[0]?.status; // passed | failed | timedOut | skipped
+  function buildObservationKey(
+    suitePath: string[],
+    spec: any,
+    test: any,
+    testIndex: number,
+  ): string {
+    const location = spec?.location || test?.location || {};
+    const file = spec?.file || location.file || '';
+    const title = spec?.title || test?.title || '';
+    const line = String(location.line ?? '');
+    const column = String(location.column ?? '');
+    const suite = suitePath.filter(Boolean).join(' > ');
 
-            if (outcome === 'skipped') {
-              skipped++;
-            } else if (outcome === 'unexpected') {
-              unexpectedFailures++;
-            } else if (outcome === 'expected' && resultStatus === 'failed') {
-              // test.fail() that correctly failed - a tracked known defect
-              knownDefects++;
-            } else {
-              // expected + passed, or flaky (passed on retry)
-              passed++;
-            }
+    // Intentionally ignore browser/project so each logical test counts once in stakeholder view.
+    const key = [file, suite, title, line, column].filter(Boolean).join('|');
+    return key || `${suite || 'suite'}|${title || 'test'}|${testIndex}`;
+  }
+
+  function walkSuites(suites: any[], parentPath: string[] = []): void {
+    for (const suite of suites) {
+      const suitePath = [...parentPath, suite?.title || ''];
+      if (suite?.specs) {
+        for (const spec of suite.specs) {
+          const tests = spec?.tests || [];
+          for (let idx = 0; idx < tests.length; idx++) {
+            const test = tests[idx];
+            const outcome = test?.status; // expected | unexpected | skipped | flaky
+            const firstResult =
+              test?.results?.find((r: any) => r?.status && r.status !== 'skipped') ||
+              test?.results?.[0];
+            const resultStatus = firstResult?.status; // passed | failed | timedOut | skipped
+            observations.push({
+              key: buildObservationKey(suitePath, spec, test, idx),
+              outcome,
+              resultStatus,
+            });
           }
         }
       }
-      if (suite.suites) {
-        walkSuites(suite.suites);
+      if (suite?.suites) {
+        walkSuites(suite.suites, suitePath);
       }
     }
   }
@@ -205,10 +221,7 @@ function countPlaywrightTests(data: any): {
   walkSuites(data.suites);
 
   return {
-    passed,
-    knownDefects,
-    unexpectedFailures,
-    skipped,
+    observations,
     lastRun: data.stats?.startTime || new Date().toISOString(),
   };
 }
@@ -222,14 +235,50 @@ function buildE2eMetrics(
   const critical = countPlaywrightTests(criticalData);
   const regression = countPlaywrightTests(regressionData);
 
-  const passed = critical.passed + regression.passed;
-  const knownDefects = critical.knownDefects + regression.knownDefects;
-  const unexpectedFailures = critical.unexpectedFailures + regression.unexpectedFailures;
-  const skipped = critical.skipped + regression.skipped;
+  // Merge both lanes and count each logical E2E once, regardless of browser/project overlap.
+  const byTest = new Map<
+    string,
+    { hasUnexpected: boolean; hasKnownDefect: boolean; hasPassed: boolean; hasSkipped: boolean }
+  >();
 
-  // For pass rate: known defects count as "handled" (not failures), unexpected failures are real
-  const total = passed + knownDefects + unexpectedFailures;
-  const passRate = total > 0 ? ((passed + knownDefects) / total) * 100 : 0;
+  for (const obs of [...critical.observations, ...regression.observations]) {
+    if (!byTest.has(obs.key)) {
+      byTest.set(obs.key, {
+        hasUnexpected: false,
+        hasKnownDefect: false,
+        hasPassed: false,
+        hasSkipped: false,
+      });
+    }
+    const state = byTest.get(obs.key)!;
+    if (obs.outcome === 'unexpected') {
+      state.hasUnexpected = true;
+    } else if (obs.outcome === 'expected' && obs.resultStatus === 'failed') {
+      // test.fail() that correctly failed - tracked as known defect
+      state.hasKnownDefect = true;
+    } else if (obs.outcome === 'skipped' || obs.resultStatus === 'skipped') {
+      state.hasSkipped = true;
+    } else {
+      // expected + passed, or flaky that eventually passed
+      state.hasPassed = true;
+    }
+  }
+
+  let passed = 0;
+  let knownDefects = 0;
+  let unexpectedFailures = 0;
+  let skipped = 0;
+  for (const state of byTest.values()) {
+    if (state.hasUnexpected) unexpectedFailures++;
+    else if (state.hasKnownDefect) knownDefects++;
+    else if (state.hasPassed) passed++;
+    else skipped++;
+  }
+
+  // Pass rate focuses on executed tests; skipped are shown separately.
+  const executedTotal = passed + knownDefects + unexpectedFailures;
+  const total = byTest.size;
+  const passRate = executedTotal > 0 ? ((passed + knownDefects) / executedTotal) * 100 : 0;
   const dataAvailable = (criticalFound || regressionFound) && total > 0;
 
   const lastRun =
