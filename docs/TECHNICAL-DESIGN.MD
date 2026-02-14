@@ -201,6 +201,16 @@ Our framework includes a dedicated helper library validated by **62 specific tes
 npm install && npx playwright install
 ```
 
+### **Local Commit/Push Gate Setup (Husky)**
+Run this once after cloning so local commit and push checks follow the repo gates:
+
+```bash
+git config core.hooksPath .husky
+npm ci
+npm run prepare
+npx playwright install chromium
+```
+
 ### **Test Execution Commands**
 ```bash
 # Quality Gates
