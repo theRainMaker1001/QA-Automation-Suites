@@ -46,6 +46,7 @@ claude.json
 .anthropic/
 .aider*
 .cursor/
+AGENTS.MD
 
 # Document audit
 DOCUMENTATION_AUDIT_PLAN.md

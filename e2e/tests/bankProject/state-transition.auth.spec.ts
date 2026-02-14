@@ -89,6 +89,14 @@ test.use({ video: 'on' });
 let testUser = { username: 'john', password: 'demo' };
 let authVerified = false;
 
+function uniqueInvalidCredentials(): { username: string; password: string } {
+  const nonce = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  return {
+    username: `invalid_${nonce}`,
+    password: `wrong_${nonce}`,
+  };
+}
+
 test.describe('@critical @state-transition Authentication State Machine', () => {
   test.beforeAll(async ({ browser }) => {
     // Register a fresh user to avoid "Internal Error" from corrupted shared accounts
@@ -176,10 +184,12 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
       expect(await loginPage.getCurrentState()).toBe('GUEST');
 
       // Trigger transition E2: invalid login
-      await loginPage.login('invaliduser', 'wrongpassword');
+      const invalidUser = uniqueInvalidCredentials();
+      await loginPage.login(invalidUser.username, invalidUser.password);
       await page.waitForLoadState('networkidle');
 
       // Verify end state: LOGIN_ERROR (S3)
+      await loginPage.expectLoginError();
       expect(await loginPage.getCurrentState()).toBe('LOGIN_ERROR');
     });
 
