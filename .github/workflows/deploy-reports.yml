@@ -493,7 +493,7 @@ jobs:
               }
               .container { max-width: 800px; text-align: center; }
               h1 { color: #f0f6fc; font-size: 2.5rem; margin-bottom: 0.5rem; }
-              .subtitle { color: #8b949e; margin-bottom: 3rem; font-size: 1.1rem; }
+              .subtitle { color: #8b949e; margin-bottom: 1.5rem; font-size: 1.1rem; }
               .cards {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -563,10 +563,10 @@ jobs:
 
           # Inject status into the HTML
           if [ "$PIPELINE_STATUS" == "success" ]; then
-            sed -i 's|<span class="status-badge status-unknown">Checking Status...</span>|<span class="status-badge status-success">● Last Run: PASSING</span>|' public/index.html
+            sed -i 's|<span class="status-badge status-unknown">Checking Status...</span>|<span class="status-badge status-success">Pipeline Status: PASSING</span>|' public/index.html
           else
             # Treat cancelled/skipped/failure as failure/attention needed
-            sed -i 's|<span class="status-badge status-unknown">Checking Status...</span>|<span class="status-badge status-failure">● Last Run: FAILED</span>|' public/index.html
+            sed -i 's|<span class="status-badge status-unknown">Checking Status...</span>|<span class="status-badge status-failure">Pipeline Status: FAILED</span>|' public/index.html
           fi
 
       # ════════════════════════════════════════════════════════════════════════
