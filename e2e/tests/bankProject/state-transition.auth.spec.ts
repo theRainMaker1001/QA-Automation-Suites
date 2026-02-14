@@ -82,7 +82,7 @@ import { test, expect } from '@playwright/test';
 import { LoginPage } from '../../pages/login.page.js';
 import { RegisterPage } from '../../pages/register.page.js';
 
-// Force video recording for this file to capture evidence of security defects (expected failures)
+// Force video recording for this file to capture evidence of known security defects.
 test.use({ video: 'on' });
 
 // Store dynamic credentials to bypass unstable 'john/demo' account
@@ -95,6 +95,13 @@ function uniqueInvalidCredentials(): { username: string; password: string } {
     username: `invalid_${nonce}`,
     password: `wrong_${nonce}`,
   };
+}
+
+function markKnownDefect(description: string): void {
+  test.info().annotations.push({
+    type: 'known-defect',
+    description,
+  });
 }
 
 test.describe('@critical @state-transition Authentication State Machine', () => {
@@ -190,11 +197,10 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
 
       // Verify end state: LOGIN_ERROR (S3)
       // ParaBank occasionally authenticates invalid credentials (known upstream defect).
-      // Mark only that specific behaviour as expected-fail so CI remains stable while defect stays visible.
+      // Mark only that specific behaviour as a known defect while still failing this test normally.
       const stateAfterInvalidLogin = await loginPage.getCurrentState();
       if (stateAfterInvalidLogin === 'LOGGED_IN') {
-        test.fail(
-          true,
+        markKnownDefect(
           'Security Defect: invalid credentials can authenticate and transition to LOGGED_IN',
         );
       }
@@ -218,9 +224,8 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
   });
 
   test.describe('Transition: LOGIN_ERROR → GUEST (T4)', () => {
-    test('refresh after error returns to guest state', async ({ page }) => {
-      test.fail(
-        true,
+    test('@known-defect refresh after error returns to guest state', async ({ page }) => {
+      markKnownDefect(
         'ParaBank uses POST for login — browser refresh re-submits credentials and reproduces the error',
       );
 
@@ -310,11 +315,12 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
       await loginPage.expectLoggedIn();
     });
 
-    test('browser back button after logout does not restore session', async ({ page }) => {
+    test('@known-defect browser back button after logout does not restore session', async ({
+      page,
+    }) => {
       test.skip(!authVerified, 'Login not verified in setup — cannot test logout');
 
-      test.fail(
-        true,
+      markKnownDefect(
         'Security Defect: ParaBank allows back-navigation to authenticated state (Cache-Control missing)',
       );
       const loginPage = new LoginPage(page);
@@ -334,13 +340,12 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
       await loginPage.expectLoginFormVisible();
     });
 
-    test('direct navigation to protected page after logout redirects to login', async ({
+    test('@known-defect direct navigation to protected page after logout redirects to login', async ({
       page,
     }) => {
       test.skip(!authVerified, 'Login not verified in setup — cannot test logout');
 
-      test.fail(
-        true,
+      markKnownDefect(
         'Security Defect: ParaBank does not invalidate server-side session on logout',
       );
       const loginPage = new LoginPage(page);

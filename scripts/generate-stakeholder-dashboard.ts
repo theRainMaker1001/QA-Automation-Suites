@@ -86,6 +86,25 @@ function calculateStatus(passRate: number, dataAvailable: boolean): LaneMetrics[
   return 'FAILING';
 }
 
+function normaliseTag(tag: unknown): string {
+  return String(tag || '')
+    .trim()
+    .toLowerCase()
+    .replace(/^@/, '');
+}
+
+function hasKnownDefectMarker(spec: any, test: any, firstResult: any): boolean {
+  const tags = [...(spec?.tags || []), ...(test?.tags || [])].map(normaliseTag);
+  if (tags.includes('known-defect')) return true;
+
+  const annotations = [...(test?.annotations || []), ...(firstResult?.annotations || [])];
+  return annotations.some((annotation: any) => {
+    const type = String(annotation?.type || '').toLowerCase();
+    const description = String(annotation?.description || '').toLowerCase();
+    return type === 'known-defect' || description.includes('known defect');
+  });
+}
+
 function calculateConfidence(lanes: DashboardData['lanes']): number {
   // Weighted: critical/loans (40%), e2e (25%), unit (20%), a11y (15%)
   const weights = { unit: 0.2, critical: 0.4, e2e: 0.25, a11y: 0.15 };
@@ -158,7 +177,8 @@ function buildCriticalMetrics(data: any, found: boolean): LaneMetrics {
  * Parses a single Playwright JSON report and extracts test outcome counts.
  * Distinguishes between:
  *   - normal passes (status=expected, result=passed)
- *   - known defects (status=expected, result=failed - test.fail() behaving as expected)
+ *   - known defects (tagged/annotated known defects that failed)
+ *   - legacy known defects (status=expected, result=failed from test.fail())
  *   - unexpected failures (status=unexpected - real bugs)
  *   - skipped (status=skipped - test.skip() conditional)
  */
@@ -167,11 +187,16 @@ function countPlaywrightTests(data: any): {
     key: string;
     outcome: string;
     resultStatus: string | undefined;
+    isKnownDefect: boolean;
   }>;
   lastRun: string;
 } {
-  const observations: Array<{ key: string; outcome: string; resultStatus: string | undefined }> =
-    [];
+  const observations: Array<{
+    key: string;
+    outcome: string;
+    resultStatus: string | undefined;
+    isKnownDefect: boolean;
+  }> = [];
 
   if (!data?.suites) {
     return { observations, lastRun: new Date().toISOString() };
@@ -208,10 +233,12 @@ function countPlaywrightTests(data: any): {
               test?.results?.find((r: any) => r?.status && r.status !== 'skipped') ||
               test?.results?.[0];
             const resultStatus = firstResult?.status; // passed | failed | timedOut | skipped
+            const isKnownDefect = hasKnownDefectMarker(spec, test, firstResult);
             observations.push({
               key: buildObservationKey(suitePath, spec, test, idx),
               outcome,
               resultStatus,
+              isKnownDefect,
             });
           }
         }
@@ -256,9 +283,13 @@ function buildE2eMetrics(
     }
     const state = byTest.get(obs.key)!;
     if (obs.outcome === 'unexpected') {
+      if (obs.isKnownDefect && obs.resultStatus === 'failed') {
+        state.hasKnownDefect = true;
+        continue;
+      }
       state.hasUnexpected = true;
     } else if (obs.outcome === 'expected' && obs.resultStatus === 'failed') {
-      // test.fail() that correctly failed - tracked as known defect
+      // Legacy expected-fail encoding from test.fail().
       state.hasKnownDefect = true;
     } else if (obs.outcome === 'skipped' || obs.resultStatus === 'skipped') {
       state.hasSkipped = true;

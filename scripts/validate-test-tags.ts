@@ -5,7 +5,7 @@
  * Ensures all E2E tests are tagged for risk-based test lanes.
  * Tests without tags will bypass CI quality gates.
  *
- * Valid tags: @smoke, @critical, @regression, @a11y, @negative, @state-transition
+ * Valid tags: @smoke, @critical, @regression, @a11y, @negative, @state-transition, @known-defect
  *
  * Usage: tsx scripts/validate-test-tags.ts
  */
@@ -20,6 +20,7 @@ const VALID_TAGS = [
   '@a11y',
   '@negative',
   '@state-transition',
+  '@known-defect',
 ];
 const TAG_PATTERN = new RegExp(`(${VALID_TAGS.map((t) => t.replace('@', '@')).join('|')})`, 'g');
 

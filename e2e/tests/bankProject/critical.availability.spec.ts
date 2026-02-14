@@ -8,9 +8,9 @@ test.describe('@bank @critical availability', () => {
       const res = await request.get('/');
       expect(res.status(), 'SERVER_5XX').toBeLessThan(500); // 5xx => fail as server-side outage
     } catch (e) {
-      // Network/DNS/outage: give a clear failure code
-      test.fail(true, 'NETWORK_DOWN');
-      throw e;
+      // Network/DNS/outage: fail hard with explicit code
+      const message = e instanceof Error ? e.message : String(e);
+      throw new Error(`NETWORK_DOWN: ${message}`);
     }
   });
 

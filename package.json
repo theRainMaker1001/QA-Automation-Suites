@@ -42,6 +42,7 @@
     "test:e2e:regression": "playwright test -c e2e/playwright.config.ts --grep @regression",
     "test:e2e:state": "playwright test -c e2e/playwright.config.ts --grep @state-transition",
     "test:e2e:negative": "playwright test -c e2e/playwright.config.ts --grep @negative",
+    "verify:e2e:critical": "tsx scripts/verify-critical-e2e-results.ts",
     "report:history": "tsx scripts/preserve-allure-history.ts",
     "report:generate": "npm run report:history && npx allure generate allure-results --clean -o allure-report",
     "report:open": "npx allure open allure-report",

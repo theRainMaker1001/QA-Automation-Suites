@@ -87,7 +87,9 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run @critical tests
-        run: npx playwright test -c e2e/playwright.config.ts --grep @critical --project=chromium
+        run: |
+          npx playwright test -c e2e/playwright.config.ts --grep @critical --project=chromium || true
+          npm run verify:e2e:critical
 
       - name: Upload critical report
         if: always()

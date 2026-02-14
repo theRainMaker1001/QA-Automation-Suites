@@ -153,7 +153,9 @@ jobs:
           npm run test:loans || true
 
       - name: Run @critical E2E tests
-        run: npx playwright test -c e2e/playwright.config.ts --grep @critical --project=chromium
+        run: |
+          npx playwright test -c e2e/playwright.config.ts --grep @critical --project=chromium || true
+          npm run verify:e2e:critical
 
       - name: Preserve E2E results for stakeholder dashboard
         if: always()

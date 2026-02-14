@@ -230,6 +230,9 @@ npm run test:loans      # Run Loan Decision Table scenarios (47 tests)
 npm run test:unit       # 189 tests (Logic & Math)
 npm run test:api        # 84 tests (Contract & Integration)
 npm run test:e2e        # ~46 tests (Full User Journeys)
+
+# Verify critical E2E outcome policy
+npm run verify:e2e:critical
 ```
 
 ### **Reporting**
@@ -304,13 +307,15 @@ The stakeholder dashboard presents four non-overlapping quality lanes:
 |------|-----------|---------------|
 | **Code Quality** | `unit-summary.json` (189 unit tests) | Pass rate for isolated logic and financial maths |
 | **Financial Accuracy** | `loan-results.json` (47 loan tests) | Decision table + BVA coverage of loan approval rules (34 core scenarios + 6 critical path + 1 coverage + 6 negative) |
-| **User Journey Coverage** | `e2e-critical-results.json` + `e2e-regression-results.json` | Known defects (amber), unexpected failures (red), skipped (grey). Critical = 31 tests (chromium), regression = 12 tests (3 browsers) |
+| **User Journey Coverage** | `e2e-critical-results.json` + `e2e-regression-results.json` | Known defects (amber, tagged `@known-defect`), unexpected failures (red), skipped (grey). Critical = 31 tests (chromium), regression = 12 tests (3 browsers) |
 | **WCAG Compliance** | `a11y-results.json` | Violation count, AA/A/Non-Compliant badge, and link to the full [compliance report](https://therainmaker1001.github.io/QA-Automation-Suites/a11y-compliance-report.html) |
 
-E2E metrics distinguish between outcomes using Playwright's `test.status` and `results[0].status`:
-- **Known defect**: `test.fail()` tests that failed as expected (tracked, not alarming)
-- **Unexpected failure**: Tests expected to pass that failed (requires investigation)
+E2E metrics distinguish between outcomes using Playwright's `test.status`, `results[0].status`, tags, and annotations:
+- **Known defect**: `@known-defect` tagged/annotated tests that fail (tracked, not alarming)
+- **Unexpected failure**: Failing tests without a known-defect marker (requires investigation)
 - **Skipped**: Conditionally skipped tests (e.g. auth-dependent)
+
+Critical lane gating uses a verifier step to keep known defects non-blocking while still failing the lane for unexpected defects.
 
 ### Dashboard Features Comparison
 
