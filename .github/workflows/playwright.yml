@@ -148,6 +148,10 @@ jobs:
       - name: Run @a11y tests
         run: npx playwright test -c e2e/playwright.config.ts --grep @a11y --project=chromium
 
+      - name: Generate a11y compliance report
+        if: always()
+        run: npx tsx scripts/generate-a11y-compliance-report.ts
+
       - name: Upload audit report
         if: always()
         uses: actions/upload-artifact@v4

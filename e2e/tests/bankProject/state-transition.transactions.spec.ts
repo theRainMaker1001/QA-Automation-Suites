@@ -33,7 +33,7 @@ test.describe('@regression @state-transition Transaction Search State Machine', 
 
     // Navigate to Find Transactions page
     await page.goto(`${PARABANK_URL}/findtrans.htm`);
-    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('networkidle');
   });
 
   test('ST-TXN-01: Search by Transaction ID - form accepts numeric input', async ({ page }) => {

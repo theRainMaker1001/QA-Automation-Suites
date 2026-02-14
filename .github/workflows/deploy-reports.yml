@@ -344,6 +344,13 @@ jobs:
             cp reports/stakeholder-dashboard.json public/stakeholder/ 2>/dev/null || true
           fi
 
+      - name: Generate a11y compliance report (fallback)
+        run: |
+          if [ ! -f "reports/a11y-compliance-report.md" ] && [ -f "reports/a11y-results.json" ]; then
+            echo "No a11y MD report in artifacts - generating from JSON..."
+            npx tsx scripts/generate-a11y-compliance-report.ts
+          fi
+
       - name: Convert a11y compliance report to HTML
         run: |
           if [ -f "reports/a11y-compliance-report.md" ]; then
@@ -394,6 +401,42 @@ jobs:
           </html>
           HTMLEOF2
             echo "A11y compliance report converted to HTML"
+          else
+            cat > public/a11y-compliance-report.html << 'PLACEHOLDER'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>WCAG Accessibility Compliance Report</title>
+            <style>
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                background: #0d1117;
+                color: #c9d1d9;
+                padding: 2rem;
+                max-width: 900px;
+                margin: 0 auto;
+                text-align: center;
+                min-height: 80vh;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+              }
+              h1 { color: #f0f6fc; margin-bottom: 1rem; }
+              p { color: #8b949e; margin-bottom: 2rem; max-width: 600px; }
+              a { color: #58a6ff; }
+            </style>
+          </head>
+          <body>
+            <h1>WCAG Compliance Report</h1>
+            <p>No accessibility test data is available yet. The report will be generated after the next nightly audit run that includes <code>@a11y</code> tests.</p>
+            <p><a href="./stakeholder/">Back to Stakeholder Dashboard</a></p>
+          </body>
+          </html>
+          PLACEHOLDER
+            echo "A11y placeholder page created (no test data available yet)"
           fi
 
       # ════════════════════════════════════════════════════════════════════════
