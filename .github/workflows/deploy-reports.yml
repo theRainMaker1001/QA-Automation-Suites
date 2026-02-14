@@ -96,13 +96,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           # ── Resolve latest nightly (scheduled) run independently ──────────
-          # Nightly regression and a11y data must always come from the most
-          # recent scheduled playwright.yml run, regardless of what triggered
-          # this deploy.  Scanning the last 20 runs avoids picking up manual
-          # dispatches that only executed the smoke or critical jobs.
+          # Nightly regression and a11y data must always come from the most recent
+          # scheduled (or manual regression) playwright.yml run, regardless of what
+          # triggered this deploy. Scanning the last 20 runs avoids picking up
+          # irrelevant runs, though we now include manual dispatches.
           NIGHTLY_RUN_ID=$(gh run list --workflow "playwright.yml" --branch main \
             --limit 20 --json databaseId,event \
-            --jq '[.[] | select(.event == "schedule")][0].databaseId')
+            --jq '[.[] | select(.event == "schedule" or .event == "workflow_dispatch")][0].databaseId')
           echo "nightly_run_id=${NIGHTLY_RUN_ID}" >> $GITHUB_OUTPUT
 
           # ── Resolve CI and general E2E run IDs ────────────────────────────
@@ -212,6 +212,7 @@ jobs:
         continue-on-error: true
 
       - name: Download critical reports (stakeholder data)
+        id: critical_reports_primary
         if: steps.get_run_ids.outputs.ci_run_id != ''
         uses: actions/download-artifact@v4
         with:
@@ -220,6 +221,21 @@ jobs:
           run-id: ${{ steps.get_run_ids.outputs.ci_run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
+
+      - name: Download critical reports (fallback from latest dispatch/PR CI)
+        if: steps.critical_reports_primary.outcome != 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          CRITICAL_CI_ID=$(gh run list --workflow "ci.yml" --branch main \
+            --status success --limit 10 --json databaseId,event \
+            --jq '[.[] | select(.event == "pull_request" or .event == "workflow_dispatch")][0].databaseId')
+          if [ -n "$CRITICAL_CI_ID" ] && [ "$CRITICAL_CI_ID" != "null" ]; then
+            echo "Falling back to CI run $CRITICAL_CI_ID for critical reports..."
+            gh run download "$CRITICAL_CI_ID" --name reports-critical --dir reports/ || true
+          else
+            echo "No recent dispatch/PR CI run found with critical reports"
+          fi
 
       # Nightly stakeholder: same try-trigger-then-scheduled pattern.
       - name: Download nightly reports (stakeholder - from trigger)
