@@ -19,6 +19,19 @@ See the system in action. These dashboards provide real-time visibility into the
 
 ---
 
+## Local checks (husky setup)
+
+Run these once after cloning so local commit and push checks match the repo setup:
+
+```bash
+git config core.hooksPath .husky
+npm ci
+npm run prepare
+npx playwright install chromium
+```
+
+---
+
 ## 🏗️ Architecture & Engineering Design
 
 🧱 [**Technical Design & Architecture**](./docs/TECHNICAL-DESIGN.MD)  
