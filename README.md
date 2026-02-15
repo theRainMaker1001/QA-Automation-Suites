@@ -8,7 +8,7 @@
 
 ## 📊 Live Quality Dashboards
 
-## 👉 <a href="https://therainmaker1001.github.io/QA-Automation-Suites/" style="color: #00ff00; text-decoration: none; font-weight: bold;">View LIVE Project Dashboard</a> 👈
+### 👉 [**View LIVE Project Dashboard**](https://therainmaker1001.github.io/QA-Automation-Suites/) 👈
 See the system in action. These dashboards provide real-time visibility into the current health of the application.
 
 | Dashboard | Audience | Shows | Link |
