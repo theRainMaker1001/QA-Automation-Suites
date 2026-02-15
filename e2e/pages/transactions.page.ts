@@ -193,11 +193,29 @@ export class TransactionsPage extends BasePage {
   }
 
   async isDateSearchVisible(): Promise<boolean> {
-    return (await this.dateInput.count()) > 0;
+    try {
+      await this.dateInput.waitFor({ state: 'visible', timeout: 1500 });
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   async isAmountSearchVisible(): Promise<boolean> {
-    return (await this.amountInput.count()) > 0;
+    try {
+      await this.amountInput.waitFor({ state: 'visible', timeout: 1500 });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async isAnySearchInputVisible(): Promise<boolean> {
+    return (
+      (await this.isSearchFormVisible()) ||
+      (await this.isDateSearchVisible()) ||
+      (await this.isAmountSearchVisible())
+    );
   }
 
   // ============================================================================

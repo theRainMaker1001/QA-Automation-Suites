@@ -14,6 +14,7 @@ export class RegisterPage extends BasePage {
   readonly repeatedPasswordInput: Locator;
   readonly registerButton: Locator;
   readonly errorMessages: Locator;
+  readonly genericErrorText: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -29,6 +30,7 @@ export class RegisterPage extends BasePage {
     this.repeatedPasswordInput = page.locator('input[id="repeatedPassword"]');
     this.registerButton = page.locator('input[value="Register"]');
     this.errorMessages = page.locator('span.error, td.error, .error');
+    this.genericErrorText = page.getByText(/an internal error has occurred/i);
   }
 
   async goto(): Promise<void> {
@@ -36,7 +38,41 @@ export class RegisterPage extends BasePage {
     await this.waitForPageLoad();
   }
 
+  async isFormVisible(timeout: number = 3000): Promise<boolean> {
+    try {
+      await this.firstNameInput.waitFor({ state: 'visible', timeout });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async gotoAndWaitForForm(maxAttempts: number = 3): Promise<boolean> {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        await this.goto();
+        if (await this.isFormVisible(5000)) {
+          return true;
+        }
+      } catch {
+        // Try again after a short backoff below.
+      }
+
+      if ((await this.genericErrorText.count()) > 0) {
+        await this.page.goto(`${this.baseUrl}/index.htm`, { waitUntil: 'domcontentloaded' });
+      }
+
+      await this.page.waitForTimeout(500 * attempt);
+    }
+
+    return false;
+  }
+
   async registerNewUser(user: { username: string; password: string }): Promise<void> {
+    if (!(await this.isFormVisible(7000))) {
+      throw new Error('Registration form is not visible');
+    }
+
     await this.firstNameInput.fill('Test');
     await this.lastNameInput.fill('User');
     await this.streetInput.fill('123 Logic Lane');

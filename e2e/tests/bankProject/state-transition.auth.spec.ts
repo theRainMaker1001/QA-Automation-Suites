@@ -108,6 +108,9 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
   test.beforeAll(async ({ browser }) => {
     // Register a fresh user to avoid "Internal Error" from corrupted shared accounts
     const page = await browser.newPage();
+    page.setDefaultTimeout(5000);
+    page.setDefaultNavigationTimeout(10000);
+
     const uniqueId = Date.now();
     const newUser = {
       username: `auto_${uniqueId}`,
@@ -115,45 +118,55 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
     };
 
     try {
-      const registerPage = new RegisterPage(page);
-      await registerPage.goto();
-      await registerPage.registerNewUser(newUser);
-      await page.waitForLoadState('domcontentloaded');
+      try {
+        const registerPage = new RegisterPage(page);
+        const registrationPageReady = await registerPage.gotoAndWaitForForm(2);
 
-      if (await registerPage.isRegistrationSuccess()) {
-        testUser = newUser;
-        console.log(`[Setup] Registered dynamic user: ${testUser.username}`);
+        if (registrationPageReady) {
+          await registerPage.registerNewUser(newUser);
+          await page.waitForLoadState('domcontentloaded');
+        }
 
-        // ParaBank auto-logs in after registration — log out to return to GUEST state
-        await page.getByRole('link', { name: /log\s*out/i }).click();
-        await page.waitForLoadState('domcontentloaded');
+        if (await registerPage.isRegistrationSuccess()) {
+          testUser = newUser;
+          console.log(`[Setup] Registered dynamic user: ${testUser.username}`);
+
+          // ParaBank auto-logs in after registration; log out to return to guest state.
+          const logoutLink = page.getByRole('link', { name: /log\s*out/i });
+          if ((await logoutLink.count()) > 0) {
+            await logoutLink.click();
+            await page.waitForLoadState('domcontentloaded');
+          }
+        } else {
+          console.warn('[Setup] Registration did not complete - using fallback credentials');
+        }
+      } catch (error) {
+        console.warn(`[Setup] Registration failed: ${error}. Falling back to default credentials`);
       }
-    } catch (error) {
-      console.warn(`[Setup] Registration failed: ${error}. Falling back to default credentials`);
-    }
 
-    // Verify login actually works before any tests rely on it
-    try {
-      const loginPage = new LoginPage(page);
-      await loginPage.goto();
-      await loginPage.login(testUser.username, testUser.password);
-      await page.waitForLoadState('domcontentloaded');
+      // Verify login actually works before any tests rely on it.
+      try {
+        const loginPage = new LoginPage(page);
+        await loginPage.goto();
+        await loginPage.login(testUser.username, testUser.password);
+        await page.waitForLoadState('domcontentloaded');
 
-      authVerified = await loginPage.isLoggedIn();
-      if (authVerified) {
-        console.log(`[Setup] Login verified for: ${testUser.username}`);
-      } else {
+        authVerified = await loginPage.isLoggedIn();
+        if (authVerified) {
+          console.log(`[Setup] Login verified for: ${testUser.username}`);
+        } else {
+          console.warn(
+            `[Setup] Login FAILED for: ${testUser.username} - auth-dependent tests will be skipped`,
+          );
+        }
+      } catch (error) {
         console.warn(
-          `[Setup] Login FAILED for: ${testUser.username} — auth-dependent tests will be skipped`,
+          `[Setup] Login verification failed: ${error}. Auth-dependent tests will be skipped`,
         );
       }
-    } catch (error) {
-      console.warn(
-        `[Setup] Login verification failed: ${error}. Auth-dependent tests will be skipped`,
-      );
+    } finally {
+      await page.close().catch(() => {});
     }
-
-    await page.close();
   });
 
   test.describe('Transition: GUEST → LOGGED_IN (T1)', () => {
