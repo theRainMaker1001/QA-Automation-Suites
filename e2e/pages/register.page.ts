@@ -1,7 +1,7 @@
 import { Page, Locator } from '@playwright/test';
+import { BasePage } from './base.page.js';
 
-export class RegisterPage {
-  readonly page: Page;
+export class RegisterPage extends BasePage {
   readonly firstNameInput: Locator;
   readonly lastNameInput: Locator;
   readonly streetInput: Locator;
@@ -16,7 +16,7 @@ export class RegisterPage {
   readonly errorMessages: Locator;
 
   constructor(page: Page) {
-    this.page = page;
+    super(page);
     this.firstNameInput = page.locator('input[id="customer.firstName"]');
     this.lastNameInput = page.locator('input[id="customer.lastName"]');
     this.streetInput = page.locator('input[id="customer.address.street"]');
@@ -31,11 +31,12 @@ export class RegisterPage {
     this.errorMessages = page.locator('span.error, td.error, .error');
   }
 
-  async goto() {
-    await this.page.goto('https://parabank.parasoft.com/parabank/register.htm');
+  async goto(): Promise<void> {
+    await this.navigate('/register.htm');
+    await this.waitForPageLoad();
   }
 
-  async registerNewUser(user: { username: string; password: string }) {
+  async registerNewUser(user: { username: string; password: string }): Promise<void> {
     await this.firstNameInput.fill('Test');
     await this.lastNameInput.fill('User');
     await this.streetInput.fill('123 Logic Lane');
@@ -49,7 +50,7 @@ export class RegisterPage {
     await this.registerButton.click();
   }
 
-  async isRegistrationSuccess() {
+  async isRegistrationSuccess(): Promise<boolean> {
     return (
       (await this.page.locator('h1.title').filter({ hasText: 'Welcome' }).isVisible()) ||
       (await this.page.locator('text=created').isVisible())

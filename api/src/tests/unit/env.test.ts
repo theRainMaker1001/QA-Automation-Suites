@@ -1,22 +1,10 @@
 /**
  * Unit tests for environment validation
- * Tests Zod schema directly (don't import env.ts as it parses on load)
+ * Tests the shared env schema used across test lanes.
  */
 
 import { describe, it, expect } from 'vitest';
-import { z } from 'zod';
-
-// Replicate the schema from config/env.ts for isolated testing
-const envSchema = z.object({
-  BANK_BASE_URL: z.string().url().default('https://parabank.parasoft.com/parabank'),
-  BANK_CUSTOMER_ID: z.string().regex(/^\d+$/, 'Must be numeric').optional(),
-  API_LATENCY_MS: z.coerce.number().positive().default(5000),
-  HEARTBEAT_TIMEOUT_MS: z.coerce.number().positive().default(30000),
-  CI: z
-    .string()
-    .optional()
-    .transform((val) => val === 'true'),
-});
+import { envSchema } from '../../../../config/env.js';
 
 describe('Environment Validation Schema', () => {
   describe('valid configurations', () => {
@@ -44,10 +32,10 @@ describe('Environment Validation Schema', () => {
       expect(env.HEARTBEAT_TIMEOUT_MS).toBe(30000);
     });
 
-    it('accepts undefined for optional customer ID', () => {
+    it('uses default customer ID when not set', () => {
       const env = envSchema.parse({});
 
-      expect(env.BANK_CUSTOMER_ID).toBeUndefined();
+      expect(env.BANK_CUSTOMER_ID).toBe('12212');
     });
   });
 

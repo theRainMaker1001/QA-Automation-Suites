@@ -73,6 +73,7 @@ Instead of running every test on every change, we use intelligent tagging:
 *   `@critical`: Core money logic (PRs & Dispatch).
 *   `@regression`: Full suite (Nightly).
 *   `@known-defect`: Tracked upstream defects that remain visible in Allure and are separated in stakeholder metrics.
+*   Local developer gate defaults to Chromium for determinism; full browser matrix runs in nightly or via `npm run test:e2e:matrix`.
 
 *   **Impact:** Reduces CI/CD cloud costs by up to **40%** by running expensive tests only when necessary.
 

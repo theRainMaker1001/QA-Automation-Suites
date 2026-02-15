@@ -20,22 +20,25 @@ We use **Husky** and **Lint-Staged** to enforce quality before commits.
 
 ### By Architectural Layer
 
-| Command             | Purpose                                    |
-| :------------------ | :----------------------------------------- |
-| `npm run test:unit` | Fast logic validation - 189 tests (Vitest) |
-| `npm run test:api`  | Integration/Contract tests (Vitest)        |
-| `npm run test:e2e`  | UI User Journeys (Playwright)              |
+| Command                          | Purpose                                                        |
+| :------------------------------- | :------------------------------------------------------------- |
+| `npm run test:unit`              | Fast logic validation - 189 tests (Vitest)                     |
+| `npm run test:api`               | Integration/Contract tests (Vitest)                            |
+| `npm run test:e2e`               | UI gate on Chromium (excludes `@negative` and `@known-defect`) |
+| `npm run test:e2e:matrix`        | Cross-browser matrix (`chromium`, `firefox`, `webkit`)         |
+| `npm run test:e2e:known-defects` | Known-defect verification lane (`@known-defect`)               |
 
 ### By Business Risk (Lanes)
 
-| Command                  | Purpose                             |
-| :----------------------- | :---------------------------------- |
-| `npm run test:smoke`     | Fast connectivity check (API + E2E) |
-| `npm run test:critical`  | Core loan logic + auth flows        |
-| `npm run test:heartbeat` | API health monitor                  |
-| `npm run test:loans`     | Loan Decision Table - 47 tests      |
-| `npm run test:a11y`      | Accessibility audit (WCAG 2.1 AA)   |
-| `npm run test:audit`     | Full Regression + Accessibility     |
+| Command                          | Purpose                                         |
+| :------------------------------- | :---------------------------------------------- |
+| `npm run test:smoke`             | Fast connectivity check (API + E2E)             |
+| `npm run test:critical`          | Core loan logic + auth flows                    |
+| `npm run test:heartbeat`         | API health monitor                              |
+| `npm run test:loans`             | Loan Decision Table - 47 tests                  |
+| `npm run test:regression:matrix` | Cross-browser regression matrix (nightly style) |
+| `npm run test:a11y`              | Accessibility audit (WCAG 2.1 AA)               |
+| `npm run test:audit`             | Full Regression + Accessibility                 |
 
 ## 🏷️ Test Tagging Conventions
 

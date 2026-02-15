@@ -225,6 +225,7 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
 
   test.describe('Transition: LOGIN_ERROR → GUEST (T4)', () => {
     test('@known-defect refresh after error returns to guest state', async ({ page }) => {
+      test.fail(true, 'Known upstream behaviour: refresh re-submits login POST state');
       markKnownDefect(
         'ParaBank uses POST for login — browser refresh re-submits credentials and reproduces the error',
       );
@@ -319,6 +320,7 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
       page,
     }) => {
       test.skip(!authVerified, 'Login not verified in setup — cannot test logout');
+      test.fail(true, 'Known upstream behaviour: cached authenticated page can be revisited');
 
       markKnownDefect(
         'Security Defect: ParaBank allows back-navigation to authenticated state (Cache-Control missing)',
@@ -344,6 +346,7 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
       page,
     }) => {
       test.skip(!authVerified, 'Login not verified in setup — cannot test logout');
+      test.fail(true, 'Known upstream behaviour: logout does not fully invalidate server session');
 
       markKnownDefect(
         'Security Defect: ParaBank does not invalidate server-side session on logout',

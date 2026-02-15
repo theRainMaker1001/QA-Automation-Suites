@@ -1,6 +1,7 @@
 // @critical smoke to detect 'site is down' vs 'server 5xx' vs 'UI broken'
 
 import { test, expect } from '@playwright/test';
+import { LoginPage } from '../../pages/login.page.js';
 
 test.describe('@bank @critical availability', () => {
   test('@critical server responds to GET / (no DNS/connection error)', async ({ request }) => {
@@ -15,7 +16,8 @@ test.describe('@bank @critical availability', () => {
   });
 
   test('@critical homepage renders login UI', async ({ page }) => {
-    await page.goto('/'); // baseURL from e2e/.env or CI
-    await expect(page.getByText(/Customer Login/i), 'APP_BROKEN_UI').toBeVisible();
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.expectLoginFormVisible();
   });
 });

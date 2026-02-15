@@ -35,6 +35,8 @@ export class TransactionsPage extends BasePage {
   private readonly resultsTable: Locator;
   private readonly resultRows: Locator;
   private readonly errorMessage: Locator;
+  private readonly genericErrorHeading: Locator;
+  private readonly genericErrorText: Locator;
   private readonly noResultsMessage: Locator;
 
   constructor(page: Page) {
@@ -46,26 +48,30 @@ export class TransactionsPage extends BasePage {
     // Search by Transaction ID
     this.transactionIdInput = page
       .locator(
-        'input[id="criteria.transactionId"], input[name*="transactionId"], input#transactionId',
+        'input#transactionId, input[id="criteria.transactionId"], input[name*="transactionId"]',
       )
       .first();
     this.findByIdButton = page
-      .locator('button[id*="transactionId"], #findById input[type="submit"]')
+      .locator('#findById, button#findById, #findById input[type="submit"]')
       .first();
 
     // Search by Date
-    this.dateInput = page.locator('input[id="criteria.onDate"], input[name*="onDate"]').first();
+    this.dateInput = page
+      .locator('input#transactionDate, input[id="criteria.onDate"], input[name*="onDate"]')
+      .first();
     this.findByDateButton = page
-      .locator('button[id*="Date"]:not([id*="Range"]), #findByDate input[type="submit"]')
+      .locator('#findByDate, button#findByDate, #findByDate input[type="submit"]')
       .first();
 
     // Search by Date Range
     this.fromDateInput = page
-      .locator('input[id="criteria.fromDate"], input[name*="fromDate"]')
+      .locator('input#fromDate, input[id="criteria.fromDate"], input[name*="fromDate"]')
       .first();
-    this.toDateInput = page.locator('input[id="criteria.toDate"], input[name*="toDate"]').first();
+    this.toDateInput = page
+      .locator('input#toDate, input[id="criteria.toDate"], input[name*="toDate"]')
+      .first();
     this.findByDateRangeButton = page
-      .locator('button[id*="DateRange"], #findByDateRange input[type="submit"]')
+      .locator('#findByDateRange, button#findByDateRange, #findByDateRange input[type="submit"]')
       .first();
 
     // Search by Amount
@@ -73,13 +79,15 @@ export class TransactionsPage extends BasePage {
       .locator('input[id="criteria.amount"], input[name*="amount"], input#amount')
       .first();
     this.findByAmountButton = page
-      .locator('button[id*="amount"], #findByAmount input[type="submit"]')
+      .locator('#findByAmount, button#findByAmount, #findByAmount input[type="submit"]')
       .first();
 
     // Results
     this.resultsTable = page.locator('#transactionTable, table[id*="transaction"]');
     this.resultRows = this.resultsTable.locator('tbody tr');
     this.errorMessage = page.locator('.error, [class*="error"]');
+    this.genericErrorHeading = page.getByRole('heading', { name: /error!?/i });
+    this.genericErrorText = page.getByText(/an internal error has occurred/i);
     this.noResultsMessage = page.locator('text=No transactions found, p:has-text("No")');
   }
 
@@ -125,6 +133,23 @@ export class TransactionsPage extends BasePage {
     await this.transactionIdInput.clear();
   }
 
+  async setTransactionId(transactionId: string): Promise<void> {
+    await this.transactionIdInput.fill(transactionId);
+  }
+
+  async setDate(date: string): Promise<void> {
+    await this.dateInput.fill(date);
+  }
+
+  async setAmount(amount: string): Promise<void> {
+    await this.amountInput.fill(amount);
+  }
+
+  async submitTransactionIdSearch(): Promise<void> {
+    await this.findByIdButton.click();
+    await this.page.waitForLoadState('networkidle');
+  }
+
   // ============================================================================
   // State Detection
   // ============================================================================
@@ -144,12 +169,18 @@ export class TransactionsPage extends BasePage {
   }
 
   async hasError(): Promise<boolean> {
-    try {
-      await this.errorMessage.waitFor({ state: 'visible', timeout: 2000 });
+    if (
+      await this.errorMessage
+        .first()
+        .isVisible()
+        .catch(() => false)
+    ) {
       return true;
-    } catch {
-      return false;
     }
+    if ((await this.genericErrorHeading.count()) > 0) {
+      return true;
+    }
+    return (await this.genericErrorText.count()) > 0;
   }
 
   async hasNoResults(): Promise<boolean> {
@@ -159,6 +190,14 @@ export class TransactionsPage extends BasePage {
     } catch {
       return false;
     }
+  }
+
+  async isDateSearchVisible(): Promise<boolean> {
+    return (await this.dateInput.count()) > 0;
+  }
+
+  async isAmountSearchVisible(): Promise<boolean> {
+    return (await this.amountInput.count()) > 0;
   }
 
   // ============================================================================
@@ -183,6 +222,14 @@ export class TransactionsPage extends BasePage {
 
   async getTransactionIdInputValue(): Promise<string> {
     return this.transactionIdInput.inputValue();
+  }
+
+  async getDateInputValue(): Promise<string> {
+    return this.dateInput.inputValue();
+  }
+
+  async getAmountInputValue(): Promise<string> {
+    return this.amountInput.inputValue();
   }
 
   async getErrorText(): Promise<string> {
