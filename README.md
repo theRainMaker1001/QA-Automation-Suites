@@ -17,6 +17,10 @@ See the system in action. These dashboards provide real-time visibility into the
 | **Stakeholder Dashboard** | **PMs & Leadership** | Confidence score, risk level, known defects, WCAG compliance | [View Executive Summary](https://therainmaker1001.github.io/QA-Automation-Suites/stakeholder/) |
 | **Developer Dashboard** | **QA Staff & Developers** | Full test details, real failure trends, screenshots, traces | [View Technical Allure Report](https://therainmaker1001.github.io/QA-Automation-Suites/allure/) |
 
+Dashboard totals policy:
+*   Stakeholder summary totals include all four lanes, including WCAG/a11y.
+*   Developer Allure is intentionally more comprehensive and can include overlapping lane executions for diagnostic redundancy.
+
 ---
 
 ## 🏗️ Architecture & Engineering Design
@@ -71,7 +75,8 @@ Instead of running every test on every change, we use intelligent tagging:
 
 *   `@smoke`: Fast connectivity checks (Push & PR).
 *   `@critical`: Core money logic (PRs & Dispatch).
-*   `@regression`: Full suite (Nightly).
+*   `@regression`: Cross-browser user journeys (Nightly).
+*   `@a11y`: WCAG compliance checks (Nightly).
 *   `@known-defect`: Tracked upstream defects that remain visible in Allure and are separated in stakeholder metrics.
 *   Local developer gate defaults to Chromium for determinism; full browser matrix runs in nightly or via `npm run test:e2e:matrix`.
 

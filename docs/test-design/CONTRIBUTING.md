@@ -38,23 +38,24 @@ We use **Husky** and **Lint-Staged** to enforce quality before commits.
 | `npm run test:loans`             | Loan Decision Table - 47 tests                  |
 | `npm run test:regression:matrix` | Cross-browser regression matrix (nightly style) |
 | `npm run test:a11y`              | Accessibility audit (WCAG 2.1 AA)               |
-| `npm run test:audit`             | Full Regression + Accessibility                 |
+| `npm run test:audit`             | Full regression + accessibility                 |
 
 ## 🏷️ Test Tagging Conventions
 
 When writing new tests, use these tags in test names/descriptions:
 
-| Tag           | Purpose                  | Runs In   |
-| :------------ | :----------------------- | :-------- |
-| `@smoke`      | Fast connectivity checks | Push & PR |
-| `@critical`   | Business-critical paths  | Every PR  |
-| `@regression` | Full feature coverage    | Nightly   |
-| `@a11y`       | Accessibility compliance | Nightly   |
-| `@negative`   | Error handling scenarios | Manual    |
+| Tag             | Purpose                  | Runs In                                 |
+| :-------------- | :----------------------- | :-------------------------------------- |
+| `@smoke`        | Fast connectivity checks | Push & PR                               |
+| `@critical`     | Business-critical paths  | Every PR                                |
+| `@regression`   | Full feature coverage    | Nightly                                 |
+| `@a11y`         | Accessibility compliance | Nightly                                 |
+| `@known-defect` | Known product defects    | Critical lane tracking + dedicated lane |
+| `@negative`     | Error handling scenarios | Manual                                  |
 
 ## 🔄 CI/CD Pipeline
 
-Pull requests trigger the following sequential gates:
+Pushes and pull requests trigger the following sequential gates:
 
 ```
 Commit Gate → Smoke Lane → Critical Lane → Report Deploy
@@ -64,6 +65,7 @@ Commit Gate → Smoke Lane → Critical Lane → Report Deploy
 - **Smoke Lane**: API + E2E connectivity (Push & PR)
 - **Critical Lane**: @critical API + E2E validation (PR + dispatch only)
 - **Nightly Audit**: @regression + @a11y at 2 AM UTC
+- **Known-defect Lane**: `npm run test:e2e:known-defects` keeps known issues visible without blocking unexpected-failure gates
 
 ## 📊 Reporting
 
@@ -71,6 +73,7 @@ Two dashboards are generated from test data, each targeting a different audience
 
 - **Stakeholder Dashboard**: Reads `reports/*.json` artefacts (unit-summary, loan-results, e2e-critical/regression-results, a11y-results) and produces a single-page executive summary with confidence scoring, risk level, and known defect tracking.
 - **Developer Dashboard (Allure)**: Merges all `allure-results/` data with `allure-config/categories.json` for failure categorisation (Known Defects, Unexpected Failures, Infrastructure Issues) and 90-day trend history.
+- **Totals behaviour**: Stakeholder top-level totals include the a11y lane; Allure may include overlapping lane executions by design for richer diagnostics.
 
 ```bash
 # Generate Allure Report (requires Java)

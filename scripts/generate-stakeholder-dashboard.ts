@@ -38,6 +38,7 @@ interface A11yMetrics extends LaneMetrics {
   wcagCompliance: 'AA' | 'A' | 'NON_COMPLIANT';
   criticalViolations: number;
   seriousViolations: number;
+  pagesScanned: number;
 }
 
 interface DashboardData {
@@ -342,9 +343,9 @@ function buildE2eMetrics(
 function buildA11yMetrics(data: any, found: boolean): A11yMetrics {
   const totalViolations = data?.totalViolations || 0;
   const totalPasses = data?.totalPasses || 0;
-  const total = totalViolations + totalPasses;
-  const passRate = total > 0 ? (totalPasses / total) * 100 : 0;
-  const dataAvailable = found && total > 0;
+  const totalChecks = totalViolations + totalPasses;
+  const passRate = totalChecks > 0 ? (totalPasses / totalChecks) * 100 : 0;
+  const dataAvailable = found && totalChecks > 0;
 
   let criticalViolations = 0;
   let seriousViolations = 0;
@@ -367,7 +368,7 @@ function buildA11yMetrics(data: any, found: boolean): A11yMetrics {
 
   return {
     passRate: Math.round(passRate * 10) / 10,
-    totalTests: data?.totalPages || 0,
+    totalTests: totalChecks,
     passed: totalPasses,
     failed: totalViolations,
     lastRun: data?.runDate || new Date().toISOString(),
@@ -382,6 +383,7 @@ function buildA11yMetrics(data: any, found: boolean): A11yMetrics {
     wcagCompliance,
     criticalViolations,
     seriousViolations,
+    pagesScanned: data?.totalPages || 0,
   };
 }
 
@@ -706,7 +708,7 @@ function generateHTML(data: DashboardData): string {
           </div>
           <div class="stat-item">
             ${statValue(data.lanes.a11y.totalTests, data.lanes.a11y.dataAvailable)}
-            <div class="stat-label">Pages Scanned</div>
+            <div class="stat-label">Accessibility Checks</div>
           </div>
           <div class="stat-item">
             ${statValue(data.lanes.a11y.criticalViolations, data.lanes.a11y.dataAvailable, data.lanes.a11y.criticalViolations > 0 ? '#ef4444' : '#22c55e')}
@@ -720,7 +722,7 @@ function generateHTML(data: DashboardData): string {
         <div style="margin-top: 1rem; text-align: center;">
           <a href="../a11y-compliance-report.html" style="color: #58a6ff; font-size: 0.85rem;">View Full WCAG Compliance Report</a>
         </div>
-        <div class="lane-meta">Last run: ${lastRunValue(data.lanes.a11y.lastRun, data.lanes.a11y.dataAvailable)}</div>
+        <div class="lane-meta">Pages scanned: ${data.lanes.a11y.dataAvailable ? data.lanes.a11y.pagesScanned : '-'} | Last run: ${lastRunValue(data.lanes.a11y.lastRun, data.lanes.a11y.dataAvailable)}</div>
       </div>
     </div>
 
@@ -786,9 +788,13 @@ function generateDashboard(): void {
     riskLevel,
     lanes,
     summary: {
-      totalTests: lanes.unit.totalTests + lanes.critical.totalTests + lanes.e2e.totalTests,
-      totalPassed: lanes.unit.passed + lanes.critical.passed + lanes.e2e.passed,
-      totalFailed: lanes.unit.failed + lanes.critical.failed + lanes.e2e.failed,
+      totalTests:
+        lanes.unit.totalTests +
+        lanes.critical.totalTests +
+        lanes.e2e.totalTests +
+        lanes.a11y.totalTests,
+      totalPassed: lanes.unit.passed + lanes.critical.passed + lanes.e2e.passed + lanes.a11y.passed,
+      totalFailed: lanes.unit.failed + lanes.critical.failed + lanes.e2e.failed + lanes.a11y.failed,
     },
     completeness: {
       isPartial: missingSources.length > 0,
