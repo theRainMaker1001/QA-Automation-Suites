@@ -8,7 +8,7 @@
 
 ## 📊 Live Quality Dashboards
 
-👉 [**View LIVE project Dashboard**](https://therainmaker1001.github.io/QA-Automation-Suites/) 👈
+## <span style="color: #00ff00;">👉 [**View LIVE Project Dashboard**](https://therainmaker1001.github.io/QA-Automation-Suites/) 👈</span>
 
 See the system in action. These dashboards provide real-time visibility into the current health of the application.
 
@@ -112,10 +112,10 @@ We avoid the 'Ice Cream Cone' anti-pattern. This suite is built on a stable foun
 ```text
                   / \
                  /   \
-                /  E2E  \             👉 Playwright (46 Tests)
+                /  E2E  \             👉 Playwright (36 Tests)
                /---------\               User Journeys & A11y
               /           \
-             / Integration \          👉 Vitest + Fetch (84 Tests)
+             / Integration \          👉 Vitest + Fetch (78 Tests)
             /---------------\            API & Business Rules
            /                 \
           /       Unit        \       👉 Vitest (189 Tests)

@@ -30,15 +30,15 @@ We use **Husky** and **Lint-Staged** to enforce quality before commits.
 
 ### By Business Risk (Lanes)
 
-| Command                          | Purpose                                         |
-| :------------------------------- | :---------------------------------------------- |
-| `npm run test:smoke`             | Fast connectivity check (API + E2E)             |
-| `npm run test:critical`          | Core loan logic + auth flows                    |
-| `npm run test:heartbeat`         | API health monitor                              |
-| `npm run test:loans`             | Loan Decision Table - 47 tests                  |
-| `npm run test:regression:matrix` | Cross-browser regression matrix (nightly style) |
-| `npm run test:a11y`              | Accessibility audit (WCAG 2.1 AA)               |
-| `npm run test:audit`             | Full regression + accessibility                 |
+| Command                          | Purpose                                                            |
+| :------------------------------- | :----------------------------------------------------------------- |
+| `npm run test:smoke`             | Fast connectivity check (API + E2E)                                |
+| `npm run test:critical`          | Core loan logic + auth flows                                       |
+| `npm run test:heartbeat`         | API health monitor                                                 |
+| `npm run test:loans`             | Loan Decision Table - 41 tests (34 core + 1 coverage + 6 negative) |
+| `npm run test:regression:matrix` | Cross-browser regression matrix (nightly style)                    |
+| `npm run test:a11y`              | Accessibility audit (WCAG 2.1 AA)                                  |
+| `npm run test:audit`             | Full regression + accessibility                                    |
 
 ## 🏷️ Test Tagging Conventions
 

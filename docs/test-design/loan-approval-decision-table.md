@@ -306,8 +306,13 @@ ParaBank's loan API uses **account balance** as `availableFunds`. This means:
 api/
 ├── src/
 │   ├── helpers/
-│   │   ├── generate-unit-summary.ts
-│   │   └── http.ts
+│   │   ├── http.ts
+│   │   ├── performance.ts
+│   │   ├── retry.ts
+│   │   ├── schema-validator.ts
+│   │   └── test-reporter.ts
+│   ├── schemas/
+│   │   └── loan.schema.ts
 │   ├── tests/
 │   │   ├── unit/                           # Fast, isolated tests
 │   │   │   ├── env.test.ts
