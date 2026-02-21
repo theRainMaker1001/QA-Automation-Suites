@@ -4,7 +4,7 @@
 [![CI Status](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml/badge.svg)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml)
 [![ISTQB Certified Engineer](https://img.shields.io/badge/ISTQB_Certified_Engineer-92.5%25-success?style=for-the-badge)](https://atsqa.org/certified-testers/profile/f1ce81a04b174d65bfbac2f82a80af39)
 [![Tech Stack (Click for detailed approach)](https://img.shields.io/badge/Tech_Stack-Playwright_%7C_Vitest_%7C_TypeScript-blueviolet?style=for-the-badge)](./docs/TECHNICAL-DESIGN.md)
-[![Engineer Available](https://img.shields.io/badge/Engineer_Available-Feb_16th-orange?style=for-the-badge)](https://www.linkedin.com/in/tom-cunningham-5a1869297/)
+[![Engineer Available](https://img.shields.io/badge/Engineer_Available-Now-orange?style=for-the-badge)](https://www.linkedin.com/in/tom-cunningham-5a1869297/)
 
 ## 📊 Live Quality Dashboards
 
@@ -123,11 +123,12 @@ We avoid the 'Ice Cream Cone' anti-pattern. This suite is built on a stable foun
 ---
 
 ## 📬 Contact & Availability
-**Tom Cunningham** – *Quality Engineer, Automation*
-tombpcunningham@icloud.com
+**Tom Cunningham** – *Quality Engineering Consultant*
+tom@orionai.co.site
 
-*   **Contract Availability:** Available to start from **Feb 16th**.
-*   **Limited time offer!** *Discounted day rates are available for contracts booked for the remainder of the 2025/2026 financial year (Feb 16th – April 5th, 2026 - Inclusive).*
+*   **Availability:** Available now, let's chat!
+*   **Contract:** Outside IR35 only. Permanent roles considered for a good mutual fit.
+*   **Limited time offer!** *Discounted day rates are available for contracts booked for the remainder of the 2025/2026 financial year (to April 5th, 2026 - Inclusive).*
 
 **Connect on LinkedIn**
 https://www.linkedin.com/in/tom-cunningham-5a1869297/
