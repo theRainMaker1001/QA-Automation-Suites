@@ -8,9 +8,9 @@
 
 ## Executive Summary
 
-This document details the test design for ParaBank's loan approval functionality using **Decision Table Testing** combined with **3-Value Boundary Value Analysis (BVA)**. The loan approval process is critical to any banking system - incorrect approvals risk financial loss; incorrect denials damage customer relationships.
+This document details the test design for ParaBank's loan approval functionality using **Decision Table Testing** combined with **3-Value Boundary Value Analysis (BVA)**. The loan approval process is critical to any banking system - incorrect approvals risk financial loss whereas incorrect denials damage customer relationships.
 
-**Coverage achieved**: 34 test cases providing complete combinatorial coverage of business rules plus 5-point boundary testing (-2, -1, 0, +1, +2) at every decision point.
+**Coverage achieved**: 34 test cases providing complete combinatorial coverage of business rules plus 3-Value BVA testing (-2, -1, 0, +1, +2) at every decision point.
 
 ---
 
@@ -106,7 +106,7 @@ The decision table below represents all logical combinations of the two conditio
 
 ### 3.1 BVA Strategy: 3-Value Testing
 
-3-value BVA tests **five points** per boundary:
+**3-Value BVA** tests:
 
 ```
     Invalid Partition    │ Boundary │    Valid Partition
@@ -213,11 +213,11 @@ When **both** conditions are near their boundaries simultaneously:
 | Category                               |  Count | Purpose                              |
 | -------------------------------------- | -----: | ------------------------------------ |
 | Decision Table Rules                   |      4 | Combinatorial coverage of conditions |
-| Funds Boundary (5-point BVA)           |      5 | -2, -1, 0, +1, +2 at funds check     |
-| Ratio Boundary (5-point BVA)           |      5 | -2, -1, 0, +1, +2 at 10% threshold   |
-| Loan Amount Boundary (5-point BVA)     |      5 | -2, -1, 0, +1, +2 at zero            |
-| Down Payment Boundary (5-point BVA)    |      5 | -2, -1, 0, +1, +2 at zero            |
-| Available Funds Boundary (5-point BVA) |      5 | -2, -1, 0, +1, +2 at zero            |
+| Funds Boundary (3-Value BVA)           |      5 | -2, -1, 0, +1, +2 at funds check     |
+| Ratio Boundary (3-Value BVA)           |      5 | -2, -1, 0, +1, +2 at 10% threshold   |
+| Loan Amount Boundary (3-Value BVA)     |      5 | -2, -1, 0, +1, +2 at zero            |
+| Down Payment Boundary (3-Value BVA)    |      5 | -2, -1, 0, +1, +2 at zero            |
+| Available Funds Boundary (3-Value BVA) |      5 | -2, -1, 0, +1, +2 at zero            |
 | Combined Boundaries                    |      5 | Critical multi-boundary scenarios    |
 | **Total**                              | **34** |                                      |
 
@@ -244,7 +244,7 @@ When **both** conditions are near their boundaries simultaneously:
 
 ### 4.3 Risk-Based Test Selection
 
-For **smoke testing** (fast feedback on every commit):
+For **fast-feedback coverage** (essential boundary cases):
 
 | ID                     | Description         | Why Critical          |
 | ---------------------- | ------------------- | --------------------- |
@@ -345,17 +345,20 @@ scripts/
 ├── run-unit-tests.ts                       # Unit test runner
 ├── run-a11y-tests.ts                       # Accessibility report
 ├── generate-stakeholder-dashboard.ts       # Executive dashboard
-└── preserve-allure-history.ts              # Trend tracking
+├── preserve-allure-history.ts              # Trend tracking
+└── ...                                     # Additional utility scripts
 
 config/
 ├── env.ts                                  # Zod-validated environment
 └── tooling-summary.ts
 
-reports/                                    # Generated reports
-├── loan-api-report.md
-├── unit-summary.md
-├── a11y-compliance-report.md
-└── stakeholder-dashboard.json
+reports/                                    # Generated reports (not checked in)
+├── loan-results.json                       # Loan test data for stakeholder dashboard
+├── unit-summary.json                       # Unit test data for stakeholder dashboard
+├── a11y-results.json                       # A11y data for stakeholder dashboard
+├── loan-api-report.md                      # Human-readable loan test report
+├── a11y-compliance-report.md              # Human-readable accessibility report
+└── ...                                     # Additional report artefacts
 
 allure-results/                             # Test results (per lane)
 ├── unit/
@@ -371,7 +374,7 @@ allure-results/                             # Test results (per lane)
 ### 6.3 Running the Tests
 
 ```bash
-# Run all loan decision table tests (34 test cases)
+# Run all loan decision table tests (41 tests)
 npm run test:loans:only
 
 # Run with markdown report generation
@@ -462,7 +465,7 @@ Test results are published to Allure for trend tracking:
 
 ```
 allure-results/
-├── unit/                 # Loan tests land here (via moveAllureResults)
+├── integration/          # Loan tests land here (via moveAllureResults)
 └── ...
 
 # Generated report
@@ -489,12 +492,10 @@ Access the dashboards:
 
 ## 9. References
 
-- **ISTQB Foundation Level Syllabus** - Section 4.3: Black-box Test Techniques
+- **ISTQB Foundation Level Syllabus v4.0**
 - **ParaBank Source Code** - `com.parasoft.parabank.domain.logic.impl.LoanProcessor`
 - **ParaBank API Documentation** - Swagger UI at `/parabank/api-docs/index.html`
 - **Project Repository** - Test implementation in `api/src/tests/critical/loan-decision-table.test.ts`
 - **CI/CD Configuration** - `.github/workflows/ci.yml` (critical lane)
 
 ---
-
-_Document generated as part of QA-Automation-Suites portfolio project demonstrating ISTQB test design techniques._

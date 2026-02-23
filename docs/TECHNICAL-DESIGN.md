@@ -1,16 +1,16 @@
-# 🛠️ Technical Design & Engineering Specifications
+# Technical Design & Engineering Specifications
 
 This document provides a deep-dive into the architectural patterns, ISTQB methodologies, and engineering logic implemented in the **QA-Automation-Suites** framework.
 
 ---
 
-## 🏗️ Architecture & The Test Pyramid
-To prevent the "Ice Cream Cone" anti-pattern, this suite is weighted toward fast, reliable unit and integration tests. This ensures maximum ROI, rapid execution, and high stability.
+## Architecture & Test Pyramid
+To prevent the 'Ice Cream Cone' anti-pattern, this suite is weighted toward fast, reliable unit and integration tests. This ensures maximum ROI, rapid execution, and high stability.
 
 ```text
                   / \
                  /   \
-                /  E2E  \             👉 Playwright (36 Tests)
+                /  E2E  \             👉 Playwright (46 Tests)
                /---------\               User Journeys & A11y
               /           \
              / Integration \          👉 Vitest + Fetch (78 Tests)
@@ -20,13 +20,13 @@ To prevent the "Ice Cream Cone" anti-pattern, this suite is weighted toward fast
          /---------------------\         Isolated Maths & Logic
 ```
 
-* **E2E (36 Tests):** High-fidelity user simulation covering smoke, critical, regression, and accessibility scenarios.
+* **E2E (46 Tests):** High-fidelity user simulation covering smoke, critical, regression, and accessibility scenarios.
 * **Integration + Critical (78 Tests):** API contract validation via Equivalence Partitioning (20 accounts), schema integrity (14), loan Decision Table + BVA (41), and heartbeat monitoring (3).
 * **Unit (189 Tests):** Sub-millisecond validation of financial utilities and isolated business logic.
 
 ---
 
-## 🧪 Loan Approval Decision Table Testing
+## Loan Approval Decision Table Testing
 
 > **ISTQB Techniques**: Decision Table Testing + 3-Value Boundary Value Analysis
 > **System Under Test**: ParaBank Loan Request API
@@ -35,7 +35,7 @@ To prevent the "Ice Cream Cone" anti-pattern, this suite is weighted toward fast
 ### 1. Executive Summary
 This document details the test design for ParaBank's loan approval functionality using **Decision Table Testing** combined with **3-Value Boundary Value Analysis (BVA)**. The loan approval process is critical to any banking system - incorrect approvals risk financial loss; incorrect denials damage customer relationships.
 
-**Coverage achieved**: 34 test cases providing complete combinatorial coverage of business rules plus 5-point boundary testing (-2, -1, 0, +1, +2) at every decision point.
+**Coverage achieved**: 34 test cases providing complete combinatorial coverage of business rules plus 3-Value BVA testing (-2, -1, 0, +1, +2) at every decision point.
 
 ### 2. Decision Table Oracle
 The decision table below represents all logical combinations of the two conditions:
@@ -110,7 +110,7 @@ To ensure absolute rigor for this financial system, we **implement** 3-Value BVA
 
 ---
 
-## 🔄 State Transition Testing (Authentication)
+## State Transition Testing (Authentication)
 The authentication flow is modelled as a finite state machine with three observable states. Each transition is verified by asserting the starting state, triggering the event, and confirming the resulting state via the Page Object Model.
 
 ```mermaid
@@ -131,7 +131,7 @@ stateDiagram-v2
 
 ---
 
-## 🚀 CI/CD Pipeline Orchestration
+## CI/CD Pipeline Orchestration
 The pipeline uses **GitHub Actions** with strict quality gates. This multi-lane approach provides rapid feedback for developers while maintaining full regression confidence.
 
 ```mermaid
@@ -180,7 +180,7 @@ graph LR
 
 ---
 
-## 🧮 Financial Precision Engineering
+## Financial Precision Engineering
 Standard JavaScript floating-point arithmetic is unsafe for banking applications due to the way binary fractions are represented.
 
 $$0.1 + 0.2 = 0.30000000000000004$$
@@ -192,7 +192,7 @@ Our framework includes a dedicated helper library validated by **62 specific tes
 
 ---
 
-## ⚙️ Execution & Workflow
+## Execution & Workflow
 
 ### **Environment Setup**
 ```bash
@@ -225,12 +225,12 @@ npm run test:regression:matrix # Full cross-browser parity (Nightly)
 npm run test:a11y       # Accessibility Audit (Nightly)
 npm run test:heartbeat  # API Health Monitor
 npm run test:audit      # Run Regression + A11y (Full Audit)
-npm run test:loans      # Run Loan Decision Table scenarios (47 tests)
+npm run test:loans      # Run Loan Decision Table scenarios (41 tests)
 npm run test:e2e:known-defects # Known-defect tracking lane
 
 # Running by Architectural Layer
 npm run test:unit       # 189 tests (Logic & Math)
-npm run test:api        # 84 tests (Contract & Integration)
+npm run test:api        # 78 tests (Contract & Integration)
 npm run test:e2e        # Chromium gate (excludes @negative/@known-defect)
 npm run test:e2e:matrix # Cross-browser matrix when all browsers are installed
 
@@ -250,7 +250,7 @@ npm run report:stakeholder
 
 ---
 
-## 📊 Dual Dashboard Architecture
+## Dual Dashboard Architecture
 
 The reporting system provides two audience-specific views. Each test lane feeds JSON data into both dashboards via CI artefacts, with zero overlap between lanes.
 
@@ -309,7 +309,7 @@ The stakeholder dashboard presents four non-overlapping quality lanes:
 | Lane | Source Data | What It Shows |
 |------|-----------|---------------|
 | **Code Quality** | `unit-summary.json` (189 unit tests) | Pass rate for isolated logic and financial maths |
-| **Financial Accuracy** | `loan-results.json` (47 loan tests) | Decision table + BVA coverage of loan approval rules (34 core scenarios + 6 critical path + 1 coverage + 6 negative) |
+| **Financial Accuracy** | `loan-results.json` (41 loan tests) | Decision table + BVA coverage of loan approval rules (34 core scenarios, 1 coverage, 6 negative) |
 | **User Journey Coverage** | `e2e-critical-results.json` + `e2e-regression-results.json` | Known defects (amber, tagged `@known-defect`), unexpected failures (red), skipped (grey). Critical = 31 tests (chromium), regression = 12 tests (3 browsers) |
 | **WCAG Compliance** | `a11y-results.json` | Violation count, AA/A/Non-Compliant badge, and link to the full [compliance report](https://therainmaker1001.github.io/QA-Automation-Suites/a11y-compliance-report.html) |
 

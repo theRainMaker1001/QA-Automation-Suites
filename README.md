@@ -1,15 +1,16 @@
-# 🏦 FinTech Quality Engineering - Reduce Quality Costs and Risks
-### *High-Confidence Automation & Risk-Based Testing for a banking system*
+# FinTech Quality Engineering
+
+### High-Confidence Automation and Risk-Based Testing for a Banking System
 
 [![CI Status](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml/badge.svg)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml)
 [![ISTQB Certified Engineer](https://img.shields.io/badge/ISTQB_Certified_Engineer-92.5%25-success?style=for-the-badge)](https://atsqa.org/certified-testers/profile/f1ce81a04b174d65bfbac2f82a80af39)
 [![Tech Stack (Click for detailed approach)](https://img.shields.io/badge/Tech_Stack-Playwright_%7C_Vitest_%7C_TypeScript-blueviolet?style=for-the-badge)](./docs/TECHNICAL-DESIGN.md)
-[![Engineer Available](https://img.shields.io/badge/Engineer_Available-Now-orange?style=for-the-badge)](https://www.linkedin.com/in/tom-cunningham-5a1869297/)
+[![Engineer Available](https://img.shields.io/badge/Engineer_Available-Now-orange?style=for-the-badge)](https://www.linkedin.com/in/tom-cunningham-orionai/)
 
-## 📊 Live Quality Dashboards
+## Live Quality Dashboards
 
-### 👉 [**View LIVE Project Dashboard**](https://therainmaker1001.github.io/QA-Automation-Suites/) 👈
-See the system in action. These dashboards provide real-time visibility into the current health of the application.
+### 👉 [**View the Live Project Dashboard**](https://therainmaker1001.github.io/QA-Automation-Suites/) 👈
+Real-time visibility into the current health of the system.
 
 | Dashboard | Audience | Shows | Link |
 |-----------|----------|-------|------|
@@ -22,84 +23,86 @@ Dashboard totals policy:
 
 ---
 
-## 🏗️ Architecture & Engineering Design
+## Architecture & Engineering Design
 
-🧱 [**Technical Design & Architecture**](./docs/TECHNICAL-DESIGN.md)  
+Full engineering decisions and test design artefacts are documented on the pages linked below.
+
+🧱 [**Technical Design & Architecture**](./docs/TECHNICAL-DESIGN.md)
 🧰 [**Loan Approval Decision Tables / 3-Value BVA**](./docs/test-design/loan-approval-decision-table.md)
 
 ---
 
-## 🚀 Summary: Why This Suite Exists
+## What This Suite Delivers
 
-This is not just a collection of test scripts. It is a **Risk Intelligence Platform** designed for the high-stakes FinTech sector.
+This is not a collection of test scripts. It is a **Risk Intelligence Platform** built for the high-stakes FinTech sector.
 
-In an industry where a single calculation error, or security gap, can cost millions 'the code works' is not enough. This framework delivers **mitigation against failure** by combining rigorous financial logic validation with automated compliance audits and software tests.
+In an industry where a single calculation error or security gap can cost millions, "the code works" is not enough. This framework delivers active mitigation against failure by combining rigorous financial logic validation with automated compliance audits and software tests.
 
-**The Bottom Line:**
+**Core guarantees:**
 
-*   **🛡️ Zero 'Money Leaks':** 34+ combinatorial scenarios ensure loan logic is mathematically perfect.
-*   **⚖️ Legal Compliance:** Automated WCAG 2.1 AA audits protect against accessibility lawsuits.
-*   **💰 40% Lower CI Costs:** Smart 'Risk Lanes' run only the necessary tests at any given time, saving cloud compute.
-
----
-
-## 1. The Business 'Safety Net' (Risk Mitigation)
-
-Technical product owners need reliability. This suite ensures the **financial logic** is bulletproof before code ever reaches production.
-
-### 💸 Combinatorial Logic Coverage
-
-*   **RISK:** Edge-case money leaks where invalid loans might be approved due to boundary errors (e.g., $0.00 down payment).
-*   **SOLUTION:** We don't guess; we prove. Using **Decision Table Testing and 3-Value BVA** this suite validates **34 unique loan approval scenarios**.
-
-### 🔐 State Transition Test Coverage
-
-*   **RISK:** Users bypassing security screens or accessing protected data while in a `Guest` or `LoginError` state.
-*   **SOLUTION:** Authentication flows are validated using **ISTQB State Transition Testing**, systematically verifying that all 7 valid state transitions behave correctly across 3 observable states (Guest, LoggedIn, LoginError).
-
-### ⚖️ Legal & Compliance Guardrails
-
-*   **RISK:** Compliance violations and potential lawsuits.
-*   **SOLUTION:** Automated **Accessibility (a11y)** tests run nightly against WCAG 2.1 AA standards, acting as a legal shield.
+*   **Zero money leaks:** 34+ combinatorial scenarios ensure loan logic is mathematically sound.
+*   **Legal compliance:** Automated WCAG 2.1 AA audits protect against accessibility violations.
+*   **40% lower CI costs:** Smart risk lanes run only the necessary tests at any given time, reducing cloud compute spend.
 
 ---
 
-## 2. ROI & Efficiency (Cost Savings)
+## 1. The Business Safety Net
 
-Software development is expensive. Set this sort of framework up right and you have a forever asset that prevents flakiness and drift in your software product. It also helps developers with clarity on issues causing failures.
+Technical product owners need reliability. This suite ensures the financial logic is sound before code reaches production.
 
-### 🚦 Risk-Based Tagging ('The Lanes')
+### Combinatorial Logic Coverage
 
-Instead of running every test on every change, we use intelligent tagging:
+*   **Risk:** Edge-case money leaks where invalid loans might be approved due to boundary errors (e.g., a £0.00 down payment).
+*   **Solution:** Using Decision Table Testing and 3-Value BVA, this suite validates **34 unique loan approval scenarios**, proven not estimated.
+
+### State Transition Coverage
+
+*   **Risk:** Users bypassing security screens or accessing protected data whilst in a `Guest` or `LoginError` state.
+*   **Solution:** Authentication flows are validated using **ISTQB State Transition Testing**, systematically verifying all 7 valid state transitions across 3 observable states (Guest, LoggedIn, LoginError).
+
+### Legal & Compliance Guardrails
+
+*   **Risk:** Compliance violations and potential legal liability.
+*   **Solution:** Automated **accessibility (a11y)** tests run nightly against WCAG 2.1 AA standards, acting as a continuous compliance guardrail.
+
+---
+
+## 2. ROI & Efficiency
+
+A well-structured framework is a long-term asset. It prevents flakiness and drift whilst providing developers with precise failure diagnostics.
+
+### 🚦 Risk-Based Tagging: The Lanes
+
+Rather than running every test on every change, intelligent tagging focuses execution:
 
 *   `@smoke`: Fast connectivity checks (Push & PR).
 *   `@critical`: Core money logic (PRs & Dispatch).
 *   `@regression`: Cross-browser user journeys (Nightly).
 *   `@a11y`: WCAG compliance checks (Nightly).
 *   `@known-defect`: Tracked upstream defects that remain visible in Allure and are separated in stakeholder metrics.
-*   Local developer gate defaults to Chromium for determinism; full browser matrix runs in nightly or via `npm run test:e2e:matrix`.
+*   Local developer gate defaults to Chromium for determinism; full browser matrix runs nightly or via `npm run test:e2e:matrix`.
 
-*   **Impact:** Reduces CI/CD cloud costs by up to **40%** by running expensive tests only when necessary.
+**Impact:** Reduces CI/CD cloud costs by up to 40% by running expensive tests only when necessary.
 
-### 🛡️ Shift-Left Quality Gates
+### Shift-Left Quality Gates
 
 Using **Husky** and **Prettier**, quality is enforced at the developer's desk.
-*   **Impact:** Prevents bad code from ever reaching the expensive build servers, saving developer time on failed builds and debugging.
 
-### ⚡ Storage State Reuse
+**Impact:** Prevents malformed code from reaching build servers, reducing time lost to failed builds and debugging cycles.
+
+### Storage State Reuse
+
 Login sessions are captured once and reused across tests (`storageState`).
-*   **Impact:** Drastically shortens the feedback loop, allowing engineers to deploy fixes faster.
+
+**Impact:** Shortens the feedback loop, allowing engineers to deploy fixes faster.
 
 ---
 
-## 3. Long-term Thinking
+## 3. Long-Term Thinking
 
-How does it continue to add value after it's deployed?
-
-*   **⏱️ Performance SLA Assertions:** Tests automatically fail if API responses exceed **5000ms**, ensuring customer experience never degrades silently.
-*   **📸 Evidence on Failure:** Every failure captures **Video, Screenshots, and Traces**. Developers spend zero time 'reproducing' bugs, they just watch the replay or follow the trace.
-*   **📝 API Contract Safety:** **Zod Schema Validation** catches backend changes instantly, preventing silent API breaks from crashing the frontend.
-
+*   **⏱️ Performance SLA assertions:** Tests automatically fail if API responses exceed 5000ms, ensuring customer experience never degrades silently.
+*   **📸 Evidence on failure:** Every failure captures video, screenshots, and traces. Developers spend no time reproducing bugs; they watch the replay or follow the trace.
+*   **📝 API contract safety:** **Zod Schema Validation** catches backend changes instantly, preventing silent API breaks from reaching the frontend.
 
 ---
 
@@ -111,7 +114,7 @@ We avoid the 'Ice Cream Cone' anti-pattern. This suite is built on a stable foun
 ```text
                   / \
                  /   \
-                /  E2E  \             👉 Playwright (36 Tests)
+                /  E2E  \             👉 Playwright (46 Tests)
                /---------\               User Journeys & A11y
               /           \
              / Integration \          👉 Vitest + Fetch (78 Tests)
@@ -120,17 +123,25 @@ We avoid the 'Ice Cream Cone' anti-pattern. This suite is built on a stable foun
           /       Unit        \       👉 Vitest (189 Tests)
          /---------------------\         Isolated Maths & Logic
 ```
+
 ---
 
-## 📬 Contact & Availability
-**Tom Cunningham** – *Quality Engineering Consultant*
-tom@orionai.co.site
+## Contract & Consulting
 
-*   **Availability:** Available now, let's chat!
-*   **Contract:** Outside IR35 only. Permanent roles considered for a good mutual fit.
-*   **Limited time offer!** *Discounted day rates are available for contracts booked for the remainder of the 2025/2026 financial year (to April 5th, 2026 - Inclusive).*
+**Tom Cunningham** | Quality Engineering Consultant | [tom@orionai.co.site](mailto:tom@orionai.co.site)
 
-**Connect on LinkedIn**
-https://www.linkedin.com/in/tom-cunningham-5a1869297/
+[![Available Now](https://img.shields.io/badge/Available-Now-brightgreen?style=for-the-badge)](mailto:tom@orionai.co.site)
+[![Discounted Rates to 5 Apr 2026](https://img.shields.io/badge/Discounted_Rates-to_5_Apr_2026-brightgreen?style=for-the-badge)](mailto:tom@orionai.co.site)
+
+Specialising in risk-based automation frameworks for FinTech and regulated industries.
+
+*   **Contract:** Outside IR35 only.
+*   **Permanent:** Considered for the right mutual fit.
+
+Good QA pays for itself.
+
+**Consultancy Website** [**orionai.co.site**](https://orionai.co.site/)
+
+**LinkedIn** [**Connect on LinkedIn**](https://www.linkedin.com/in/tom-cunningham-orionai/)
 
 ---
