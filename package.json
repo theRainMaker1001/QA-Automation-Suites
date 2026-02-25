@@ -34,7 +34,7 @@
     "test:unit:report": "tsx scripts/run-unit-tests.ts",
     "test:smoke": "vitest run --config vitest.integration.config.ts --testNamePattern @smoke && playwright test -c e2e/playwright.config.ts --grep @smoke --project=chromium",
     "test:critical": "vitest run --config vitest.integration.config.ts --testNamePattern @critical && playwright test -c e2e/playwright.config.ts --grep @critical --project=chromium --grep-invert @known-defect",
-    "test:regression": "playwright test -c e2e/playwright.config.ts --grep @regression --project=chromium",
+    "test:regression": "playwright test -c e2e/playwright.config.ts --grep @regression --project=chromium-auth",
     "test:regression:matrix": "playwright test -c e2e/playwright.config.ts --grep @regression --project=chromium --project=firefox --project=webkit",
     "test:a11y": "playwright test -c e2e/playwright.config.ts --grep @a11y --project=chromium",
     "test:heartbeat": "vitest run --config vitest.integration.config.ts --testNamePattern @heartbeat",

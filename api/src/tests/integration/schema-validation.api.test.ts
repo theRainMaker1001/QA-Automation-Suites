@@ -10,6 +10,7 @@ import { HttpClient } from '../../helpers/http.js';
 import { env } from '../_env.js';
 import { validateResponse, isValidResponse } from '../../helpers/schema-validator.js';
 import { LoanResponseSchema } from '../../schemas/loan.schema.js';
+import { AccountSchema, AccountListSchema } from '../../schemas/account.schema.js';
 
 const client = new HttpClient({
   baseUrl: env.BANK_BASE_URL,
@@ -81,24 +82,21 @@ describe('@smoke API Schema Validation - Integration', () => {
   });
 
   describe('Account API', () => {
-    it('account response has expected structure', async () => {
+    it('single account response matches AccountSchema', async () => {
       const res = await client.get(`services/bank/accounts/12345`);
 
       if (res.ok && res.data) {
-        // Check basic structure
-        expect(res.data).toBeDefined();
+        const isValid = isValidResponse(AccountSchema, res.data);
+        expect(isValid).toBe(true);
       }
     });
 
-    it('account response type validation', async () => {
-      const res = await client.get(`services/bank/accounts/12345`);
+    it('accounts list response matches AccountListSchema', async () => {
+      const res = await client.get(`services/bank/customers/12212/accounts`);
 
-      if (res.ok && res.data && typeof res.data === 'object') {
-        // If we get account data, validate it has expected fields
-        const data = res.data as Record<string, unknown>;
-        if ('id' in data) {
-          expect(typeof data.id).toBe('number');
-        }
+      if (res.ok && res.data) {
+        const isValid = isValidResponse(AccountListSchema, res.data);
+        expect(isValid).toBe(true);
       }
     });
   });

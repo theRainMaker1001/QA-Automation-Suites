@@ -373,7 +373,7 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
       await loginPage.logout();
 
       // Try to access overview directly
-      await page.goto('https://parabank.parasoft.com/parabank/overview.htm');
+      await loginPage.navigate('/overview.htm');
 
       // Should be redirected or show error
       expect(page.url()).not.toContain('overview.htm');
@@ -393,10 +393,7 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
       const loginPage = new LoginPage(page);
       await loginPage.goto();
 
-      const loginButton = page
-        .locator('#loginPanel, #leftPanel')
-        .getByRole('button', { name: /log\s*in/i });
-      await expect(loginButton).toBeEnabled();
+      await loginPage.expectLoginButtonEnabled();
     });
   });
 });

@@ -46,6 +46,9 @@ claude.json
 .aider*
 .cursor/
 
+# QA philosophy / playbook (private working documents)
+PHILOSOPHY.md
+
 # Codex files and config
 .codex/
 .codex

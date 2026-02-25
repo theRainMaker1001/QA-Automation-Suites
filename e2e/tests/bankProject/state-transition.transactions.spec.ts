@@ -10,16 +10,15 @@
  */
 
 import { test, expect } from '@playwright/test';
-import { TEST_USERS } from '../../fixtures/test-data.fixture.js';
 import { TransactionsPage } from '../../pages/transactions.page.js';
-import { ensureAuthenticatedSession } from '../../utils/auth-session.js';
 
+// Auth is provided by the chromium-auth storageState project (playwright.config.ts).
+// Per-test login is not needed here — see state-transition.auth.spec.ts for auth state tests.
 test.describe('@regression @state-transition Transaction Search State Machine', () => {
   let transactionsPage: TransactionsPage;
 
   test.beforeEach(async ({ page }) => {
     transactionsPage = new TransactionsPage(page);
-    await ensureAuthenticatedSession(page, TEST_USERS.default);
     await transactionsPage.goto();
   });
 

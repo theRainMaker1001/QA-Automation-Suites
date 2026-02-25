@@ -356,8 +356,8 @@ reports/                                    # Generated reports (not checked in)
 ├── loan-results.json                       # Loan test data for stakeholder dashboard
 ├── unit-summary.json                       # Unit test data for stakeholder dashboard
 ├── a11y-results.json                       # A11y data for stakeholder dashboard
-├── loan-api-report.md                      # Human-readable loan test report
-├── a11y-compliance-report.md              # Human-readable accessibility report
+├── loan-api-report.md                      # Formatted markdown loan test report
+├── a11y-compliance-report.md              # Formatted markdown accessibility report
 └── ...                                     # Additional report artefacts
 
 allure-results/                             # Test results (per lane)

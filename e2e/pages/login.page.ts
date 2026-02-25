@@ -142,6 +142,10 @@ export class LoginPage extends BasePage {
     await expect(this.logoutLink).not.toBeVisible();
   }
 
+  async expectLoginButtonEnabled(): Promise<void> {
+    await expect(this.loginButton).toBeEnabled();
+  }
+
   // ============================================================================
   // Getters
   // ============================================================================

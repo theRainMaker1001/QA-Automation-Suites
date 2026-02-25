@@ -123,6 +123,7 @@ We avoid the 'Ice Cream Cone' anti-pattern. This suite is built on a stable foun
           /       Unit        \       👉 Vitest (189 Tests)
          /---------------------\         Isolated Maths & Logic
 ```
+*(Counts as of 2026-02-25)*
 
 ---
 

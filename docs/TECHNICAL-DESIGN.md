@@ -19,6 +19,7 @@ To prevent the 'Ice Cream Cone' anti-pattern, this suite is weighted toward fast
           /       Unit        \       👉 Vitest (189 Tests)
          /---------------------\         Isolated Maths & Logic
 ```
+*(Counts as of 2026-02-25)*
 
 * **E2E (46 Tests):** High-fidelity user simulation covering smoke, critical, regression, and accessibility scenarios.
 * **Integration + Critical (78 Tests):** API contract validation via Equivalence Partitioning (20 accounts), schema integrity (14), loan Decision Table + BVA (41), and heartbeat monitoring (3).
