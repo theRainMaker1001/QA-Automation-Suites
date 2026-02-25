@@ -1,15 +1,15 @@
-# Usage & Contributing Guide
+﻿# Usage and Contributing Guide
 
-This guide covers everything needed to run the test suites locally, interpret the results, and contribute new tests. Whether you are exploring the framework or extending it, start here.
+This guide explains how to run the suites locally, interpret results, and contribute new tests.
 
 ---
 
 ## Prerequisites
 
-| Requirement | Details                                                                                         |
-| :---------- | :---------------------------------------------------------------------------------------------- |
-| **Node.js** | Version `24.11.1` — use `nvm use` if NVM is installed                                           |
-| **Java**    | Required only for generating the Allure developer dashboard locally (`npm run report:generate`) |
+| Requirement | Details                                                               |
+| :---------- | :-------------------------------------------------------------------- |
+| Node.js     | Version `24.11.1` (use `nvm use` if available)                        |
+| Java        | Required only for local Allure generation (`npm run report:generate`) |
 
 ---
 
@@ -20,11 +20,27 @@ npm install && npx playwright install
 npm run test:smoke
 ```
 
-If the smoke tests pass, your environment is ready.
+If smoke passes, your local environment is ready.
 
-> ⚠️ **Pre-commit hooks are active.** Commits will be blocked if they contain linting errors or CRLF line endings. Run `npm run lint` and `npm run fmt` before committing.
+---
 
-> ⚠️ **Pre-push hooks are also active.** Pushes will be blocked if typecheck, lint, or smoke tests fail. Ensure `npm run typecheck`, `npm run lint`, and `npm run test:smoke` all pass before pushing.
+## Local Quality Gates
+
+### Pre-commit (`.husky/pre-commit`)
+
+Commits are blocked if any of these fail:
+
+- `lint-staged` checks (ESLint and Prettier on staged files)
+- CRLF line-ending check on staged files
+- Unit tests for staged TypeScript changes (`npm run test:unit --silent`)
+
+### Pre-push (`.husky/pre-push`)
+
+Pushes are blocked if any of these fail:
+
+- `npm run typecheck`
+- `npm run lint`
+- `npm run test:smoke`
 
 ---
 
@@ -32,102 +48,112 @@ If the smoke tests pass, your environment is ready.
 
 ### By Architectural Layer
 
-| Command                          | Purpose                                                        |
-| :------------------------------- | :------------------------------------------------------------- |
-| `npm run test:unit`              | Fast logic validation, 189 tests (Vitest)                      |
-| `npm run test:api`               | Integration and contract tests (Vitest)                        |
-| `npm run test:e2e`               | UI gate on Chromium (excludes `@negative` and `@known-defect`) |
-| `npm run test:e2e:matrix`        | Cross-browser matrix (`chromium`, `firefox`, `webkit`)         |
-| `npm run test:e2e:known-defects` | Known-defect verification lane (`@known-defect`)               |
+| Command                          | Purpose                                                              |
+| :------------------------------- | :------------------------------------------------------------------- |
+| `npm run test:unit`              | Unit logic and maths tests                                           |
+| `npm run test:api`               | Integration plus critical API tests (`vitest.integration.config.ts`) |
+| `npm run test:e2e`               | Chromium E2E gate (excludes `@negative` and `@known-defect`)         |
+| `npm run test:e2e:all`           | All Playwright projects                                              |
+| `npm run test:e2e:matrix`        | Chromium + Firefox + WebKit matrix                                   |
+| `npm run test:e2e:state`         | `@state-transition` tests on Chromium                                |
+| `npm run test:e2e:known-defects` | Known-defect E2E lane                                                |
+| `npm run test:e2e:negative`      | Negative/demo lane                                                   |
 
 ### By Business Risk Lane
 
-| Command                          | Purpose                                                         |
-| :------------------------------- | :-------------------------------------------------------------- |
-| `npm run test:smoke`             | Fast connectivity check (API and E2E)                           |
-| `npm run test:critical`          | Core loan logic and auth flows                                  |
-| `npm run test:heartbeat`         | API health monitor                                              |
-| `npm run test:loans`             | Loan Decision Table: 41 tests (34 core, 1 coverage, 6 negative) |
-| `npm run test:regression:matrix` | Cross-browser regression matrix (nightly style)                 |
-| `npm run test:a11y`              | Accessibility audit (WCAG 2.1 AA)                               |
-| `npm run test:audit`             | Full regression and accessibility                               |
+| Command                          | Purpose                              |
+| :------------------------------- | :----------------------------------- |
+| `npm run test:smoke`             | Fast API plus UI connectivity checks |
+| `npm run test:critical`          | Core API and E2E critical checks     |
+| `npm run test:regression`        | Regression lane on `chromium-auth`   |
+| `npm run test:regression:matrix` | Cross-browser regression lane        |
+| `npm run test:a11y`              | Accessibility audit lane             |
+| `npm run test:heartbeat`         | API environment heartbeat checks     |
+| `npm run test:loans`             | Loan decision-table report run       |
+| `npm run test:audit`             | Regression plus a11y aggregate run   |
+
+Notes:
+
+- `test:regression` uses `chromium-auth` storage state.
+- Authentication state-machine tests are a deliberate exception and validate guest/login/logout transitions directly.
 
 ---
 
-## Test Tagging Conventions
+## Tagging Conventions
 
-Tags control which lane a test runs in. When writing new tests, apply the appropriate tag in the test name or description.
-
-| Tag             | Purpose                  | Runs In                                   |
-| :-------------- | :----------------------- | :---------------------------------------- |
-| `@smoke`        | Fast connectivity checks | Push and PR                               |
-| `@critical`     | Business-critical paths  | Every PR                                  |
-| `@regression`   | Full feature coverage    | Nightly                                   |
-| `@a11y`         | Accessibility compliance | Nightly                                   |
-| `@known-defect` | Known product defects    | Critical lane tracking and dedicated lane |
-| `@negative`     | Error handling scenarios | Manual                                    |
-
----
-
-## Code Quality Standards
-
-Quality is enforced at the developer's desk via **Husky** and **Lint-Staged**. Commits that fail these checks are blocked before they reach the build server.
-
-| Check         | Command             |
-| :------------ | :------------------ |
-| Linting       | `npm run lint`      |
-| Formatting    | `npm run fmt`       |
-| Type checking | `npm run typecheck` |
+| Tag                 | Purpose                       | Typical lane                             |
+| :------------------ | :---------------------------- | :--------------------------------------- |
+| `@smoke`            | Fast connectivity             | Smoke                                    |
+| `@critical`         | High-risk business paths      | Critical                                 |
+| `@regression`       | Broader behavioural coverage  | Nightly audit                            |
+| `@a11y`             | Accessibility checks          | Nightly audit                            |
+| `@state-transition` | Explicit state-machine flows  | Regression or focused state run          |
+| `@known-defect`     | Upstream known issue tracking | Critical reporting and known-defect lane |
+| `@negative`         | Defensive/error-path checks   | Manual/special runs                      |
 
 ---
 
-## CI/CD Pipeline
+## CI and Workflow Overview
 
-Every push and pull request runs the following sequential gates:
+### `ci.yml` (push, pull_request, workflow_dispatch)
 
-```
-Commit Gate → Smoke Lane → Critical Lane → Report Deploy
+Pipeline order:
+
+```text
+commit-gate -> smoke-lane -> critical-lane
 ```
 
-| Gate              | Trigger                | What runs                                                           |
-| :---------------- | :--------------------- | :------------------------------------------------------------------ |
-| Commit Gate       | Every push             | Lint, typecheck, unit tests, loan report generation                 |
-| Smoke Lane        | Push and PR            | API and E2E connectivity                                            |
-| Critical Lane     | PR and manual dispatch | `@critical` API and E2E validation                                  |
-| Nightly Audit     | 2 AM UTC               | `@regression` and `@a11y`                                           |
-| Known-defect Lane | Manual                 | Known issues kept visible without blocking unexpected-failure gates |
+- `commit-gate`: typecheck, lint, prettier check, tag validation, unit tests
+- `smoke-lane`: `@smoke` API and E2E checks
+- `critical-lane`: `@critical` API and E2E checks, then `verify:e2e:critical`
+
+### `playwright.yml` (scheduled nightly + workflow_dispatch)
+
+- Smoke lane (manual dispatch path)
+- Critical lane (manual dispatch path)
+- Nightly audit: `@regression` matrix then `@a11y`
+
+Known-defect behaviour:
+
+- `verify:e2e:critical` allows expected known defects and fails only on unexpected failures.
 
 ---
 
 ## Reporting
 
-Two dashboards are generated from test data, each targeting a different audience.
+| Command                      | Output                                    |
+| :--------------------------- | :---------------------------------------- |
+| `npm run report:generate`    | Local Allure developer report             |
+| `npm run report:open`        | Opens local Allure report                 |
+| `npm run report:stakeholder` | Generates stakeholder dashboard JSON/HTML |
 
-- **Stakeholder Dashboard**: Reads `reports/*.json` artefacts and produces an executive summary with confidence scoring, risk level, and known defect tracking. No Java required.
-- **Developer Dashboard (Allure)**: Merges all `allure-results/` data with failure categorisation (Known Defects, Unexpected Failures, Infrastructure Issues) and 90-day trend history. Requires Java.
+Dashboard behaviour:
 
-```bash
-# Generate the Allure developer dashboard (requires Java)
-npm run report:generate
-npm run report:open
+- Stakeholder dashboard uses lane summaries and confidence scoring.
+- Allure dashboard includes detailed execution evidence and trends.
+- Known defects are tracked explicitly, not hidden.
 
-# Generate the stakeholder dashboard (no Java required)
-npm run report:stakeholder
-```
+---
 
-**Dashboard totals note:** Stakeholder top-level totals include the a11y lane. Allure may include overlapping lane executions by design for richer diagnostics.
+## Contribution Standards
+
+- Follow Page Object Model for E2E tests.
+- Keep raw `page` operations restricted to explicit exception cases (a11y audit and security bypass checks).
+- Use British English in authored docs/comments.
+- Keep documentation in sync with behaviour/workflow changes in the same change set.
 
 ---
 
 ## Project Structure
 
-```
-api/src/tests/     # Vitest tests (unit, integration, critical)
-e2e/tests/         # Playwright specs
-scripts/           # Report generation scripts
-allure-config/     # Allure categories and metadata
-reports/           # JSON test result data (generated)
-.github/workflows/ # CI/CD pipelines
+```text
+api/src/tests/              Vitest tests (unit, integration, critical)
+e2e/tests/                  Playwright specs
+e2e/pages/                  Page objects
+scripts/                    Test runners and report generators
+docs/test-design/           Design and contribution documentation
+.github/workflows/          CI/CD workflows
+reports/                    Generated report artefacts
 ```
 
-See [TECHNICAL-DESIGN.md](../TECHNICAL-DESIGN.md) for full architecture documentation.
+See [TECHNICAL-DESIGN.md](../TECHNICAL-DESIGN.md) for architecture detail.
