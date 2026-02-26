@@ -18,7 +18,7 @@ This document details the test design for ParaBank's loan approval functionality
 
 ### 1.1 API Under Test
 
-```
+```text
 POST /parabank/services/bank/requestLoan
 ```
 
@@ -33,7 +33,7 @@ POST /parabank/services/bank/requestLoan
 
 Through source code analysis and API testing, two business rules govern loan approval:
 
-```
+```text
 RULE 1: availableFunds >= downPayment
         "Customer must have sufficient funds to cover the down payment"
 
@@ -63,7 +63,7 @@ RULE 2: downPayment / loanAmount >= 0.1
 
 The decision table below represents all logical combinations of the two conditions:
 
-```
+```text
 ┌─────────────────────────────────────────┬───────┬───────┬───────┬───────┐
 │                                         │  R1   │  R2   │  R3   │  R4   │
 ├─────────────────────────────────────────┼───────┼───────┼───────┼───────┤
@@ -108,7 +108,7 @@ The decision table below represents all logical combinations of the two conditio
 
 **3-Value BVA** tests:
 
-```
+```text
     Invalid Partition    │ Boundary │    Valid Partition
     ─────────────────────┼──────────┼─────────────────────
          -2    -1        │    0     │    +1    +2
@@ -223,7 +223,7 @@ When **both** conditions are near their boundaries simultaneously:
 
 ### 4.2 Coverage Visualisation
 
-```
+```text
                     LOAN APPROVAL TEST COVERAGE
     ═══════════════════════════════════════════════════════════════
 
@@ -302,7 +302,7 @@ ParaBank's loan API uses **account balance** as `availableFunds`. This means:
 
 ### 6.2 File Structure
 
-```
+```text
 api/
 ├── src/
 │   ├── helpers/
@@ -410,7 +410,7 @@ The loan tests use `vitest.integration.config.ts`:
 
 The loan approval tests are part of the **critical lane** in the risk-based testing pipeline:
 
-```
+```text
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
 │  COMMIT GATE    │────▶│   SMOKE LANE    │────▶│  CRITICAL LANE  │
 │  (Every Push)   │     │(Push/PR/Dispatch)│    │  (PR/Dispatch)  │
@@ -463,7 +463,7 @@ npm run test:loans
 
 Test results are published to Allure for trend tracking:
 
-```
+```text
 allure-results/
 ├── integration/          # Loan tests land here (via moveAllureResults)
 └── ...

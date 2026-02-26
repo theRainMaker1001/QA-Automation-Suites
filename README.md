@@ -1,6 +1,6 @@
 # FinTech Quality Engineering
 
-### High-Confidence Automation and Risk-Based Testing for a Banking System
+**High-Confidence Automation and Risk-Based Testing for a Banking System**
 
 [![CI Status](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml/badge.svg)](https://github.com/theRainMaker1001/QA-Automation-Suites/actions/workflows/ci.yml)
 [![ISTQB Certified Engineer](https://img.shields.io/badge/ISTQB_Certified_Engineer-92.5%25-success?style=for-the-badge)](https://atsqa.org/certified-testers/profile/f1ce81a04b174d65bfbac2f82a80af39)
@@ -95,6 +95,16 @@ Using **Husky** and **Prettier**, quality is enforced at the developer's desk.
 Login sessions are captured once and reused across tests (`storageState`).
 
 **Impact:** Shortens the feedback loop, allowing engineers to deploy fixes faster.
+
+### Containerised Nightly Audit
+
+The nightly regression and a11y lanes run inside the [official Playwright Docker image](https://playwright.dev/docs/docker), both locally and in CI, using `mcr.microsoft.com/playwright`. Chromium, Firefox, and WebKit are baked into the image — no browser download occurs at run time. Docker layer caching in CI means the image is only rebuilt when the `Dockerfile` or `package-lock.json` changes.
+
+*   `npm run docker:build` — build once, then cache.
+*   `npm run docker:run` — run the full nightly sequence with outputs on the host.
+*   `npm run docker:audit` — verify the image and write a local health summary.
+
+**Impact:** Reduces browser version drift between developer machines and the build server. When the Dockerfile image tag is kept in sync with the installed `@playwright/test` version, the nightly environment is consistent between local and CI runs. Run `npm run docker:audit` to verify parity before pushing.
 
 ---
 

@@ -57,6 +57,9 @@ PHILOSOPHY.md
 codex.json
 codex.*.json
 
+# Docker audit output (local only — regenerate with: npm run docker:audit)
+dockerAudit.md
+
 # Document audit
 DOCUMENTATION_AUDIT_PLAN.md
 AUDIT_TODO.md

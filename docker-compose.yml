@@ -1,0 +1,34 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Nightly Regression Container — Local Execution
+#
+# Runs the full nightly audit sequence (regression matrix + a11y) inside the
+# official Playwright Docker image. Outputs land in the host's ./reports and
+# ./allure-results directories, matching CI artefact paths exactly.
+#
+# Commands:
+#   npm run docker:build           Build (or rebuild) the image
+#   npm run docker:run             Run the full nightly sequence
+#   npm run docker:audit           Build + verify + write dockerAudit.md
+#
+# Environment overrides (optional — defaults shown below):
+#   BANK_BASE_URL=https://... docker compose run --rm nightly
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  nightly:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: qa-nightly:local
+    environment:
+      - CI=true
+      - BANK_BASE_URL=${BANK_BASE_URL:-https://parabank.parasoft.com/parabank}
+      - BANK_CUSTOMER_ID=${BANK_CUSTOMER_ID:-}
+    volumes:
+      # Report artefacts — stakeholder dashboard data
+      - ./reports:/app/reports
+      # Allure E2E results — developer dashboard data
+      - ./allure-results/e2e:/app/allure-results/e2e
+      # Playwright HTML report and failure artefacts
+      - ./e2e/playwright-report:/app/e2e/playwright-report
+      - ./e2e/test-results:/app/e2e/test-results

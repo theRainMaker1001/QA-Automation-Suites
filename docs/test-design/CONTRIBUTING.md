@@ -1,4 +1,4 @@
-﻿# Usage and Contributing Guide
+# Usage and Contributing Guide
 
 This guide explains how to run the suites locally, interpret results, and contribute new tests.
 
@@ -10,6 +10,7 @@ This guide explains how to run the suites locally, interpret results, and contri
 | :---------- | :-------------------------------------------------------------------- |
 | Node.js     | Version `24.11.1` (use `nvm use` if available)                        |
 | Java        | Required only for local Allure generation (`npm run report:generate`) |
+| Docker      | Required only for containerised nightly runs (`npm run docker:run`)   |
 
 ---
 
@@ -90,6 +91,51 @@ Notes:
 | `@state-transition` | Explicit state-machine flows  | Regression or focused state run          |
 | `@known-defect`     | Upstream known issue tracking | Critical reporting and known-defect lane |
 | `@negative`         | Defensive/error-path checks   | Manual/special runs                      |
+
+---
+
+## Docker (Nightly Lane)
+
+The nightly regression and a11y lanes can be run locally inside the same Playwright Docker image used in CI, reducing browser version and OS differences between environments. Environment consistency requires the Dockerfile image tag to match the installed `@playwright/test` version — run `npm run docker:audit` to verify this before pushing.
+
+### Prerequisites
+
+Docker Desktop (or Docker Engine) must be installed and running.
+
+### Commands
+
+```bash
+# Build the image (once — cached on subsequent runs unless Dockerfile or
+# package-lock.json changes)
+npm run docker:build
+
+# Run the full nightly sequence: regression matrix → a11y → compliance report
+# Outputs land in ./reports and ./allure-results/e2e on the host
+npm run docker:run
+
+# Build, run environment checks, and write a local dockerAudit.md summary
+npm run docker:audit
+```
+
+### Output Locations
+
+After `npm run docker:run`, the following files are available on the host:
+
+| Path                                  | Contents                                           |
+| :------------------------------------ | :------------------------------------------------- |
+| `reports/e2e-results.json`            | Raw Playwright JSON from the last test run         |
+| `reports/e2e-regression-results.json` | Regression results preserved before a11y run       |
+| `reports/a11y-results.json`           | A11y test output (written by the a11y spec)        |
+| `reports/a11y-compliance-report.md`   | Generated WCAG compliance report                   |
+| `allure-results/e2e/`                 | Allure XML/JSON for developer dashboard generation |
+| `e2e/playwright-report/`              | Playwright HTML report                             |
+| `e2e/test-results/`                   | Failure artefacts (screenshots, traces, videos)    |
+
+Notes:
+
+- `dockerAudit.md` is git-ignored and local only.
+- The Docker image includes Chromium, Firefox, and WebKit; no separate browser installation is required.
+- The nightly sequence inside Docker mirrors `playwright.yml → nightly-audit` exactly.
 
 ---
 

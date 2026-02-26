@@ -181,6 +181,91 @@ graph LR
 
 ---
 
+## Containerised Nightly Execution
+
+The nightly regression and a11y lanes run inside the official Playwright Docker image, both locally and in CI. This eliminates the most common source of environment drift: different browser binary versions between developer machines and the build server.
+
+### Why the Official Playwright Image
+
+The `mcr.microsoft.com/playwright` image bundles Chromium, Firefox, and WebKit with all system-level dependencies pre-installed. Key advantages over the alternative (Node base image + `npx playwright install --with-deps`):
+
+| Concern | `playwright install` on bare Node | Playwright Docker image |
+|---|---|---|
+| Browser download per CI run | ~300–600 MB every cache miss | Zero — browsers are baked in |
+| Environment parity | Depends on OS, distro, and apt version | Consistent image locally and in CI (requires Dockerfile tag = npm version) |
+| Setup complexity in CI | Node + npm ci + browser install (3 steps) | Docker build (cached) + docker run |
+| First-run speed | Fast (if apt cache hits) | Slower initial pull (~2.3 GB), fast thereafter |
+
+The image is cached after the first pull. Subsequent runs only rebuild the npm dependency layer when `package-lock.json` changes.
+
+### Architecture
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│  Dockerfile (mcr.microsoft.com/playwright:v1.58.0-noble)    │
+│                                                             │
+│  + Node 24 (NodeSource apt layer)                           │
+│  + npm ci (dependency layer — cached on package-lock.json)  │
+│  + Source copy                                              │
+│  + Output dirs: reports/  allure-results/e2e/               │
+│                                                             │
+│  CMD: npx tsx scripts/run-nightly.ts                        │
+└──────────────────────────┬──────────────────────────────────┘
+                           │  docker run (bind mounts)
+           ┌───────────────┴───────────────┐
+           │                               │
+           ▼                               ▼
+   ./reports/                    ./allure-results/e2e/
+   e2e-results.json              Allure XML/JSON results
+   e2e-regression-results.json   (stakeholder + developer
+   a11y-results.json              dashboards)
+   a11y-compliance-report.md
+```
+
+Output directories are bind-mounted from the host so report artefacts land on the local filesystem without requiring `docker cp`. The bind-mount paths match the CI artefact upload paths.
+
+### Nightly Sequence (`scripts/run-nightly.ts`)
+
+`run-nightly.ts` is the single source of truth for the nightly audit sequence, used by both the Docker CMD and the CI `nightly-audit` job. The CI job runs this same script inside the same image, so the execution steps are consistent:
+
+```text
+1. @regression cross-browser matrix (chromium + firefox + webkit)
+2. Preserve e2e-results.json → e2e-regression-results.json
+   (prevents a11y run from overwriting the regression JSON)
+3. @a11y audit (chromium)
+4. Generate a11y compliance markdown report
+```
+
+The preserve step runs in a `finally` block so partial regression results are always captured, even when tests fail.
+
+### Local Commands
+
+```bash
+# Build the image (once, or after Dockerfile / dependency changes)
+npm run docker:build
+
+# Run the full nightly sequence and write outputs to ./reports and ./allure-results/e2e
+npm run docker:run
+
+# Build, verify environment, inspect outputs, write dockerAudit.md
+npm run docker:audit
+
+# Run nightly sequence without Docker (requires local browser install)
+npm run test:nightly
+```
+
+### CI Integration
+
+The `nightly-audit` job in `playwright.yml` builds the image with Docker Buildx and GitHub Actions layer caching, then runs the container with bind mounts for the output directories. The cache key covers `Dockerfile` and `package-lock.json`, so the image is only fully rebuilt when browsers or dependencies change.
+
+```text
+cache key: docker-nightly-{hash(Dockerfile + package-lock.json)}
+```
+
+Artefact upload paths (`reports/`, `allure-results/e2e/`) are unchanged from the pre-Docker setup; the bind mounts ensure the outputs land at the expected host paths.
+
+---
+
 ## Financial Precision Engineering
 Standard JavaScript floating-point arithmetic is unsafe for banking applications due to the way binary fractions are represented.
 

@@ -117,10 +117,13 @@ jobs:
           retention-days: 7
 
   # ════════════════════════════════════════════════════════════════════════════
-  # NIGHTLY DEEP AUDIT: @regression (none critical UI) + @a11y [Overall too slow for PRs]
+  # NIGHTLY DEEP AUDIT: @regression (cross-browser matrix) + @a11y
+  # Runs inside the official Playwright Docker image for exact environment
+  # parity with local docker compose runs. Docker layer caching keeps
+  # subsequent CI runs fast after the first image build.
   # ════════════════════════════════════════════════════════════════════════════
   nightly-audit:
-    name: Nightly Deep Audit
+    name: Nightly Deep Audit (Docker)
     if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.test_lane == 'audit' || github.event.inputs.test_lane == 'regression' || github.event.inputs.test_lane == 'a11y'))
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -128,31 +131,52 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
         with:
-          node-version-file: .nvmrc
-          cache: 'npm'
+          path: /tmp/.buildx-cache
+          # Cache key covers the Dockerfile and all npm dependencies.
+          # Invalidates only when browsers/Node layer or dependency tree changes.
+          key: docker-nightly-${{ hashFiles('Dockerfile', 'package-lock.json') }}
+          restore-keys: |
+            docker-nightly-
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Build nightly regression image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: qa-nightly:latest
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          load: true
 
-      - name: Install Playwright (all browsers)
-        run: npx playwright install --with-deps
-
-      - name: Run @regression tests
-        run: npx playwright test -c e2e/playwright.config.ts --grep @regression --project=chromium --project=firefox --project=webkit
-
-      - name: Preserve regression results before a11y overwrites
-        if: always()
+      # Rotate the cache so stale layers from the previous run are not kept.
+      - name: Rotate Docker layer cache
         run: |
-          cp reports/e2e-results.json reports/e2e-regression-results.json 2>/dev/null || true
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
-      - name: Run @a11y tests
-        run: npx playwright test -c e2e/playwright.config.ts --grep @a11y --project=chromium
+      # Create host-side bind-mount targets before docker run so Docker does
+      # not create them as root-owned directories.
+      - name: Create output directories
+        run: mkdir -p reports allure-results/e2e e2e/test-results e2e/playwright-report
 
-      - name: Generate a11y compliance report
-        if: always()
-        run: npx tsx scripts/generate-a11y-compliance-report.ts
+      - name: Run nightly audit via Docker
+        env:
+          BANK_BASE_URL: ${{ vars.BANK_BASE_URL }}
+        run: |
+          docker run --rm \
+            -v "$PWD/reports:/app/reports" \
+            -v "$PWD/allure-results/e2e:/app/allure-results/e2e" \
+            -v "$PWD/e2e/test-results:/app/e2e/test-results" \
+            -v "$PWD/e2e/playwright-report:/app/e2e/playwright-report" \
+            -e CI=true \
+            -e "BANK_BASE_URL=${BANK_BASE_URL:-https://parabank.parasoft.com/parabank}" \
+            qa-nightly:latest
 
       - name: Upload audit report
         if: always()

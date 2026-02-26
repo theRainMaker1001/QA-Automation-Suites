@@ -1,0 +1,52 @@
+# ── Version control ───────────────────────────────────────────────────────────
+.git/
+.github/
+
+# ── Node modules (installed fresh inside the container via npm ci) ────────────
+node_modules/
+e2e/node_modules/
+
+# ── Generated output (populated at runtime via bind mounts) ──────────────────
+reports/
+allure-results/
+allure-report/
+allure-results-merged/
+allure-history-cache/
+
+# ── Playwright test output ────────────────────────────────────────────────────
+e2e/playwright-report/
+e2e/test-results/
+e2e/blob-report/
+
+# ── Auth state (created fresh by globalSetup inside the container) ────────────
+e2e/.auth/user.json
+
+# ── Local environment secrets ─────────────────────────────────────────────────
+.env
+.env.*
+
+# ── IDE and editor artefacts ──────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── Build cache and generated files ───────────────────────────────────────────
+.eslintcache
+*.tsbuildinfo
+coverage/
+dist/
+api/dist/
+
+# ── Private and git-ignored working documents ─────────────────────────────────
+PHILOSOPHY.md
+CLAUDE.md
+AGENTS.md
+dockerAudit.md
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
