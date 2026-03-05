@@ -139,10 +139,10 @@ We avoid the 'Ice Cream Cone' anti-pattern. This suite is built on a stable foun
 
 ## Contract & Consulting
 
-**Tom Cunningham** | Quality Engineering Consultant | [tom@orionai.co.site](mailto:tom@orionai.co.site)
+**Tom Cunningham** | Quality Engineering Consultant | [tom@orionqa.co.uk](mailto:tom@orionqa.co.uk)
 
-[![Available Now](https://img.shields.io/badge/Available-Now-brightgreen?style=for-the-badge)](mailto:tom@orionai.co.site)
-[![Discounted Rates to 5 Apr 2026](https://img.shields.io/badge/Discounted_Rates-to_5_Apr_2026-brightgreen?style=for-the-badge)](mailto:tom@orionai.co.site)
+[![Available Now](https://img.shields.io/badge/Available-Now-brightgreen?style=for-the-badge)](mailto:tom@orionqa.co.uk)
+[![Discounted Rates to 5 Apr 2026](https://img.shields.io/badge/Discounted_Rates-to_5_Apr_2026-brightgreen?style=for-the-badge)](mailto:tom@orionqa.co.uk)
 
 Specialising in risk-based automation frameworks for FinTech and regulated industries.
 
@@ -151,7 +151,7 @@ Specialising in risk-based automation frameworks for FinTech and regulated indus
 
 Good QA pays for itself.
 
-**Consultancy Website** [**orionai.co.site**](https://orionai.co.site/)
+**Consultancy Website** [**orionqa.co.uk**](https://orionqa.co.uk/)
 
 **LinkedIn** [**Connect on LinkedIn**](https://www.linkedin.com/in/tom-cunningham-orionai/)
 
