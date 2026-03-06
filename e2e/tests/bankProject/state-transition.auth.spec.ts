@@ -122,7 +122,7 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
         const registerPage = new RegisterPage(page);
         const registrationPageReady = await registerPage.gotoAndWaitForForm(2);
 
-        if (registrationPageReady) {
+        if (registrationPageReady === 'loaded') {
           await registerPage.registerNewUser(newUser);
           await page.waitForLoadState('domcontentloaded');
         }

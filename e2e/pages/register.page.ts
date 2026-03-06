@@ -1,5 +1,8 @@
 import { Page, Locator } from '@playwright/test';
 import { BasePage } from './base.page.js';
+import { isNetworkError } from '../utils/network-errors.js';
+
+export type FormLoadStatus = 'loaded' | 'unreachable' | 'not-found';
 
 export class RegisterPage extends BasePage {
   readonly firstNameInput: Locator;
@@ -47,15 +50,24 @@ export class RegisterPage extends BasePage {
     }
   }
 
-  async gotoAndWaitForForm(maxAttempts: number = 3): Promise<boolean> {
+  async gotoAndWaitForForm(maxAttempts: number = 3): Promise<FormLoadStatus> {
+    let allAttemptsWereNetworkErrors = true;
+
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
         await this.goto();
+        // Navigation succeeded — not a network-level failure.
+        allAttemptsWereNetworkErrors = false;
+
         if (await this.isFormVisible(5000)) {
-          return true;
+          return 'loaded';
         }
-      } catch {
-        // Try again after a short backoff below.
+      } catch (error) {
+        if (!isNetworkError(error)) {
+          // Navigation threw, but not for a network reason (e.g. timeout waiting
+          // for load state). Treat as a render failure, not an infrastructure one.
+          allAttemptsWereNetworkErrors = false;
+        }
       }
 
       if ((await this.genericErrorText.count()) > 0) {
@@ -65,7 +77,7 @@ export class RegisterPage extends BasePage {
       await this.page.waitForTimeout(500 * attempt);
     }
 
-    return false;
+    return allAttemptsWereNetworkErrors ? 'unreachable' : 'not-found';
   }
 
   async registerNewUser(user: { username: string; password: string }): Promise<void> {

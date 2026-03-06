@@ -9,7 +9,7 @@
  */
 
 import { test, expect } from '@playwright/test';
-import { RegisterPage } from '../../pages/register.page.js';
+import { RegisterPage, type FormLoadStatus } from '../../pages/register.page.js';
 
 test.describe('@regression Form Validation: Registration', () => {
   // Skip on WebKit - ParaBank registration page loads inconsistently on WebKit
@@ -20,15 +20,26 @@ test.describe('@regression Form Validation: Registration', () => {
 
   test.beforeEach(async ({ page, browserName }) => {
     registerPage = new RegisterPage(page);
-    const formLoaded = await registerPage.gotoAndWaitForForm(browserName === 'firefox' ? 3 : 2);
+    const status: FormLoadStatus = await registerPage.gotoAndWaitForForm(
+      browserName === 'firefox' ? 3 : 2,
+    );
 
-    // Firefox intermittently fails to render ParaBank register.htm in CI.
-    // Skip only when the page cannot be recovered after retries.
-    if (!formLoaded && browserName === 'firefox') {
+    // Site was unreachable at the network level — infrastructure failure, not an
+    // application defect. Skip rather than record a misleading red result.
+    if (status === 'unreachable') {
+      test.skip(true, 'ParaBank site unreachable in CI — infrastructure issue');
+    }
+
+    // Firefox intermittently fails to render register.htm even when the site is up.
+    // Skip only on that browser; Chromium failures here are a real defect signal.
+    if (status === 'not-found' && browserName === 'firefox') {
       test.skip(true, 'ParaBank registration page unavailable on Firefox CI');
     }
 
-    expect(formLoaded).toBe(true);
+    expect(
+      status,
+      'Registration page rendered but form inputs were absent — investigate the /register.htm route or a DOM change before raising a defect',
+    ).toBe('loaded');
   });
 
   test('FV-REG-01: Empty form submission shows required field errors', async ({ page }) => {

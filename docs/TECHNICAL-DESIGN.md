@@ -16,14 +16,14 @@ To prevent the 'Ice Cream Cone' anti-pattern, this suite is weighted toward fast
              / Integration \          👉 Vitest + Fetch (78 Tests)
             /---------------\            API & Business Rules
            /                 \
-          /       Unit        \       👉 Vitest (189 Tests)
+          /       Unit        \       👉 Vitest (199 Tests)
          /---------------------\         Isolated Maths & Logic
 ```
-*(Counts as of 2026-02-25)*
+*(Counts as of 2026-03-06)*
 
 * **E2E (46 Tests):** High-fidelity user simulation covering smoke, critical, regression, and accessibility scenarios.
 * **Integration + Critical (78 Tests):** API contract validation via Equivalence Partitioning (20 accounts), schema integrity (14), loan Decision Table + BVA (41), and heartbeat monitoring (3).
-* **Unit (189 Tests):** Sub-millisecond validation of financial utilities and isolated business logic.
+* **Unit (199 Tests):** Sub-millisecond validation of financial utilities, isolated business logic, and pure E2E infrastructure helpers. The 10 additional tests cover `isNetworkError` — a pure string-matching utility used by `RegisterPage` to classify navigation failures as infrastructure outages vs application defects.
 
 ---
 
@@ -315,7 +315,7 @@ npm run test:loans      # Run Loan Decision Table scenarios (41 tests)
 npm run test:e2e:known-defects # Known-defect tracking lane
 
 # Running by Architectural Layer
-npm run test:unit       # 189 tests (Logic & Math)
+npm run test:unit       # 199 tests (Logic, Math & E2E infrastructure helpers)
 npm run test:api        # 78 tests (Contract & Integration)
 npm run test:e2e        # Chromium gate (excludes @negative/@known-defect)
 npm run test:e2e:matrix # Cross-browser matrix when all browsers are installed
@@ -394,15 +394,18 @@ The stakeholder dashboard presents four non-overlapping quality lanes:
 
 | Lane | Source Data | What It Shows |
 |------|-----------|---------------|
-| **Code Quality** | `unit-summary.json` (189 unit tests) | Pass rate for isolated logic and financial maths |
+| **Code Quality** | `unit-summary.json` (199 unit tests) | Pass rate for isolated logic, financial maths, and pure E2E infrastructure helpers |
 | **Financial Accuracy** | `loan-results.json` (41 loan tests) | Decision table + BVA coverage of loan approval rules (34 core scenarios, 1 coverage, 6 negative) |
-| **User Journey Coverage** | `e2e-critical-results.json` + `e2e-regression-results.json` | Known defects (amber, tagged `@known-defect`), unexpected failures (red), skipped (grey). Critical = 31 tests (chromium), regression = 12 tests (3 browsers) |
+| **User Journey Coverage** | `e2e-critical-results.json` + `e2e-regression-results.json` | Known defects (amber, tagged `@known-defect`), unexpected failures (red), infra skips (grey — host unreachable), browser skips (grey — intentional per-browser exclusions). Critical = 31 tests (chromium), regression = 12 tests (3 browsers) |
 | **WCAG Compliance** | `a11y-results.json` | Violation count, AA/A/Non-Compliant badge, and link to the full [compliance report](https://therainmaker1001.github.io/QA-Automation-Suites/a11y-compliance-report.html) |
 
 E2E metrics distinguish between outcomes using Playwright's `test.status`, `results[0].status`, tags, and annotations:
 - **Known defect**: `@known-defect` tagged/annotated tests that fail (tracked, not alarming)
 - **Unexpected failure**: Failing tests without a known-defect marker (requires investigation)
-- **Skipped**: Conditionally skipped tests (e.g. auth-dependent)
+- **Skipped**: Conditionally skipped tests — includes two infrastructure-skip categories:
+  - `'unreachable'` — the host could not be reached at all (DNS/connection failure); all browsers skip. This is an infrastructure outage, not an application defect.
+  - `'not-found'` on Firefox — the page rendered but the form was absent; a known Firefox CI render flake. Skipped on Firefox only.
+  - `'not-found'` on Chromium — fires as a hard failure with an explicit diagnostic message identifying `/register.htm`; this is a real application defect signal and must be investigated.
 
 Critical lane gating uses a verifier step to keep known defects non-blocking while still failing the lane for unexpected defects.
 

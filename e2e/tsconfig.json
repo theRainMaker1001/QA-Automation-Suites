@@ -15,6 +15,7 @@
     "tests/**/*.ts",
     "pages/**/*.ts",
     "fixtures/**/*.ts",
+    "utils/**/*.ts",
     "playwright.config.ts",
     "global.setup.ts"
   ],

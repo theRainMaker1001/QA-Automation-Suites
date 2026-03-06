@@ -32,6 +32,7 @@ interface E2eMetrics extends LaneMetrics {
   knownDefects: number;
   unexpectedFailures: number;
   skipped: number;
+  infrastructureSkips: number;
 }
 
 interface A11yMetrics extends LaneMetrics {
@@ -104,6 +105,32 @@ function hasKnownDefectMarker(spec: any, test: any, firstResult: any): boolean {
     const description = String(annotation?.description || '').toLowerCase();
     return type === 'known-defect' || description.includes('known defect');
   });
+}
+
+/**
+ * Returns true when the skip reason string identifies an infrastructure outage
+ * (the host was never reachable) rather than an intentional browser-level exclusion.
+ *
+ * Only matches the 'unreachable' wording set by gotoAndWaitForForm's 'unreachable'
+ * branch in form-validation.registration.spec.ts.  The Firefox render-flake skip
+ * ('unavailable on Firefox CI') is a browser-level exclusion, not an outage, and
+ * must NOT be classified here.
+ */
+function isInfrastructureSkipReason(reason: string): boolean {
+  return reason.includes('unreachable');
+}
+
+function getSkipReason(spec: any, test: any, firstResult: any): string {
+  const annotations = [
+    ...(spec?.annotations || []),
+    ...(test?.annotations || []),
+    ...(firstResult?.annotations || []),
+  ].filter((a: any) => String(a?.type || '').toLowerCase() === 'skip');
+
+  if (annotations.length > 0) {
+    return annotations.map((a: any) => String(a?.description || '')).join(' ');
+  }
+  return String(firstResult?.error?.message || '');
 }
 
 function calculateConfidence(lanes: DashboardData['lanes']): number {
@@ -189,6 +216,7 @@ function countPlaywrightTests(data: any): {
     outcome: string;
     resultStatus: string | undefined;
     isKnownDefect: boolean;
+    isInfrastructureSkip: boolean;
   }>;
   lastRun: string;
 } {
@@ -197,6 +225,7 @@ function countPlaywrightTests(data: any): {
     outcome: string;
     resultStatus: string | undefined;
     isKnownDefect: boolean;
+    isInfrastructureSkip: boolean;
   }> = [];
 
   if (!data?.suites) {
@@ -235,11 +264,14 @@ function countPlaywrightTests(data: any): {
               test?.results?.[0];
             const resultStatus = firstResult?.status; // passed | failed | timedOut | skipped
             const isKnownDefect = hasKnownDefectMarker(spec, test, firstResult);
+            const skipReason = getSkipReason(spec, test, firstResult);
+            const isInfrastructureSkip = isInfrastructureSkipReason(skipReason);
             observations.push({
               key: buildObservationKey(suitePath, spec, test, idx),
               outcome,
               resultStatus,
               isKnownDefect,
+              isInfrastructureSkip,
             });
           }
         }
@@ -270,7 +302,13 @@ function buildE2eMetrics(
   // Merge both lanes and count each logical E2E once, regardless of browser/project overlap.
   const byTest = new Map<
     string,
-    { hasUnexpected: boolean; hasKnownDefect: boolean; hasPassed: boolean; hasSkipped: boolean }
+    {
+      hasUnexpected: boolean;
+      hasKnownDefect: boolean;
+      hasPassed: boolean;
+      hasSkipped: boolean;
+      hasInfrastructureSkip: boolean;
+    }
   >();
 
   for (const obs of [...critical.observations, ...regression.observations]) {
@@ -280,6 +318,7 @@ function buildE2eMetrics(
         hasKnownDefect: false,
         hasPassed: false,
         hasSkipped: false,
+        hasInfrastructureSkip: false,
       });
     }
     const state = byTest.get(obs.key)!;
@@ -294,6 +333,7 @@ function buildE2eMetrics(
       state.hasKnownDefect = true;
     } else if (obs.outcome === 'skipped' || obs.resultStatus === 'skipped') {
       state.hasSkipped = true;
+      if (obs.isInfrastructureSkip) state.hasInfrastructureSkip = true;
     } else {
       // expected + passed, or flaky that eventually passed
       state.hasPassed = true;
@@ -304,11 +344,15 @@ function buildE2eMetrics(
   let knownDefects = 0;
   let unexpectedFailures = 0;
   let skipped = 0;
+  let infrastructureSkips = 0;
   for (const state of byTest.values()) {
     if (state.hasUnexpected) unexpectedFailures++;
     else if (state.hasKnownDefect) knownDefects++;
     else if (state.hasPassed) passed++;
-    else skipped++;
+    else {
+      skipped++;
+      if (state.hasInfrastructureSkip) infrastructureSkips++;
+    }
   }
 
   // Pass rate focuses on executed tests; skipped are shown separately.
@@ -334,6 +378,7 @@ function buildE2eMetrics(
     knownDefects,
     unexpectedFailures,
     skipped,
+    infrastructureSkips,
     lastRun,
     status: calculateStatus(passRate, dataAvailable),
     dataAvailable,
@@ -687,8 +732,12 @@ function generateHTML(data: DashboardData): string {
             <div class="defect-label">Action Required</div>
           </div>
           <div>
-            <div class="defect-value" style="color: #8b949e">${e2e.dataAvailable ? e2e.skipped : '-'}</div>
-            <div class="defect-label">Skipped</div>
+            <div class="defect-value" style="color: #8b949e">${e2e.dataAvailable ? e2e.infrastructureSkips : '-'}</div>
+            <div class="defect-label">Infra Skips</div>
+          </div>
+          <div>
+            <div class="defect-value" style="color: #8b949e">${e2e.dataAvailable ? e2e.skipped - e2e.infrastructureSkips : '-'}</div>
+            <div class="defect-label">Browser Skips</div>
           </div>
         </div>
         <div class="lane-meta">Last run: ${lastRunValue(e2e.lastRun, e2e.dataAvailable)}</div>

@@ -130,10 +130,10 @@ We avoid the 'Ice Cream Cone' anti-pattern. This suite is built on a stable foun
              / Integration \          👉 Vitest + Fetch (78 Tests)
             /---------------\            API & Business Rules
            /                 \
-          /       Unit        \       👉 Vitest (189 Tests)
+          /       Unit        \       👉 Vitest (199 Tests)
          /---------------------\         Isolated Maths & Logic
 ```
-*(Counts as of 2026-02-25)*
+*(Counts as of 2026-03-06)*
 
 ---
 

@@ -196,6 +196,10 @@ Dashboard behaviour:
 api/src/tests/              Vitest tests (unit, integration, critical)
 e2e/tests/                  Playwright specs
 e2e/pages/                  Page objects
+e2e/utils/                  Shared E2E infrastructure helpers
+                              Pure utilities (no Playwright imports) are unit-tested
+                              under Vitest; see vitest.unit.config.ts for the
+                              explicit inclusion list.
 scripts/                    Test runners and report generators
 docs/test-design/           Design and contribution documentation
 .github/workflows/          CI/CD workflows
