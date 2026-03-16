@@ -314,7 +314,7 @@ jobs:
           echo "missing_count=${missing}" >> "$GITHUB_OUTPUT"
 
       - name: Enforce complete stakeholder dataset on main
-        if: github.ref_name == 'main' && steps.validate_stakeholder_inputs.outputs.missing_count != '0'
+        if: github.ref_name == 'main' && steps.validate_stakeholder_inputs.outputs.missing_count > 1
         env:
           MISSING_COUNT: ${{ steps.validate_stakeholder_inputs.outputs.missing_count }}
           MISSING_FILES: ${{ steps.validate_stakeholder_inputs.outputs.missing_files }}

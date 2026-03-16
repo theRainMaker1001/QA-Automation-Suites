@@ -179,7 +179,7 @@ jobs:
           name: reports-critical
           path: reports/
           if-no-files-found: warn
-          retention-days: 30
+          retention-days: 90
 
       - name: Upload Allure results (critical)
         if: always()
