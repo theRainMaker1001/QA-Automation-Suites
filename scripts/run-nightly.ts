@@ -9,21 +9,25 @@
  *   1. Unit tests (vitest)
  *   2. API integration tests (vitest)
  *   3. Loan decision table tests
- *   4. @regression cross-browser matrix — chromium + firefox + webkit
- *   5. Preserve e2e-results.json → e2e-regression-results.json before
+ *   4. @critical E2E — chromium-auth only (produces e2e-critical-results.json)
+ *   5. @regression cross-browser matrix — chromium + firefox + webkit
+ *   6. Preserve e2e-results.json → e2e-regression-results.json before
  *      the a11y run overwrites the shared output file
- *   6. @a11y audit — chromium only
- *   7. Generate a11y compliance markdown report
+ *   7. @a11y audit — chromium only
+ *   8. Generate a11y compliance markdown report
  *
  * Failure behaviour:
  *   - Steps 1–3 (vitest): failure is recorded in `vitestFailed` but never
  *     aborts later phases. All three suites run regardless of each other.
- *   - Step 4 (regression E2E): failure sets `regressionFailed` and preserves
+ *   - Step 4 (critical E2E): failure sets `criticalFailed`. The results file
+ *     is always written in a finally block so the stakeholder dashboard is
+ *     never left with a missing e2e-critical-results.json.
+ *   - Step 5 (regression E2E): failure sets `regressionFailed` and preserves
  *     partial results, but does NOT skip a11y.
- *   - Step 6 (a11y): always runs — nightly is an audit lane, not fail-fast.
+ *   - Step 7 (a11y): always runs — nightly is an audit lane, not fail-fast.
  *     Failure sets `a11yFailed`. A warning is printed if regression also
  *     failed so context is visible in CI output.
- *   - Step 7 (report generation): non-blocking warning on failure.
+ *   - Step 8 (report generation): non-blocking warning on failure.
  *
  * Exit code: 1 if any step failed; 0 if all passed.
  *
@@ -51,12 +55,14 @@ function run(cmd: string): void {
 }
 
 // Separate flags so each phase's outcome is reported independently.
-// vitestFailed: any of the three vitest suites failed
+// vitestFailed:   any of the three vitest suites failed
+// criticalFailed: the @critical E2E run failed
 // regressionFailed: the @regression E2E matrix failed
-// a11yFailed: the @a11y run failed
+// a11yFailed:     the @a11y run failed
 // None of these abort subsequent phases — nightly is an audit lane, not a
 // fail-fast gate. Full picture on bad nights matters more than early exit.
 let vitestFailed = false;
+let criticalFailed = false;
 let regressionFailed = false;
 let a11yFailed = false;
 
@@ -76,7 +82,27 @@ for (const [label, cmd] of [
   }
 }
 
-// ── 4. Cross-browser regression E2E matrix ───────────────────────────────────
+// ── 4. @critical E2E (chromium-auth — produces e2e-critical-results.json) ────
+// Runs on every nightly so the stakeholder dashboard always has a fresh
+// e2e-critical-results.json, independent of PR cadence. Uses the
+// chromium-auth project so authenticated tests have a valid session.
+try {
+  run('npx playwright test -c e2e/playwright.config.ts --grep @critical --project=chromium-auth');
+} catch {
+  criticalFailed = true;
+  console.error('\nCritical E2E tests failed — writing partial results and continuing.');
+} finally {
+  // Always write the critical results file so the dashboard never shows
+  // "Partial dataset: missing e2e-critical-results.json".
+  const src = path.join(reportsDir, 'e2e-results.json');
+  const dest = path.join(reportsDir, 'e2e-critical-results.json');
+  if (fs.existsSync(src)) {
+    fs.copyFileSync(src, dest);
+    console.log('\nPreserved: e2e-results.json → e2e-critical-results.json');
+  }
+}
+
+// ── 5. Cross-browser regression E2E matrix ───────────────────────────────────
 try {
   run(
     'npx playwright test -c e2e/playwright.config.ts --grep @regression ' +
@@ -96,7 +122,7 @@ try {
   }
 }
 
-// ── 5–6. A11y audit (always runs — nightly is an audit lane, not fail-fast) ──
+// ── 6–7. A11y audit (always runs — nightly is an audit lane, not fail-fast) ──
 // Running a11y even after regression failure gives the full picture on bad nights
 // and avoids carrying stale a11y data forward into the stakeholder dashboard.
 // Some a11y failures may be secondary fallout from broken UI — the label below
@@ -122,4 +148,4 @@ try {
   console.warn('\nA11y compliance report generation failed (non-blocking):', e);
 }
 
-process.exit(vitestFailed || regressionFailed || a11yFailed ? 1 : 0);
+process.exit(vitestFailed || criticalFailed || regressionFailed || a11yFailed ? 1 : 0);

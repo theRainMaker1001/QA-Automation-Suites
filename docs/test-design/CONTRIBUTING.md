@@ -162,7 +162,7 @@ commit-gate -> smoke-lane -> critical-lane
 
 - Smoke lane (manual dispatch path)
 - Critical lane (manual dispatch path)
-- Nightly audit: unit tests → API integration tests → loan decision table → `@regression` matrix → `@a11y` (always runs, even after regression failure)
+- Nightly audit: unit tests → API integration tests → loan decision table → `@critical` E2E (produces `e2e-critical-results.json`) → `@regression` matrix → `@a11y` (always runs, even after regression failure)
 
 Known-defect behaviour:
 

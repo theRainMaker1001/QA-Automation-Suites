@@ -238,17 +238,20 @@ Output directories are bind-mounted from the host so report artefacts land on th
 1. Unit tests (vitest)               — soft-fail: continues regardless of outcome
 2. API integration tests (vitest)    — soft-fail: continues regardless of outcome
 3. Loan decision table tests         — soft-fail: continues regardless of outcome
-4. @regression cross-browser matrix (chromium + firefox + webkit)
-5. Preserve e2e-results.json → e2e-regression-results.json
+4. @critical E2E (chromium-auth)     — produces e2e-critical-results.json;
+   always written in a finally block so the dashboard never sees a missing file
+5. @regression cross-browser matrix (chromium + firefox + webkit)
+6. Preserve e2e-results.json → e2e-regression-results.json
    (prevents a11y run from overwriting the regression JSON)
-6. @a11y audit (chromium)            — always runs, even after regression failure
-7. Generate a11y compliance markdown report
+7. @a11y audit (chromium)            — always runs, even after regression failure
+8. Generate a11y compliance markdown report
 ```
 
 Failure behaviour:
 - Steps 1–3 (vitest): failure is recorded but never aborts later phases. All three suites run regardless of each other.
-- Steps 4 and 6 (E2E): each has its own flag (`regressionFailed`, `a11yFailed`). A11y always runs — nightly is an audit lane, not a fail-fast gate. Running a11y after a regression failure gives the full picture and avoids carrying stale a11y data into the stakeholder dashboard. A warning is printed when a11y runs after a regression failure so context is visible in CI output.
-- The preserve step runs in a `finally` block so partial regression results are always captured.
+- Step 4 (critical E2E): failure sets `criticalFailed`. The `e2e-critical-results.json` file is always written in a `finally` block, so the stakeholder dashboard is never left with a partial dataset regardless of test outcome.
+- Steps 5 and 7 (E2E): each has its own flag (`regressionFailed`, `a11yFailed`). A11y always runs — nightly is an audit lane, not a fail-fast gate. Running a11y after a regression failure gives the full picture and avoids carrying stale a11y data into the stakeholder dashboard. A warning is printed when a11y runs after a regression failure so context is visible in CI output.
+- The preserve steps run in `finally` blocks so partial results are always captured.
 
 ### Local Commands
 
