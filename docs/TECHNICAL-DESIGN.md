@@ -10,19 +10,19 @@ To prevent the 'Ice Cream Cone' anti-pattern, this suite is weighted toward fast
 ```text
                   / \
                  /   \
-                /  E2E  \             👉 Playwright (46 Tests)
+                /  E2E  \             👉 Playwright (48 Tests)
                /---------\               User Journeys & A11y
               /           \
-             / Integration \          👉 Vitest + Fetch (78 Tests)
+             / Integration \          👉 Vitest + Fetch (84 Tests)
             /---------------\            API & Business Rules
            /                 \
           /       Unit        \       👉 Vitest (199 Tests)
          /---------------------\         Isolated Maths & Logic
 ```
-*(Counts as of 2026-03-06)*
+*(Counts as of 2026-04-10. E2E excludes the 2 `@negative` artifact-demo tests that only run in the demo lane.)*
 
-* **E2E (46 Tests):** High-fidelity user simulation covering smoke, critical, regression, and accessibility scenarios.
-* **Integration + Critical (78 Tests):** API contract validation via Equivalence Partitioning (20 accounts), schema integrity (14), loan Decision Table + BVA (41), and heartbeat monitoring (3).
+* **E2E (48 Tests):** High-fidelity user simulation covering smoke, critical, regression, state-transition, and accessibility scenarios. Two additional `@negative` artifact-demo tests exist in the repo but are excluded from this architectural count because they only run in the dedicated demo lane.
+* **Integration + Critical (84 Tests):** API contract validation via Equivalence Partitioning (20 accounts), schema integrity (14), loan Decision Table + BVA (47), and heartbeat monitoring (3).
 * **Unit (199 Tests):** Sub-millisecond validation of financial utilities, isolated business logic, and pure E2E infrastructure helpers. The 10 additional tests cover `isNetworkError` — a pure string-matching utility used by `RegisterPage` to classify navigation failures as infrastructure outages vs application defects.
 
 ---
@@ -326,7 +326,7 @@ npm run test:regression:matrix # Full cross-browser parity (Nightly)
 npm run test:a11y       # Accessibility Audit (Nightly)
 npm run test:heartbeat  # API Health Monitor
 npm run test:audit      # Run Regression + A11y (Full Audit)
-npm run test:loans      # Run Loan Decision Table scenarios (41 tests)
+npm run test:loans      # Run Loan Decision Table scenarios (47 tests)
 npm run test:e2e:known-defects # Known-defect tracking lane
 
 # Running by Architectural Layer
@@ -410,8 +410,8 @@ The stakeholder dashboard presents four non-overlapping quality lanes:
 | Lane | Source Data | What It Shows |
 |------|-----------|---------------|
 | **Code Quality** | `unit-summary.json` (199 unit tests) | Pass rate for isolated logic, financial maths, and pure E2E infrastructure helpers |
-| **Financial Accuracy** | `loan-results.json` (41 loan tests) | Decision table + BVA coverage of loan approval rules (34 core scenarios, 1 coverage, 6 negative) |
-| **User Journey Coverage** | `e2e-critical-results.json` + `e2e-regression-results.json` | Known defects (amber, tagged `@known-defect`), unexpected failures (red), infra skips (grey — host unreachable), browser skips (grey — intentional per-browser exclusions). Critical = 31 tests (chromium), regression = 12 tests (3 browsers) |
+| **Financial Accuracy** | `loan-results.json` (47 loan tests) | Decision table + BVA coverage of loan approval rules (34 core scenarios, 1 coverage summary, 6 critical-path reruns, 6 negative cases) |
+| **User Journey Coverage** | `e2e-critical-results.json` + `e2e-regression-results.json` | Known defects (amber, tagged `@known-defect`), unexpected failures (red), infra skips (grey — host unreachable), browser skips (grey — intentional per-browser exclusions). Current nightly inputs are 41 chromium `@critical` tests plus 6 logical regression tests across the cross-browser matrix (18 scheduled browser executions, 13 currently executed because 5 WebKit cases are intentionally skipped) |
 | **WCAG Compliance** | `a11y-results.json` | Violation count, AA/A/Non-Compliant badge, and link to the full [compliance report](https://therainmaker1001.github.io/QA-Automation-Suites/a11y-compliance-report.html) |
 
 E2E metrics distinguish between outcomes using Playwright's `test.status`, `results[0].status`, tags, and annotations:

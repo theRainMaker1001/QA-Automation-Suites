@@ -374,7 +374,7 @@ allure-results/                             # Test results (per lane)
 ### 6.3 Running the Tests
 
 ```bash
-# Run all loan decision table tests (41 tests)
+# Run all loan decision table tests (47 tests)
 npm run test:loans:only
 
 # Run with markdown report generation
