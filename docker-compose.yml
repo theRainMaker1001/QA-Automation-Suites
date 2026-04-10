@@ -27,8 +27,10 @@ services:
     volumes:
       # Report artefacts — stakeholder dashboard data
       - ./reports:/app/reports
-      # Allure E2E results — developer dashboard data
+      # Allure results — developer dashboard data (E2E, unit, and integration)
       - ./allure-results/e2e:/app/allure-results/e2e
+      - ./allure-results/unit:/app/allure-results/unit
+      - ./allure-results/integration:/app/allure-results/integration
       # Playwright HTML report and failure artefacts
       - ./e2e/playwright-report:/app/e2e/playwright-report
       - ./e2e/test-results:/app/e2e/test-results

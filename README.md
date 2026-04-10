@@ -58,7 +58,7 @@ Technical product owners need reliability. This suite ensures the financial logi
 ### State Transition Coverage
 
 *   **Risk:** Users bypassing security screens or accessing protected data whilst in a `Guest` or `LoginError` state.
-*   **Solution:** Authentication flows are validated using **ISTQB State Transition Testing**, systematically verifying all 7 valid state transitions across 3 observable states (Guest, LoggedIn, LoginError).
+*   **Solution:** Authentication flows are validated using **ISTQB State Transition Testing**, systematically verifying all 11 valid state transitions across 3 observable states (Guest, LoggedIn, LoginError).
 
 ### Legal & Compliance Guardrails
 
@@ -142,7 +142,6 @@ We avoid the 'Ice Cream Cone' anti-pattern. This suite is built on a stable foun
 **Tom Cunningham** | Quality Engineering Consultant | [tom@orionqa.co.uk](mailto:tom@orionqa.co.uk)
 
 [![Available Now](https://img.shields.io/badge/Available-Now-brightgreen?style=for-the-badge)](mailto:tom@orionqa.co.uk)
-[![Discounted Rates to 5 Apr 2026](https://img.shields.io/badge/Discounted_Rates-to_5_Apr_2026-brightgreen?style=for-the-badge)](mailto:tom@orionqa.co.uk)
 
 Specialising in risk-based automation frameworks for FinTech and regulated industries.
 

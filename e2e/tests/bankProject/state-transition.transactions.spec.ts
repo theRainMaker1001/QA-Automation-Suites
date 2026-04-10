@@ -1,99 +1,38 @@
 /**
  * @file state-transition.transactions.spec.ts
- * @description ISTQB State Transition Testing - Transaction Search
+ * @description Access control check — /findtrans.htm is a protected route.
  *
- * State Machine: SEARCH_IDLE -> BY_ID/BY_DATE/BY_AMOUNT -> SEARCHING -> RESULTS/NO_RESULTS/ERROR
+ * Unauthenticated visits must not expose the transaction search form.
+ * Runs cross-browser as part of @regression to catch any accidental
+ * removal of the authentication gate on this route.
  *
- * Tests ParaBank Find Transactions functionality with multiple search modes.
+ * The full state-machine tests (SEARCH_IDLE → RESULTS / NO_RESULTS / ERROR)
+ * live in state-transition.transactions.authenticated.spec.ts and require
+ * an active session via chromium-auth storage state.
  *
- * @tags @regression @state-transition
+ * @tags @regression
  */
 
 import { test, expect } from '@playwright/test';
-import { TransactionsPage } from '../../pages/transactions.page.js';
 
-// Auth is provided by the chromium-auth storageState project (playwright.config.ts).
-// Per-test login is not needed here — see state-transition.auth.spec.ts for auth state tests.
-test.describe('@regression @state-transition Transaction Search State Machine', () => {
-  let transactionsPage: TransactionsPage;
+test.describe('@regression Transaction Search — Access Control', () => {
+  test('unauthenticated visit to /findtrans.htm does not expose the search form', async ({
+    page,
+  }) => {
+    const baseUrl = process.env.BANK_BASE_URL ?? 'https://parabank.parasoft.com/parabank';
 
-  test.beforeEach(async ({ page }) => {
-    transactionsPage = new TransactionsPage(page);
-    await transactionsPage.goto();
-  });
+    await page.goto(`${baseUrl}/findtrans.htm`);
+    await page.waitForLoadState('domcontentloaded');
 
-  test('ST-TXN-01: Search by Transaction ID - form accepts numeric input', async () => {
-    if (await transactionsPage.isSearchFormVisible()) {
-      await transactionsPage.setTransactionId('12345');
-      expect(await transactionsPage.getTransactionIdInputValue()).toBe('12345');
-    } else {
-      expect(await transactionsPage.getCurrentUrl()).toContain('parabank');
-    }
-  });
+    // The search form requires authentication — it must not be rendered for a guest.
+    const searchFormVisible = await page
+      .locator('input#transactionId, input[id="criteria.transactionId"]')
+      .isVisible()
+      .catch(() => false);
 
-  test('ST-TXN-02: Search by Transaction ID - executes search', async () => {
-    if (await transactionsPage.isSearchFormVisible()) {
-      await transactionsPage.searchByTransactionId('999999999');
+    expect(searchFormVisible).toBe(false);
 
-      const hasResults = await transactionsPage.hasResults();
-      const hasNoResults = await transactionsPage.hasNoResults();
-      const hasError = await transactionsPage.hasError();
-      expect(hasResults || hasNoResults || hasError).toBe(true);
-    } else {
-      expect(await transactionsPage.getCurrentUrl()).toContain('parabank');
-    }
-  });
-
-  test('ST-TXN-03: Search by Date - date field accepts input', async () => {
-    if (await transactionsPage.isDateSearchVisible()) {
-      await transactionsPage.setDate('01-15-2024');
-      expect((await transactionsPage.getDateInputValue()).length).toBeGreaterThan(0);
-    } else {
-      expect(await transactionsPage.getCurrentUrl()).toContain('parabank');
-    }
-  });
-
-  test('ST-TXN-04: Search by Amount - amount field accepts numeric input', async () => {
-    if (await transactionsPage.isAmountSearchVisible()) {
-      await transactionsPage.setAmount('100.00');
-      expect(await transactionsPage.getAmountInputValue()).toBe('100.00');
-    } else {
-      expect(await transactionsPage.getCurrentUrl()).toContain('parabank');
-    }
-  });
-
-  test('ST-TXN-05: Search form maintains state after input', async ({ page }) => {
-    if (await transactionsPage.isSearchFormVisible()) {
-      await transactionsPage.setTransactionId('12345');
-      await page.locator('body').click();
-      expect(await transactionsPage.getTransactionIdInputValue()).toBe('12345');
-    } else {
-      expect(await transactionsPage.getCurrentUrl()).toContain('parabank');
-    }
-  });
-
-  test('ST-TXN-06: Multiple search input fields available', async () => {
-    const hasAnySearchInput = await transactionsPage.isAnySearchInputVisible();
-    if (hasAnySearchInput) {
-      expect(hasAnySearchInput).toBe(true);
-      return;
-    }
-
-    // ParaBank occasionally serves a generic internal-error page for this route.
-    // Treat that as a detectable error state instead of a false negative.
-    expect(await transactionsPage.hasError()).toBe(true);
-  });
-
-  test('ST-TXN-07: Page responds to user interaction', async () => {
-    const initialUrl = await transactionsPage.getCurrentUrl();
-    expect(initialUrl).toContain('parabank');
-
-    const isInteractive = await transactionsPage.isAnySearchInputVisible();
-    if (isInteractive) {
-      expect(isInteractive).toBe(true);
-      return;
-    }
-
-    expect(await transactionsPage.hasError()).toBe(true);
+    // Page must remain on the parabank domain (redirect to login or error, not external).
+    expect(page.url()).toContain('parabank');
   });
 });

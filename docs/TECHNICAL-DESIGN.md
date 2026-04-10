@@ -125,9 +125,13 @@ stateDiagram-v2
     Guest --> Guest : E5 Refresh
     Guest --> Guest : E6 Navigate
 
+    LoginError --> LoggedIn : E1 Valid Login
     LoginError --> LoginError : E5 Refresh
+    LoginError --> Guest : E6 Navigate
 
     LoggedIn --> Guest : E4 Logout
+    LoggedIn --> LoggedIn : E5 Refresh
+    LoggedIn --> LoggedIn : E6 Navigate
 ```
 
 ---
@@ -207,19 +211,21 @@ The image is cached after the first pull. Subsequent runs only rebuild the npm d
 │  + Node 24 (NodeSource apt layer)                           │
 │  + npm ci (dependency layer — cached on package-lock.json)  │
 │  + Source copy                                              │
-│  + Output dirs: reports/  allure-results/e2e/               │
+│  + Output dirs: reports/  allure-results/{e2e,unit,         │
+│                           integration}/                     │
 │                                                             │
 │  CMD: npx tsx scripts/run-nightly.ts                        │
 └──────────────────────────┬──────────────────────────────────┘
                            │  docker run (bind mounts)
-           ┌───────────────┴───────────────┐
-           │                               │
-           ▼                               ▼
-   ./reports/                    ./allure-results/e2e/
-   e2e-results.json              Allure XML/JSON results
-   e2e-regression-results.json   (stakeholder + developer
-   a11y-results.json              dashboards)
-   a11y-compliance-report.md
+           ┌───────────────┼───────────────┬───────────────────┐
+           │               │               │                   │
+           ▼               ▼               ▼                   ▼
+   ./reports/      ./allure-results/ ./allure-results/ ./allure-results/
+   e2e-results        e2e/              unit/           integration/
+   e2e-regression     Allure E2E        Allure unit     Allure API
+   a11y-results       results           results         results
+   unit-summary
+   loan-results
 ```
 
 Output directories are bind-mounted from the host so report artefacts land on the local filesystem without requiring `docker cp`. The bind-mount paths match the CI artefact upload paths.
@@ -229,14 +235,20 @@ Output directories are bind-mounted from the host so report artefacts land on th
 `run-nightly.ts` is the single source of truth for the nightly audit sequence, used by both the Docker CMD and the CI `nightly-audit` job. The CI job runs this same script inside the same image, so the execution steps are consistent:
 
 ```text
-1. @regression cross-browser matrix (chromium + firefox + webkit)
-2. Preserve e2e-results.json → e2e-regression-results.json
+1. Unit tests (vitest)               — soft-fail: continues regardless of outcome
+2. API integration tests (vitest)    — soft-fail: continues regardless of outcome
+3. Loan decision table tests         — soft-fail: continues regardless of outcome
+4. @regression cross-browser matrix (chromium + firefox + webkit)
+5. Preserve e2e-results.json → e2e-regression-results.json
    (prevents a11y run from overwriting the regression JSON)
-3. @a11y audit (chromium)
-4. Generate a11y compliance markdown report
+6. @a11y audit (chromium)            — always runs, even after regression failure
+7. Generate a11y compliance markdown report
 ```
 
-The preserve step runs in a `finally` block so partial regression results are always captured, even when tests fail.
+Failure behaviour:
+- Steps 1–3 (vitest): failure is recorded but never aborts later phases. All three suites run regardless of each other.
+- Steps 4 and 6 (E2E): each has its own flag (`regressionFailed`, `a11yFailed`). A11y always runs — nightly is an audit lane, not a fail-fast gate. Running a11y after a regression failure gives the full picture and avoids carrying stale a11y data into the stakeholder dashboard. A warning is printed when a11y runs after a regression failure so context is visible in CI output.
+- The preserve step runs in a `finally` block so partial regression results are always captured.
 
 ### Local Commands
 
@@ -262,7 +274,7 @@ The `nightly-audit` job in `playwright.yml` builds the image with Docker Buildx 
 cache key: docker-nightly-{hash(Dockerfile + package-lock.json)}
 ```
 
-Artefact upload paths (`reports/`, `allure-results/e2e/`) are unchanged from the pre-Docker setup; the bind mounts ensure the outputs land at the expected host paths.
+Artefact upload paths (`reports/`, `allure-results/e2e/`, `allure-results/unit/`, `allure-results/integration/`) are bind-mounted so outputs land at the expected host paths and are picked up by the existing CI artefact upload steps.
 
 ---
 

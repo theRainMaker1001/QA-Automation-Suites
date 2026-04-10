@@ -109,8 +109,9 @@ Docker Desktop (or Docker Engine) must be installed and running.
 # package-lock.json changes)
 npm run docker:build
 
-# Run the full nightly sequence: regression matrix → a11y → compliance report
-# Outputs land in ./reports and ./allure-results/e2e on the host
+# Run the full nightly sequence: unit → API → loans → regression matrix → a11y → compliance report
+# Outputs land in ./reports, ./allure-results/e2e, ./allure-results/unit, and
+# ./allure-results/integration on the host
 npm run docker:run
 
 # Build, run environment checks, and write a local dockerAudit.md summary
@@ -121,15 +122,19 @@ npm run docker:audit
 
 After `npm run docker:run`, the following files are available on the host:
 
-| Path                                  | Contents                                           |
-| :------------------------------------ | :------------------------------------------------- |
-| `reports/e2e-results.json`            | Raw Playwright JSON from the last test run         |
-| `reports/e2e-regression-results.json` | Regression results preserved before a11y run       |
-| `reports/a11y-results.json`           | A11y test output (written by the a11y spec)        |
-| `reports/a11y-compliance-report.md`   | Generated WCAG compliance report                   |
-| `allure-results/e2e/`                 | Allure XML/JSON for developer dashboard generation |
-| `e2e/playwright-report/`              | Playwright HTML report                             |
-| `e2e/test-results/`                   | Failure artefacts (screenshots, traces, videos)    |
+| Path                                  | Contents                                              |
+| :------------------------------------ | :---------------------------------------------------- |
+| `reports/e2e-results.json`            | Raw Playwright JSON from the last test run            |
+| `reports/e2e-regression-results.json` | Regression results preserved before a11y run          |
+| `reports/a11y-results.json`           | A11y test output (written by the a11y spec)           |
+| `reports/a11y-compliance-report.md`   | Generated WCAG compliance report                      |
+| `reports/unit-summary.json`           | Unit test summary for stakeholder dashboard           |
+| `reports/loan-results.json`           | Loan decision table results                           |
+| `allure-results/e2e/`                 | Allure XML/JSON for E2E results (developer dashboard) |
+| `allure-results/unit/`                | Allure XML/JSON for unit test results                 |
+| `allure-results/integration/`         | Allure XML/JSON for API integration test results      |
+| `e2e/playwright-report/`              | Playwright HTML report                                |
+| `e2e/test-results/`                   | Failure artefacts (screenshots, traces, videos)       |
 
 Notes:
 
@@ -157,7 +162,7 @@ commit-gate -> smoke-lane -> critical-lane
 
 - Smoke lane (manual dispatch path)
 - Critical lane (manual dispatch path)
-- Nightly audit: `@regression` matrix then `@a11y`
+- Nightly audit: unit tests → API integration tests → loan decision table → `@regression` matrix → `@a11y` (always runs, even after regression failure)
 
 Known-defect behaviour:
 

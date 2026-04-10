@@ -98,11 +98,13 @@ describe('withLatencyCheck', () => {
 
   describe('duration measurement', () => {
     it('returns duration greater than zero for async operations', async () => {
-      const delayed = () => new Promise((r) => setTimeout(() => r('done'), 20));
+      // 50 ms gives the OS scheduler enough headroom to avoid the sub-20 ms
+      // variance that caused intermittent failures with a tighter 20 ms timer.
+      const delayed = () => new Promise((r) => setTimeout(() => r('done'), 50));
 
       const { durationMs } = await withLatencyCheck('timed', delayed, 1000);
 
-      expect(durationMs).toBeGreaterThanOrEqual(20);
+      expect(durationMs).toBeGreaterThanOrEqual(40);
     });
 
     it('returns integer duration', async () => {

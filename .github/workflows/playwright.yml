@@ -163,7 +163,7 @@ jobs:
       # Create host-side bind-mount targets before docker run so Docker does
       # not create them as root-owned directories.
       - name: Create output directories
-        run: mkdir -p reports allure-results/e2e e2e/test-results e2e/playwright-report
+        run: mkdir -p reports allure-results/e2e allure-results/unit allure-results/integration e2e/test-results e2e/playwright-report
 
       - name: Run nightly audit via Docker
         env:
@@ -172,6 +172,8 @@ jobs:
           docker run --rm \
             -v "$PWD/reports:/app/reports" \
             -v "$PWD/allure-results/e2e:/app/allure-results/e2e" \
+            -v "$PWD/allure-results/unit:/app/allure-results/unit" \
+            -v "$PWD/allure-results/integration:/app/allure-results/integration" \
             -v "$PWD/e2e/test-results:/app/e2e/test-results" \
             -v "$PWD/e2e/playwright-report:/app/e2e/playwright-report" \
             -e CI=true \
@@ -203,11 +205,14 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
-      - name: Upload Allure results (nightly E2E)
+      - name: Upload Allure results (nightly)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: allure-results-e2e-nightly
-          path: allure-results/e2e/
+          path: |
+            allure-results/e2e/
+            allure-results/unit/
+            allure-results/integration/
           if-no-files-found: ignore
           retention-days: 30
