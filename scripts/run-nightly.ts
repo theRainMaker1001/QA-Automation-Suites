@@ -9,7 +9,7 @@
  *   1. Unit tests (vitest)
  *   2. API integration tests (vitest)
  *   3. Loan decision table tests
- *   4. @critical E2E — chromium-auth only (produces e2e-critical-results.json)
+ *   4. @critical E2E — chromium only (produces e2e-critical-results.json)
  *   5. @regression cross-browser matrix — chromium + firefox + webkit
  *   6. Preserve e2e-results.json → e2e-regression-results.json before
  *      the a11y run overwrites the shared output file
@@ -82,12 +82,14 @@ for (const [label, cmd] of [
   }
 }
 
-// ── 4. @critical E2E (chromium-auth — produces e2e-critical-results.json) ────
+// ── 4. @critical E2E (chromium — produces e2e-critical-results.json) ─────────
 // Runs on every nightly so the stakeholder dashboard always has a fresh
-// e2e-critical-results.json, independent of PR cadence. Uses the
-// chromium-auth project so authenticated tests have a valid session.
+// e2e-critical-results.json, independent of PR cadence. Uses chromium
+// (not chromium-auth) to match the ci.yml critical-lane exactly — availability
+// and login specs require an unauthenticated session. Authenticated specs load
+// their own storage state via test.use({ storageState }) and work on any project.
 try {
-  run('npx playwright test -c e2e/playwright.config.ts --grep @critical --project=chromium-auth');
+  run('npx playwright test -c e2e/playwright.config.ts --grep @critical --project=chromium');
 } catch {
   criticalFailed = true;
   console.error('\nCritical E2E tests failed — writing partial results and continuing.');

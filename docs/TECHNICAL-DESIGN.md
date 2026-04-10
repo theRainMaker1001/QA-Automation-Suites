@@ -238,7 +238,7 @@ Output directories are bind-mounted from the host so report artefacts land on th
 1. Unit tests (vitest)               — soft-fail: continues regardless of outcome
 2. API integration tests (vitest)    — soft-fail: continues regardless of outcome
 3. Loan decision table tests         — soft-fail: continues regardless of outcome
-4. @critical E2E (chromium-auth)     — produces e2e-critical-results.json;
+4. @critical E2E (chromium)          — produces e2e-critical-results.json;
    always written in a finally block so the dashboard never sees a missing file
 5. @regression cross-browser matrix (chromium + firefox + webkit)
 6. Preserve e2e-results.json → e2e-regression-results.json
