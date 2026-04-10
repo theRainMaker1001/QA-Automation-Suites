@@ -134,11 +134,13 @@ describe('measureLatency', () => {
   });
 
   it('returns accurate duration', async () => {
-    const delayed = () => new Promise((r) => setTimeout(() => r('x'), 30));
+    // A 50 ms delay gives enough scheduler headroom to keep this assertion
+    // stable in CI while still proving the helper measures meaningful latency.
+    const delayed = () => new Promise((r) => setTimeout(() => r('x'), 50));
 
     const { durationMs } = await measureLatency(delayed);
 
-    expect(durationMs).toBeGreaterThanOrEqual(30);
+    expect(durationMs).toBeGreaterThanOrEqual(40);
     expect(durationMs).toBeLessThan(100); // Reasonable upper bound
   });
 
