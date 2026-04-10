@@ -36,7 +36,10 @@ function moveAllureResults(): void {
   for (const entry of entries) {
     const fullPath = path.join(ALLURE_DEFAULT_DIR, entry);
     if (fs.statSync(fullPath).isFile()) {
-      fs.renameSync(fullPath, path.join(ALLURE_UNIT_DIR, entry));
+      // renameSync fails with EXDEV when source and destination are on different
+      // bind-mount volumes (e.g. in Docker). Copy then delete is always safe.
+      fs.copyFileSync(fullPath, path.join(ALLURE_UNIT_DIR, entry));
+      fs.unlinkSync(fullPath);
     }
   }
 }
