@@ -145,8 +145,8 @@ We avoid the 'Ice Cream Cone' anti-pattern. This suite is built on a stable foun
 
 Specialising in risk-based automation frameworks for FinTech and regulated industries.
 
-*   **Contract:** Outside IR35 only.
-*   **Permanent:** Considered for the right mutual fit.
+*   **Contract:** Outside IR35 preferred though open to all engagements.
+*   **Permanent:** Open to roles with ownership of quality strategy.
 
 Good QA pays for itself.
 
