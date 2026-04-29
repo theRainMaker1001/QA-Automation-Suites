@@ -49,34 +49,35 @@ Pushes are blocked if any of these fail:
 
 ### By Architectural Layer
 
-| Command                          | Purpose                                                              |
-| :------------------------------- | :------------------------------------------------------------------- |
-| `npm run test:unit`              | Unit logic and maths tests                                           |
-| `npm run test:api`               | Integration plus critical API tests (`vitest.integration.config.ts`) |
-| `npm run test:e2e`               | Chromium E2E gate (excludes `@negative` and `@known-defect`)         |
-| `npm run test:e2e:all`           | All Playwright projects                                              |
-| `npm run test:e2e:matrix`        | Chromium + Firefox + WebKit matrix                                   |
-| `npm run test:e2e:state`         | `@state-transition` tests on Chromium                                |
-| `npm run test:e2e:known-defects` | Known-defect E2E lane                                                |
-| `npm run test:e2e:negative`      | Negative/demo lane                                                   |
+| Command                          | Purpose                                                                           |
+| :------------------------------- | :-------------------------------------------------------------------------------- |
+| `npm run test:unit`              | Unit logic and maths tests                                                        |
+| `npm run test:api`               | API integration and non-loan critical API checks (`vitest.integration.config.ts`) |
+| `npm run test:e2e`               | Chromium E2E gate (excludes `@negative` and `@known-defect`)                      |
+| `npm run test:e2e:all`           | All Playwright projects                                                           |
+| `npm run test:e2e:matrix`        | Chromium + Firefox + WebKit matrix                                                |
+| `npm run test:e2e:state`         | `@state-transition` tests on Chromium                                             |
+| `npm run test:e2e:known-defects` | Known-defect E2E lane                                                             |
+| `npm run test:e2e:negative`      | Negative/demo lane                                                                |
 
 ### By Business Risk Lane
 
-| Command                          | Purpose                              |
-| :------------------------------- | :----------------------------------- |
-| `npm run test:smoke`             | Fast API plus UI connectivity checks |
-| `npm run test:critical`          | Core API and E2E critical checks     |
-| `npm run test:regression`        | Regression lane on `chromium-auth`   |
-| `npm run test:regression:matrix` | Cross-browser regression lane        |
-| `npm run test:a11y`              | Accessibility audit lane             |
-| `npm run test:heartbeat`         | API environment heartbeat checks     |
-| `npm run test:loans`             | Loan decision-table report run       |
-| `npm run test:audit`             | Regression plus a11y aggregate run   |
+| Command                          | Purpose                                   |
+| :------------------------------- | :---------------------------------------- |
+| `npm run test:smoke`             | Fast API plus UI connectivity checks      |
+| `npm run test:critical`          | Critical API, loan report, and E2E checks |
+| `npm run test:regression`        | Regression lane on `chromium-auth`        |
+| `npm run test:regression:matrix` | Cross-browser regression lane             |
+| `npm run test:a11y`              | Accessibility audit lane                  |
+| `npm run test:heartbeat`         | API environment heartbeat checks          |
+| `npm run test:loans`             | Loan decision-table report run            |
+| `npm run test:audit`             | Regression plus a11y aggregate run        |
 
 Notes:
 
 - `test:regression` uses `chromium-auth` storage state.
 - Authentication state-machine tests are a deliberate exception and validate guest/login/logout transitions directly.
+- Loan decision-table tests run through `test:loans`, not `test:api`, so live loan endpoint calls are not duplicated across lanes.
 
 ---
 
@@ -122,19 +123,20 @@ npm run docker:audit
 
 After `npm run docker:run`, the following files are available on the host:
 
-| Path                                  | Contents                                              |
-| :------------------------------------ | :---------------------------------------------------- |
-| `reports/e2e-results.json`            | Raw Playwright JSON from the last test run            |
-| `reports/e2e-regression-results.json` | Regression results preserved before a11y run          |
-| `reports/a11y-results.json`           | A11y test output (written by the a11y spec)           |
-| `reports/a11y-compliance-report.md`   | Generated WCAG compliance report                      |
-| `reports/unit-summary.json`           | Unit test summary for stakeholder dashboard           |
-| `reports/loan-results.json`           | Loan decision table results                           |
-| `allure-results/e2e/`                 | Allure XML/JSON for E2E results (developer dashboard) |
-| `allure-results/unit/`                | Allure XML/JSON for unit test results                 |
-| `allure-results/integration/`         | Allure XML/JSON for API integration test results      |
-| `e2e/playwright-report/`              | Playwright HTML report                                |
-| `e2e/test-results/`                   | Failure artefacts (screenshots, traces, videos)       |
+| Path                                       | Contents                                              |
+| :----------------------------------------- | :---------------------------------------------------- |
+| `reports/e2e-results.json`                 | Raw Playwright JSON from the last test run            |
+| `reports/e2e-regression-results.json`      | Regression results preserved before a11y run          |
+| `reports/a11y-results.json`                | A11y test output (written by the a11y spec)           |
+| `reports/a11y-compliance-report.md`        | Generated WCAG compliance report                      |
+| `reports/unit-summary.json`                | Unit test summary for stakeholder dashboard           |
+| `reports/loan-results.json`                | Loan decision table results                           |
+| `reports/loan-transport-observations.json` | Live loan endpoint timeout/transport observations     |
+| `allure-results/e2e/`                      | Allure XML/JSON for E2E results (developer dashboard) |
+| `allure-results/unit/`                     | Allure XML/JSON for unit test results                 |
+| `allure-results/integration/`              | Allure XML/JSON for API integration test results      |
+| `e2e/playwright-report/`                   | Playwright HTML report                                |
+| `e2e/test-results/`                        | Failure artefacts (screenshots, traces, videos)       |
 
 Notes:
 
@@ -156,13 +158,13 @@ commit-gate -> smoke-lane -> critical-lane
 
 - `commit-gate`: typecheck, lint, prettier check, tag validation, unit tests
 - `smoke-lane`: `@smoke` API and E2E checks
-- `critical-lane`: `@critical` API and E2E checks, then `verify:e2e:critical`
+- `critical-lane`: `@critical` API checks, the dedicated loan report, E2E checks, then `verify:e2e:critical`
 
 ### `playwright.yml` (scheduled nightly + workflow_dispatch)
 
 - Smoke lane (manual dispatch path)
 - Critical lane (manual dispatch path)
-- Nightly audit: unit tests → API integration tests → loan decision table → `@critical` E2E (produces `e2e-critical-results.json`) → `@regression` matrix → `@a11y` (always runs, even after regression failure)
+- Nightly audit: unit tests → API integration tests → dedicated loan decision table → `@critical` E2E (produces `e2e-critical-results.json`) → `@regression` matrix → `@a11y` (always runs, even after regression failure)
 
 Known-defect behaviour:
 

@@ -320,7 +320,7 @@ npm run typecheck       # TypeScript validation
 
 # Running by Business Risk (Lanes)
 npm run test:smoke      # Fast connectivity check (API + E2E)
-npm run test:critical   # Core loan and transaction logic
+npm run test:critical   # Critical API, loan report, and E2E checks
 npm run test:regression # Chromium regression lane
 npm run test:regression:matrix # Full cross-browser parity (Nightly)
 npm run test:a11y       # Accessibility Audit (Nightly)
@@ -331,7 +331,7 @@ npm run test:e2e:known-defects # Known-defect tracking lane
 
 # Running by Architectural Layer
 npm run test:unit       # 199 tests (Logic, Math & E2E infrastructure helpers)
-npm run test:api        # 78 tests (Contract & Integration)
+npm run test:api        # Contract and integration API checks; loan decision table is separate
 npm run test:e2e        # Chromium gate (excludes @negative/@known-defect)
 npm run test:e2e:matrix # Cross-browser matrix when all browsers are installed
 

@@ -380,27 +380,31 @@ npm run test:loans:only
 # Run with markdown report generation
 npm run test:loans
 
-# Run via critical lane (includes heartbeat + loans)
+# Run via critical lane (heartbeat, loan report, then critical E2E)
 npm run test:critical
 
 # Run specific boundary category using test name pattern
-npx vitest run api/src/tests/critical/loan-decision-table.test.ts --testNamePattern "BVA: Ratio"
+npx vitest run --config vitest.critical.config.ts api/src/tests/critical/loan-decision-table.test.ts --testNamePattern "BVA: Ratio"
 
 # Run decision table rules only
-npx vitest run api/src/tests/critical/loan-decision-table.test.ts --testNamePattern "Decision Table"
+npx vitest run --config vitest.critical.config.ts api/src/tests/critical/loan-decision-table.test.ts --testNamePattern "Decision Table"
 ```
 
 ### 6.4 Vitest Configuration
 
-The loan tests use `vitest.integration.config.ts`:
+The loan tests run through their own critical config and report runner:
 
 ```typescript
 {
-  include: ['api/src/tests/integration/**/*.test.ts', 'api/src/tests/critical/**/*.test.ts'],
+  include: ['api/src/tests/critical/**/*.test.ts'],
   testTimeout: 30000,
-  reporters: ['verbose', ['allure-vitest', { resultsDir: './allure-results/integration' }]]
+  exclude: ['node_modules/**', 'dist/**', 'coverage/**']
 }
 ```
+
+`vitest.integration.config.ts` deliberately excludes `loan-decision-table.test.ts`. That keeps the API integration lane focused on contract and heartbeat checks while `npm run test:loans` owns the live loan decision-table run and its markdown/JSON report.
+
+Live transport failures from the public ParaBank loan endpoint are recorded as transport observations in the loan report. This keeps external availability and latency issues visible without mislabelling them as decision-rule regressions.
 
 ---
 
@@ -408,7 +412,7 @@ The loan tests use `vitest.integration.config.ts`:
 
 ### 7.1 Testing Lane Strategy
 
-The loan approval tests are part of the **critical lane** in the risk-based testing pipeline:
+The loan approval tests are part of the **financial accuracy lane** and are invoked explicitly from critical and nightly flows:
 
 ```text
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
@@ -417,18 +421,18 @@ The loan approval tests are part of the **critical lane** in the risk-based test
 ├─────────────────┤     ├─────────────────┤     ├─────────────────┤
 │ • Type check    │     │ • API @smoke    │     │ • API @critical │
 │ • Lint + Format │     │ • E2E @smoke    │     │ • E2E @critical │
-│ • Unit tests    │     │                 │     │                 │
-│ • Loan report   │     │                 │     │                 │
+│ • Unit tests    │     │                 │     │ • API heartbeat │
+│ • Loan report   │     │                 │     │ • Loan report   │
 └─────────────────┘     └─────────────────┘     └─────────────────┘
 ```
 
 ### 7.2 GitHub Actions Workflows
 
-| Workflow             | Trigger                               | Loan Tests Run?                                           |
-| -------------------- | ------------------------------------- | --------------------------------------------------------- |
-| `ci.yml`             | Push to `main`, PR, workflow dispatch | ✅ Commit gate (every push) + Critical lane (PR/dispatch) |
-| `playwright.yml`     | Nightly schedule, workflow dispatch   | ❌ E2E only                                               |
-| `deploy-reports.yml` | On workflow completion                | ✅ For reporting                                          |
+| Workflow             | Trigger                               | Loan Tests Run?                                                   |
+| -------------------- | ------------------------------------- | ----------------------------------------------------------------- |
+| `ci.yml`             | Push to `main`, PR, workflow dispatch | Yes, as a dedicated report step rather than inside `test:api`     |
+| `playwright.yml`     | Nightly schedule, workflow dispatch   | Yes, through `scripts/run-nightly.ts` after API integration tests |
+| `deploy-reports.yml` | On workflow completion                | Yes, for reporting                                                |
 
 ### 7.3 Environment Variables
 
@@ -436,7 +440,7 @@ The loan approval tests are part of the **critical lane** in the risk-based test
 env:
   BANK_BASE_URL: https://parabank.parasoft.com/parabank
   BANK_CUSTOMER_ID: '12345'
-  API_LATENCY_MS: 5000 # SLA threshold
+  API_LATENCY_MS: 5000 # Loan/API request timeout and SLA threshold
 ```
 
 ---
@@ -455,6 +459,7 @@ npm run test:loans
 **Report Contents**:
 
 - Summary table (total, passed, failed, pass rate, duration)
+- Transport observations for live ParaBank timeouts or invalid transport responses
 - Test technique breakdown (Decision Table vs BVA categories)
 - Results grouped by boundary type
 - Failed test details with error messages

@@ -19,7 +19,9 @@
  * For these tests we assume a test account with known balance.
  */
 
-import { describe, it, expect } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
+import { describe, it, expect, afterAll } from 'vitest';
 import {
   allLoanDecisionTests,
   decisionTableRules,
@@ -31,6 +33,7 @@ import {
   combinedBoundaryTests,
   getCriticalTests,
 } from './loan-decision-table.js';
+import { HttpClient, type Ms } from '../../helpers/http.js';
 import { env } from '../_env.js';
 import type {
   LoanResponse,
@@ -42,7 +45,29 @@ import type {
 // TEST CONFIGURATION
 // ============================================================================
 
-const BASE_URL = `${env.BANK_BASE_URL}/services/bank`;
+const TRANSPORT_FAILURE_MESSAGES = new Set([
+  'error.timeout',
+  'error.network',
+  'error.invalid.loan.response',
+]);
+const LOAN_TRANSPORT_OBSERVATIONS_PATH = path.resolve(
+  process.cwd(),
+  'reports',
+  'loan-transport-observations.json',
+);
+const transportObservations: Array<{
+  id: string;
+  description: string;
+  message: string;
+}> = [];
+
+const client = new HttpClient({
+  baseUrl: env.BANK_BASE_URL,
+  defaultTimeoutMs: env.API_LATENCY_MS as Ms,
+  defaultHeaders: {
+    Accept: 'application/json',
+  },
+});
 
 /** Known test customer ID from ParaBank's demo data */
 const TEST_CUSTOMER_ID = 12212;
@@ -58,38 +83,70 @@ const TEST_ACCOUNT_ID = 12345;
  * Request a loan from ParaBank API
  */
 async function requestLoan(options: LoanRequestParams): Promise<LoanResponse> {
-  const params = new URLSearchParams({
-    customerId: options.customerId.toString(),
-    amount: options.amount.toString(),
-    downPayment: options.downPayment.toString(),
-    fromAccountId: options.fromAccountId.toString(),
-  });
-
-  const response = await fetch(`${BASE_URL}/requestLoan?${params}`, {
+  const response = await client.request<unknown>({
+    path: 'services/bank/requestLoan',
     method: 'POST',
-    headers: {
-      Accept: 'application/json',
+    query: {
+      customerId: options.customerId,
+      amount: options.amount,
+      downPayment: options.downPayment,
+      fromAccountId: options.fromAccountId,
     },
   });
 
-  // Handle HTTP errors as denials (API returns 400/500 for invalid inputs)
   if (!response.ok) {
-    // Try to parse error response, otherwise use status text
-    try {
-      const errorBody = (await response.json()) as { message?: string };
-      return {
-        approved: false,
-        message: errorBody.message || response.statusText,
-      };
-    } catch {
-      return {
-        approved: false,
-        message: response.statusText,
-      };
-    }
+    return {
+      approved: false,
+      message: mapTransportFailureMessage(response.error.code, response.error.message),
+    };
   }
 
-  return response.json() as Promise<LoanResponse>;
+  if (!isLoanResponse(response.data)) {
+    return {
+      approved: false,
+      message: 'error.invalid.loan.response',
+    };
+  }
+
+  return response.data;
+}
+
+function isLoanResponse(data: unknown): data is LoanResponse {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    typeof (data as { approved?: unknown }).approved === 'boolean'
+  );
+}
+
+function mapTransportFailureMessage(code: string, fallback: string): string {
+  switch (code) {
+    case 'TIMEOUT':
+      return 'error.timeout';
+    case 'NETWORK':
+      return 'error.network';
+    case 'INVALID_JSON':
+      return 'error.invalid.loan.response';
+    default:
+      return fallback;
+  }
+}
+
+function noteTransportObservation(
+  testCase: Pick<LoanDecisionTestCase, 'id' | 'description'>,
+  response: LoanResponse,
+): boolean {
+  const message = response.message ?? '';
+  if (!TRANSPORT_FAILURE_MESSAGES.has(message)) return false;
+
+  transportObservations.push({
+    id: testCase.id,
+    description: testCase.description,
+    message,
+  });
+
+  console.warn(`[WARN] ${testCase.id}: ${message}`);
+  return true;
 }
 
 /**
@@ -139,9 +196,14 @@ function runDecisionTableTest(testCase: LoanDecisionTestCase) {
     expect(typeof response.approved).toBe('boolean');
 
     // Document the results
-    console.log(`Expected approval: ${response.approved}`);
+    console.log(`Actual approval: ${response.approved}`);
     if (response.message) {
       console.log(`Response message: ${response.message}`);
+    }
+
+    if (noteTransportObservation(testCase, response)) {
+      expect(response.approved).toBe(false);
+      return;
     }
 
     // Note: These tests document expected behavior per decision table.
@@ -301,7 +363,7 @@ describe('Test Coverage Summary', () => {
 
 describe('Loan API - Negative Cases', () => {
   it('rejects request with zero loan amount', async () => {
-    const request = mapTestCaseToRequest({
+    const testCase: LoanDecisionTestCase = {
       id: 'NEG-ZERO-AMOUNT',
       description: 'Zero loan amount',
       tags: ['@negative'],
@@ -309,16 +371,18 @@ describe('Loan API - Negative Cases', () => {
       downPayment: 0,
       availableFunds: 1000,
       expectedDecision: 'DENIED_INSUFFICIENT_DOWN_PAYMENT',
-    });
+    };
+    const request = mapTestCaseToRequest(testCase);
 
     const response = await requestLoan(request);
 
+    noteTransportObservation(testCase, response);
     expect(response).toBeDefined();
     expect(typeof response.approved).toBe('boolean');
   });
 
   it('rejects request with negative down payment', async () => {
-    const request = mapTestCaseToRequest({
+    const testCase: LoanDecisionTestCase = {
       id: 'NEG-DOWN-PAYMENT',
       description: 'Negative down payment',
       tags: ['@negative'],
@@ -326,16 +390,18 @@ describe('Loan API - Negative Cases', () => {
       downPayment: -100,
       availableFunds: 500,
       expectedDecision: 'DENIED_INSUFFICIENT_DOWN_PAYMENT',
-    });
+    };
+    const request = mapTestCaseToRequest(testCase);
 
     const response = await requestLoan(request);
 
+    noteTransportObservation(testCase, response);
     expect(response).toBeDefined();
     expect(typeof response.approved).toBe('boolean');
   });
 
   it('handles extremely large loan amount', async () => {
-    const request = mapTestCaseToRequest({
+    const testCase: LoanDecisionTestCase = {
       id: 'NEG-LARGE-AMOUNT',
       description: 'Extremely large loan',
       tags: ['@negative', '@edge-case'],
@@ -343,15 +409,17 @@ describe('Loan API - Negative Cases', () => {
       downPayment: 100000000,
       availableFunds: 100000000,
       expectedDecision: 'APPROVED',
-    });
+    };
+    const request = mapTestCaseToRequest(testCase);
 
     const response = await requestLoan(request);
 
+    noteTransportObservation(testCase, response);
     expect(response).toBeDefined();
   });
 
   it('handles decimal precision in amounts', async () => {
-    const request = mapTestCaseToRequest({
+    const testCase: LoanDecisionTestCase = {
       id: 'NEG-DECIMALS',
       description: 'Decimal precision',
       tags: ['@edge-case'],
@@ -359,15 +427,17 @@ describe('Loan API - Negative Cases', () => {
       downPayment: 100.001,
       availableFunds: 500.555,
       expectedDecision: 'APPROVED',
-    });
+    };
+    const request = mapTestCaseToRequest(testCase);
 
     const response = await requestLoan(request);
 
+    noteTransportObservation(testCase, response);
     expect(response).toBeDefined();
   });
 
   it('response includes all expected fields on approval', async () => {
-    const request = mapTestCaseToRequest({
+    const testCase: LoanDecisionTestCase = {
       id: 'NEG-FIELD-CHECK',
       description: 'Field validation',
       tags: ['@positive'],
@@ -375,15 +445,17 @@ describe('Loan API - Negative Cases', () => {
       downPayment: 200,
       availableFunds: 500,
       expectedDecision: 'APPROVED',
-    });
+    };
+    const request = mapTestCaseToRequest(testCase);
 
     const response = await requestLoan(request);
 
+    noteTransportObservation(testCase, response);
     expect(response).toHaveProperty('approved');
   });
 
   it('responseDate is valid format when present', async () => {
-    const request = mapTestCaseToRequest({
+    const testCase: LoanDecisionTestCase = {
       id: 'NEG-DATE-FORMAT',
       description: 'Date format validation',
       tags: ['@positive'],
@@ -391,12 +463,30 @@ describe('Loan API - Negative Cases', () => {
       downPayment: 200,
       availableFunds: 500,
       expectedDecision: 'APPROVED',
-    });
+    };
+    const request = mapTestCaseToRequest(testCase);
 
     const response = await requestLoan(request);
 
+    noteTransportObservation(testCase, response);
     if (response.responseDate) {
       expect(() => new Date(response.responseDate!)).not.toThrow();
     }
   });
+});
+
+afterAll(() => {
+  fs.mkdirSync(path.dirname(LOAN_TRANSPORT_OBSERVATIONS_PATH), { recursive: true });
+  fs.writeFileSync(
+    LOAN_TRANSPORT_OBSERVATIONS_PATH,
+    JSON.stringify(
+      {
+        generatedAt: new Date().toISOString(),
+        observations: transportObservations,
+      },
+      null,
+      2,
+    ),
+    'utf8',
+  );
 });

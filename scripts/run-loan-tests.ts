@@ -14,8 +14,15 @@ import * as path from 'path';
 const REPORTS_DIR = path.join(process.cwd(), 'reports');
 const REPORT_PATH = path.join(REPORTS_DIR, 'loan-api-report.md');
 const JSON_REPORT_PATH = path.join(REPORTS_DIR, 'loan-results.json');
+const TRANSPORT_OBSERVATIONS_PATH = path.join(REPORTS_DIR, 'loan-transport-observations.json');
 const ALLURE_DEFAULT_DIR = path.join(process.cwd(), 'allure-results');
 const ALLURE_UNIT_DIR = path.join(ALLURE_DEFAULT_DIR, 'unit');
+
+type LoanTransportObservation = {
+  id: string;
+  description: string;
+  message: string;
+};
 
 function ensureReportsDir(): void {
   if (!fs.existsSync(REPORTS_DIR)) {
@@ -44,7 +51,24 @@ function moveAllureResults(): void {
   }
 }
 
-function generateReport(jsonPath: string): string {
+function readTransportObservations(): LoanTransportObservation[] {
+  try {
+    const raw = fs.readFileSync(TRANSPORT_OBSERVATIONS_PATH, 'utf-8');
+    const parsed = JSON.parse(raw) as { observations?: LoanTransportObservation[] };
+    return Array.isArray(parsed.observations) ? parsed.observations : [];
+  } catch {
+    return [];
+  }
+}
+
+function escapeTableCell(value: string): string {
+  return value.replace(/\|/g, '\\|');
+}
+
+function generateReport(
+  jsonPath: string,
+  transportObservations: LoanTransportObservation[] = [],
+): string {
   const timestamp = new Date().toISOString();
   let results: any = { testResults: [] };
   let parseError = false;
@@ -74,18 +98,25 @@ function generateReport(jsonPath: string): string {
   const failed = allTests.filter((t) => t.status === 'failed').length;
   const skipped = allTests.filter((t) => t.status === 'skipped' || t.status === 'pending').length;
   const total = allTests.length || (parseError ? 0 : 34); // Expected 34 tests
+  const transportObservationCount = transportObservations.length;
   const duration =
     results.startTime && results.endTime
       ? ((results.endTime - results.startTime) / 1000).toFixed(2)
       : '?';
 
-  const statusEmoji = failed === 0 ? '✅' : '❌';
+  const statusEmoji = failed === 0 ? (transportObservationCount > 0 ? '⚠️' : '✅') : '❌';
+  const statusText =
+    failed === 0
+      ? transportObservationCount > 0
+        ? `PASSED WITH ${transportObservationCount} TRANSPORT OBSERVATIONS`
+        : 'ALL TESTS PASSED'
+      : `${failed} FAILED`;
   const passRate = total > 0 ? ((passed / total) * 100).toFixed(1) : '0';
 
   let report = `# Loan API Test Report
 
 > **Generated**: ${timestamp}  
-> **Status**: ${statusEmoji} ${failed === 0 ? 'ALL TESTS PASSED' : `${failed} FAILED`}
+> **Status**: ${statusEmoji} ${statusText}
 
 ---
 
@@ -97,6 +128,7 @@ function generateReport(jsonPath: string): string {
 | ✅ Passed | ${passed} |
 | ❌ Failed | ${failed} |
 | ⏭️ Skipped | ${skipped} |
+| ⚠️ Transport observations | ${transportObservationCount} |
 | Pass Rate | ${passRate}% |
 | Duration | ${duration}s |
 
@@ -121,6 +153,24 @@ This suite implements **ISTQB Decision Table Testing** combined with **3-Value B
 ## Detailed Results
 
 `;
+
+  if (transportObservations.length > 0) {
+    report += `## ⚠️ Transport Observations
+
+These are live ParaBank calls that did not return a usable loan response within the configured request budget. They are reported separately from decision-table failures because they indicate external service availability or latency, not proof that the loan rules changed.
+
+| Test ID | Message | Description |
+|---------|---------|-------------|
+`;
+
+    for (const observation of transportObservations) {
+      report += `| ${escapeTableCell(observation.id)} | ${escapeTableCell(
+        observation.message,
+      )} | ${escapeTableCell(observation.description)} |\n`;
+    }
+
+    report += '\n---\n\n';
+  }
 
   // Group by category
   const categories: Record<string, typeof allTests> = {
@@ -189,13 +239,16 @@ function main(): void {
   console.log('🏦 Running Loan API Decision Table Tests...\n');
 
   ensureReportsDir();
+  if (fs.existsSync(TRANSPORT_OBSERVATIONS_PATH)) {
+    fs.unlinkSync(TRANSPORT_OBSERVATIONS_PATH);
+  }
 
   let exitCode = 0;
 
   try {
     // Run vitest with both JSON and Allure reporters
     execSync(
-      `npx vitest run api/src/tests/critical/loan-decision-table.test.ts --reporter=json --reporter=allure-vitest/reporter --outputFile=${JSON_REPORT_PATH}`,
+      `npx vitest run --config vitest.critical.config.ts api/src/tests/critical/loan-decision-table.test.ts --reporter=json --reporter=allure-vitest/reporter --outputFile=${JSON_REPORT_PATH}`,
       { stdio: 'inherit' },
     );
   } catch (e) {
@@ -208,7 +261,7 @@ function main(): void {
 
   // Generate markdown report
   if (fs.existsSync(JSON_REPORT_PATH)) {
-    const report = generateReport(JSON_REPORT_PATH);
+    const report = generateReport(JSON_REPORT_PATH, readTransportObservations());
     fs.writeFileSync(REPORT_PATH, report);
     console.log(`\n📄 Report generated: ${REPORT_PATH}`);
   } else {
