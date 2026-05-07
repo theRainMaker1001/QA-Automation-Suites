@@ -96,6 +96,17 @@ Login sessions are captured once and reused across tests (`storageState`).
 
 **Impact:** Shortens the feedback loop, allowing engineers to deploy fixes faster.
 
+### Critical Login-Surface Diagnostics
+
+The critical E2E lane keeps ParaBank login-surface outages visible as red results.
+When the server responds but the login form is absent, the failure is classified as
+`UPSTREAM_LOGIN_SURFACE_UNAVAILABLE` and a Playwright JSON attachment captures URL,
+title, `/index.htm` status, selector counts, visible error text, and a short page
+snippet.
+
+**Impact:** Separates third-party UI/auth availability from API latency or local
+selector drift without weakening the critical gate.
+
 ### Containerised Nightly Audit
 
 The nightly regression and a11y lanes run inside the [official Playwright Docker image](https://playwright.dev/docs/docker), both locally and in CI, using `mcr.microsoft.com/playwright`. Chromium, Firefox, and WebKit are baked into the image — no browser download occurs at run time. Docker layer caching in CI means the image is only rebuilt when the `Dockerfile` or `package-lock.json` changes.

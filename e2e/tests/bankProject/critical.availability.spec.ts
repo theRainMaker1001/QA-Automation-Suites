@@ -15,9 +15,12 @@ test.describe('@bank @critical availability', () => {
     }
   });
 
-  test('@critical homepage renders login UI', async ({ page }) => {
+  test('@critical homepage renders login UI', async ({ page }, testInfo) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
-    await loginPage.expectLoginFormVisible();
+    await loginPage.expectLoginFormVisible({
+      testInfo,
+      diagnosticsReason: 'critical availability check could not see the login form',
+    });
   });
 });

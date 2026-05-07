@@ -17,3 +17,19 @@ failure, refused connection, or timeout), and `false` for all other error types.
 Covered by Vitest unit tests (`e2e/utils/network-errors.test.ts`). This is the only
 E2E utility intentionally listed in `vitest.unit.config.ts` — do not add other files
 from this directory to that config unless they are equally free of Playwright imports.
+
+## `login-surface-diagnostics.ts`
+
+Playwright-only helper for classifying ParaBank login-surface failures. It is used
+by critical login availability checks and global setup when the server responds but
+the login form does not render.
+
+Collected evidence includes current URL, page title, `/index.htm` status, login
+panel/input/button counts, visible error text, and a short body text snippet. Specs
+that pass `testInfo` receive a `login-surface-diagnostics` JSON attachment in the
+Playwright report.
+
+This helper deliberately does not turn the failure into a skip or pass. Missing
+login UI remains a critical red result; the diagnostic data explains whether the
+failure looks like upstream ParaBank UI/auth instability, API latency, or selector
+drift.

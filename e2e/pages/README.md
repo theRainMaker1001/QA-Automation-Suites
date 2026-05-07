@@ -10,6 +10,16 @@ Current pages:
 - `AccountsPage`: account overview interactions.
 - `TransactionsPage`: transaction search workflows.
 
+## LoginPage Diagnostics
+
+`expectLoginFormVisible()` accepts an optional `testInfo` argument. Critical specs
+pass it so missing login UI produces a `login-surface-diagnostics` JSON attachment
+and an `UPSTREAM_LOGIN_SURFACE_UNAVAILABLE` error.
+
+The assertion still lives in the page object so specs do not duplicate selectors.
+The extra evidence is only collected on failure, keeping passing runs quiet while
+making ParaBank login-surface outages easier to separate from selector drift.
+
 ## RegisterPage — `gotoAndWaitForForm` return contract
 
 `gotoAndWaitForForm` returns a `FormLoadStatus` string literal describing what happened

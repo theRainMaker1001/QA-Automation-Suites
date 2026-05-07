@@ -77,6 +77,7 @@ Notes:
 
 - `test:regression` uses `chromium-auth` storage state.
 - Authentication state-machine tests are a deliberate exception and validate guest/login/logout transitions directly.
+- Critical login-surface checks remain hard failures when ParaBank responds but the login form is absent. Inspect the `login-surface-diagnostics` Playwright attachment to separate upstream UI/auth availability from API latency or selector drift.
 - Loan decision-table tests run through `test:loans`, not `test:api`, so live loan endpoint calls are not duplicated across lanes.
 
 ---
@@ -169,6 +170,7 @@ commit-gate -> smoke-lane -> critical-lane
 Known-defect behaviour:
 
 - `verify:e2e:critical` allows expected known defects and fails only on unexpected failures.
+- `UPSTREAM_LOGIN_SURFACE_UNAVAILABLE` is intentionally not skipped. It keeps a user-visible third-party login outage red while attaching diagnostic JSON for triage.
 
 ---
 
@@ -185,6 +187,7 @@ Dashboard behaviour:
 - Stakeholder dashboard uses lane summaries and confidence scoring.
 - Allure dashboard includes detailed execution evidence and trends.
 - Known defects are tracked explicitly, not hidden.
+- Login-surface diagnostic attachments show URL, title, `/index.htm` status, selector counts, visible error text, and a short page snippet when the critical login form is missing.
 
 ---
 

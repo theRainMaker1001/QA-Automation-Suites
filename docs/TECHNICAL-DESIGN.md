@@ -250,6 +250,7 @@ Output directories are bind-mounted from the host so report artefacts land on th
 Failure behaviour:
 - Steps 1–3 (vitest): failure is recorded but never aborts later phases. All three suites run regardless of each other.
 - Step 4 (critical E2E): failure sets `criticalFailed`. The `e2e-critical-results.json` file is always written in a `finally` block, so the stakeholder dashboard is never left with a partial dataset regardless of test outcome.
+- Critical login-surface failures stay red. When ParaBank responds but the login form does not render, the failure is classified as `UPSTREAM_LOGIN_SURFACE_UNAVAILABLE` and Playwright attaches `login-surface-diagnostics` JSON with URL, title, `/index.htm` status, selector counts, visible error text, and a page text snippet.
 - Steps 5 and 7 (E2E): each has its own flag (`regressionFailed`, `a11yFailed`). A11y always runs — nightly is an audit lane, not a fail-fast gate. Running a11y after a regression failure gives the full picture and avoids carrying stale a11y data into the stakeholder dashboard. A warning is printed when a11y runs after a regression failure so context is visible in CI output.
 - The preserve steps run in `finally` blocks so partial results are always captured.
 
@@ -417,6 +418,7 @@ The stakeholder dashboard presents four non-overlapping quality lanes:
 E2E metrics distinguish between outcomes using Playwright's `test.status`, `results[0].status`, tags, and annotations:
 - **Known defect**: `@known-defect` tagged/annotated tests that fail (tracked, not alarming)
 - **Unexpected failure**: Failing tests without a known-defect marker (requires investigation)
+- **Login surface unavailable**: Critical login checks fail with `UPSTREAM_LOGIN_SURFACE_UNAVAILABLE` when the server/API is reachable but the login form is absent. This is a user-visible third-party UI/auth availability failure, not a soft latency warning.
 - **Skipped**: Conditionally skipped tests — includes two infrastructure-skip categories:
   - `'unreachable'` — the host could not be reached at all (DNS/connection failure); all browsers skip. This is an infrastructure outage, not an application defect.
   - `'not-found'` on Firefox — the page rendered but the form was absent; a known Firefox CI render flake. Skipped on Firefox only.

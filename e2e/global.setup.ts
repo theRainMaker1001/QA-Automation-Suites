@@ -16,6 +16,10 @@ import {
   saveStorageState,
   writeEmptyStorageState,
 } from './utils/auth-session.js';
+import {
+  collectLoginSurfaceDiagnostics,
+  formatLoginSurfaceUnavailableError,
+} from './utils/login-surface-diagnostics.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const STORAGE_STATE_PATH = path.join(__dirname, '.auth', 'user.json');
@@ -39,6 +43,11 @@ async function globalSetup(_config: FullConfig): Promise<void> {
     }
   } catch (error) {
     console.error('[Global Setup] Error during authentication:', error);
+    const diagnostics = await collectLoginSurfaceDiagnostics(page, {
+      reason: 'global setup could not authenticate before storage-state creation',
+    });
+    console.error(`[Global Setup] ${formatLoginSurfaceUnavailableError(diagnostics)}`);
+    console.error('[Global Setup] Login surface diagnostics:', JSON.stringify(diagnostics));
     writeEmptyStorageState(STORAGE_STATE_PATH);
     console.log('[Global Setup] Created empty storage state as fallback');
   } finally {

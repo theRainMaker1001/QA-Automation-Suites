@@ -4,10 +4,19 @@
  * Encapsulates ParaBank login functionality for state transition testing.
  */
 
-import { Page, Locator, expect } from '@playwright/test';
+import { expect, type Locator, type Page, type TestInfo } from '@playwright/test';
 import { BasePage } from './base.page.js';
+import {
+  attachLoginSurfaceDiagnostics,
+  formatLoginSurfaceUnavailableError,
+} from '../utils/login-surface-diagnostics.js';
 
 export type AuthState = 'GUEST' | 'LOGGING_IN' | 'LOGGED_IN' | 'LOGIN_ERROR' | 'LOGGING_OUT';
+
+interface LoginFormAssertionOptions {
+  testInfo?: TestInfo;
+  diagnosticsReason?: string;
+}
 
 export class LoginPage extends BasePage {
   // Locators
@@ -123,10 +132,23 @@ export class LoginPage extends BasePage {
   // Assertions
   // ============================================================================
 
-  async expectLoginFormVisible(): Promise<void> {
-    await expect(this.usernameInput).toBeVisible();
-    await expect(this.passwordInput).toBeVisible();
-    await expect(this.loginButton).toBeVisible();
+  async expectLoginFormVisible(options: LoginFormAssertionOptions = {}): Promise<void> {
+    try {
+      await expect(this.usernameInput).toBeVisible();
+      await expect(this.passwordInput).toBeVisible();
+      await expect(this.loginButton).toBeVisible();
+    } catch (error) {
+      if (!options.testInfo) {
+        throw error;
+      }
+
+      const diagnostics = await attachLoginSurfaceDiagnostics(this.page, options.testInfo, {
+        reason: options.diagnosticsReason,
+        baseUrl: this.baseUrl,
+      });
+
+      throw new Error(formatLoginSurfaceUnavailableError(diagnostics));
+    }
   }
 
   async expectLoggedIn(): Promise<void> {
