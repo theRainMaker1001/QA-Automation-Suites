@@ -191,7 +191,8 @@ Dashboard behaviour:
 - Stakeholder dashboard uses lane summaries and confidence scoring.
 - Allure dashboard includes detailed execution evidence and trends.
 - Known defects are tracked explicitly, not hidden.
-- Login-surface diagnostic attachments show URL, title, `/index.htm` status, selector counts, visible error text, and a short page snippet when the critical login form is missing.
+- Login-surface diagnostic attachments show URL, title, `/index.htm` status, selector counts, visible error text, stakeholder wording, technical cause, and a short page snippet when the critical login form is missing.
+- The dashboard hub badge is derived from `stakeholder-dashboard.json` where available, so blocked-only upstream runs are labelled `BLOCKED BY THIRD-PARTY ACCESS` rather than `FAILED`.
 
 ---
 

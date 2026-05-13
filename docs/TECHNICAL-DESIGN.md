@@ -433,8 +433,8 @@ Critical lane gating uses a verifier step to keep known defects non-blocking, re
 | Audience | QA Staff, Developers | PMs, Leadership |
 | Detail Level | Full test execution data | Aggregated metrics |
 | History | 90-day trend analysis | Current run summary |
-| Failures | Stack traces, screenshots, video | Known defects vs unexpected breakdown |
-| Categories | Known Defects, Unexpected, Infrastructure | N/A (aggregated into lane status) |
+| Failures | Stack traces, screenshots, video | Known defects, upstream blocks, and unexpected breakdown |
+| Categories | Known Defects, Unexpected, Infrastructure | Aggregated lane status with blocked counts |
 | WCAG | Individual violations listed | Compliance badge (AA/A/NC) |
 | Risk | Per-test severity labels | Overall confidence score + risk level |
 | Data Source | Allure result XML/JSON | Report JSON artefacts (5 files) |
@@ -443,6 +443,7 @@ Critical lane gating uses a verifier step to keep known defects non-blocking, re
 
 - Each stakeholder lane card displays the source `lastRun` timestamp, so stale data is visible.
 - If required inputs are missing, the stakeholder page shows a partial-data warning banner listing missing files.
+- The dashboard hub badge reads `stakeholder-dashboard.json` after report generation. A run with upstream blocks but no unit, financial, or unexpected E2E failures is shown as `BLOCKED BY THIRD-PARTY ACCESS` rather than `FAILED` or `PASSING`.
 - Deploy is blocked on `main` when required stakeholder inputs are incomplete, preventing publication of partial snapshots.
 
 ### Report Generation Commands

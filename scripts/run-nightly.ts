@@ -63,6 +63,12 @@ function isBlockedOnlyCriticalRun(reportPath: string): boolean {
   try {
     const report = JSON.parse(fs.readFileSync(reportPath, 'utf-8'));
     const metrics = buildE2eMetrics(report, true, {}, false);
+    console.warn(
+      '\nCritical E2E classification: ' +
+        `${metrics.upstreamBlocks} upstream blocked, ` +
+        `${metrics.unexpectedFailures} unexpected, ` +
+        `${metrics.knownDefects} known defects.`,
+    );
     return metrics.upstreamBlocks > 0 && metrics.unexpectedFailures === 0;
   } catch (error) {
     console.warn('\nCould not classify critical E2E result:', error);

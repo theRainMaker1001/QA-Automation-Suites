@@ -49,24 +49,35 @@ function hasKnownDefectMarker(spec: JsonValue, test: JsonValue, firstResult: Jso
 }
 
 function collectResultText(spec: JsonValue, test: JsonValue, firstResult: JsonValue): string {
-  const errors = firstResult?.errors || [];
-  const errorMessages = errors
-    .map((error: JsonValue) => [error?.message, error?.stack].filter(Boolean).join(' '))
+  const results = test?.results?.length ? test.results : [firstResult];
+  const resultMessages = results
+    .map((result: JsonValue) => {
+      const errors = result?.errors || [];
+      const errorMessages = errors
+        .map((error: JsonValue) => [error?.message, error?.stack].filter(Boolean).join(' '))
+        .join(' ');
+      const resultAnnotations = (result?.annotations || [])
+        .map(
+          (annotation: JsonValue) => `${annotation?.type || ''} ${annotation?.description || ''}`,
+        )
+        .join(' ');
+
+      return [
+        result?.status,
+        result?.error?.message,
+        result?.error?.stack,
+        errorMessages,
+        resultAnnotations,
+      ]
+        .filter(Boolean)
+        .join(' ');
+    })
     .join(' ');
   const annotations = [...(spec?.annotations || []), ...(test?.annotations || [])]
     .map((annotation: JsonValue) => `${annotation?.type || ''} ${annotation?.description || ''}`)
     .join(' ');
 
-  return [
-    spec?.title,
-    test?.title,
-    test?.status,
-    firstResult?.status,
-    firstResult?.error?.message,
-    firstResult?.error?.stack,
-    errorMessages,
-    annotations,
-  ]
+  return [spec?.title, test?.title, test?.status, resultMessages, annotations]
     .filter(Boolean)
     .join(' ')
     .toLowerCase();

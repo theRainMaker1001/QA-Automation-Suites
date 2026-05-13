@@ -137,24 +137,33 @@ function getSkipReason(spec: any, test: any, firstResult: any): string {
 }
 
 function collectResultText(spec: any, test: any, firstResult: any): string {
-  const errors = firstResult?.errors || [];
-  const errorMessages = errors
-    .map((error: any) => [error?.message, error?.stack].filter(Boolean).join(' '))
+  const results = test?.results?.length ? test.results : [firstResult];
+  const resultMessages = results
+    .map((result: any) => {
+      const errors = result?.errors || [];
+      const errorMessages = errors
+        .map((error: any) => [error?.message, error?.stack].filter(Boolean).join(' '))
+        .join(' ');
+      const resultAnnotations = (result?.annotations || [])
+        .map((annotation: any) => `${annotation?.type || ''} ${annotation?.description || ''}`)
+        .join(' ');
+
+      return [
+        result?.status,
+        result?.error?.message,
+        result?.error?.stack,
+        errorMessages,
+        resultAnnotations,
+      ]
+        .filter(Boolean)
+        .join(' ');
+    })
     .join(' ');
   const annotations = [...(spec?.annotations || []), ...(test?.annotations || [])]
     .map((annotation: any) => `${annotation?.type || ''} ${annotation?.description || ''}`)
     .join(' ');
 
-  return [
-    spec?.title,
-    test?.title,
-    test?.status,
-    firstResult?.status,
-    firstResult?.error?.message,
-    firstResult?.error?.stack,
-    errorMessages,
-    annotations,
-  ]
+  return [spec?.title, test?.title, test?.status, resultMessages, annotations]
     .filter(Boolean)
     .join(' ')
     .toLowerCase();

@@ -533,6 +533,38 @@ jobs:
           else
             PIPELINE_STATUS="${{ github.event.workflow_run.conclusion }}"
           fi
+          HUB_STATUS_KIND=$(PIPELINE_STATUS="$PIPELINE_STATUS" node <<'NODE'
+          const fs = require('fs');
+
+          const rawStatus = process.env.PIPELINE_STATUS || 'unknown';
+          let kind =
+            rawStatus === 'success' ? 'passing' : rawStatus === 'failure' ? 'failure' : 'attention';
+
+          try {
+            const dashboard = JSON.parse(
+              fs.readFileSync('reports/stakeholder-dashboard.json', 'utf8'),
+            );
+            const e2e = dashboard?.lanes?.e2e || {};
+            const unit = dashboard?.lanes?.unit || {};
+            const critical = dashboard?.lanes?.critical || {};
+            const hasCoreFailure =
+              Number(e2e.unexpectedFailures || 0) > 0 ||
+              Number(unit.failed || 0) > 0 ||
+              Number(critical.failed || 0) > 0;
+            const isBlockedOnly =
+              Number(e2e.upstreamBlocks || 0) > 0 &&
+              !hasCoreFailure;
+
+            if (isBlockedOnly) {
+              kind = 'blocked';
+            }
+          } catch {
+            // Fall back to the raw workflow conclusion when stakeholder data is missing.
+          }
+
+          process.stdout.write(kind);
+          NODE
+          )
 
           cat > public/index.html << 'EOF'
           <!DOCTYPE html>
@@ -585,6 +617,12 @@ jobs:
                 border-color: rgba(239, 68, 68, 0.7);
                 box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.12) inset;
               }
+              .status-blocked {
+                color: #fff7ed;
+                background: rgba(249, 115, 22, 0.2);
+                border-color: rgba(249, 115, 22, 0.72);
+                box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.14) inset;
+              }
               .cards {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -631,7 +669,7 @@ jobs:
                 <a href="./stakeholder/" class="card stakeholder">
                   <div class="icon">📊</div>
                   <h2>Stakeholder Dashboard</h2>
-                  <p>Executive summary with confidence metrics, risk indicators, and WCAG compliance status. Ideal for PMs and leadership.</p>
+                  <p>Executive summary with confidence metrics, risk indicators, upstream access blocks, and WCAG compliance status. Ideal for PMs and leadership.</p>
                 </a>
 
                 <a href="./allure/" class="card developer">
@@ -652,9 +690,11 @@ jobs:
           EOF
 
           # Inject status into the HTML
-          if [ "$PIPELINE_STATUS" == "success" ]; then
+          if [ "$HUB_STATUS_KIND" == "passing" ]; then
             sed -i 's|{{STATUS_BADGE}}|<span class="status-badge status-success">Pipeline Status: PASSING</span>|' public/index.html
-          elif [ "$PIPELINE_STATUS" == "failure" ]; then
+          elif [ "$HUB_STATUS_KIND" == "blocked" ]; then
+            sed -i 's|{{STATUS_BADGE}}|<span class="status-badge status-blocked">Pipeline Status: BLOCKED BY THIRD-PARTY ACCESS</span>|' public/index.html
+          elif [ "$HUB_STATUS_KIND" == "failure" ]; then
             sed -i 's|{{STATUS_BADGE}}|<span class="status-badge status-failure">Pipeline Status: FAILED</span>|' public/index.html
           else
             # Treat cancelled/skipped/neutral/timed_out/action_required as attention needed

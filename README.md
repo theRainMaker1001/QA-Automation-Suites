@@ -20,6 +20,7 @@ Real-time visibility into the current health of the system.
 Dashboard totals policy:
 *   Stakeholder summary totals include all four lanes, including WCAG/a11y.
 *   Developer Allure is intentionally more comprehensive and can include overlapping lane executions for diagnostic redundancy.
+*   The dashboard hub separates blocked third-party access from confirmed pipeline failures when stakeholder data is available.
 
 ---
 

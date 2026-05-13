@@ -9,6 +9,10 @@ interface PlaywrightCase {
   status: 'expected' | 'unexpected' | 'skipped';
   resultStatus: 'passed' | 'failed' | 'skipped' | 'timedOut';
   message?: string;
+  results?: Array<{
+    status: 'passed' | 'failed' | 'skipped' | 'timedOut';
+    message?: string;
+  }>;
   tags?: string[];
   annotations?: Array<{ type: string; description?: string }>;
 }
@@ -29,13 +33,13 @@ function playwrightReport(cases: PlaywrightCase[]) {
               title: testCase.title,
               status: testCase.status,
               annotations: testCase.annotations || [],
-              results: [
-                {
-                  status: testCase.resultStatus,
-                  error: testCase.message ? { message: testCase.message } : undefined,
-                  errors: testCase.message ? [{ message: testCase.message }] : [],
-                },
-              ],
+              results: (
+                testCase.results || [{ status: testCase.resultStatus, message: testCase.message }]
+              ).map((result) => ({
+                status: result.status,
+                error: result.message ? { message: result.message } : undefined,
+                errors: result.message ? [{ message: result.message }] : [],
+              })),
             },
           ],
         })),
@@ -155,6 +159,39 @@ describe('stakeholder dashboard E2E classification', () => {
     const metrics = buildE2eMetrics(report, true, {}, false);
 
     expect(metrics.upstreamBlocks).toBe(3);
+    expect(metrics.unexpectedFailures).toBe(0);
+  });
+
+  it('uses retry errors when the selected Playwright result is a generic timeout', () => {
+    const report = playwrightReport([
+      {
+        title: '@critical homepage renders login UI',
+        status: 'unexpected',
+        resultStatus: 'timedOut',
+        results: [
+          {
+            status: 'timedOut',
+            message: 'Test timeout exceeded while collecting diagnostics after the page was closed',
+          },
+          {
+            status: 'failed',
+            message:
+              'UPSTREAM_LOGIN_SURFACE_UNAVAILABLE: ParaBank blocked the test runner before the login form rendered. classification=UPSTREAM_RATE_LIMITED technicalCause=Cloudflare HTTP 429 / Error 1015 rate limit',
+          },
+        ],
+      },
+      {
+        title: 'setup health check - credentials verified before state machine tests',
+        status: 'unexpected',
+        resultStatus: 'failed',
+        message:
+          'beforeAll could not verify login - upstream registration or site may be unavailable',
+      },
+    ]);
+
+    const metrics = buildE2eMetrics(report, true, {}, false);
+
+    expect(metrics.upstreamBlocks).toBe(2);
     expect(metrics.unexpectedFailures).toBe(0);
   });
 
