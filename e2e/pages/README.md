@@ -18,7 +18,8 @@ and an `UPSTREAM_LOGIN_SURFACE_UNAVAILABLE` error.
 
 The assertion still lives in the page object so specs do not duplicate selectors.
 The extra evidence is only collected on failure, keeping passing runs quiet while
-making ParaBank login-surface outages easier to separate from selector drift.
+making ParaBank login-surface outages and third-party access blocks easier to
+separate from selector drift.
 
 ## RegisterPage — `gotoAndWaitForForm` return contract
 

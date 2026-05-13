@@ -249,8 +249,8 @@ Output directories are bind-mounted from the host so report artefacts land on th
 
 Failure behaviour:
 - Steps 1–3 (vitest): failure is recorded but never aborts later phases. All three suites run regardless of each other.
-- Step 4 (critical E2E): failure sets `criticalFailed`. The `e2e-critical-results.json` file is always written in a `finally` block, so the stakeholder dashboard is never left with a partial dataset regardless of test outcome.
-- Critical login-surface failures stay red. When ParaBank responds but the login form does not render, the failure is classified as `UPSTREAM_LOGIN_SURFACE_UNAVAILABLE` and Playwright attaches `login-surface-diagnostics` JSON with URL, title, `/index.htm` status, selector counts, visible error text, and a page text snippet.
+- Step 4 (critical E2E): failure sets `criticalFailed` unless all failures are classified as third-party upstream blocks. The `e2e-critical-results.json` file is always written in a `finally` block, so the stakeholder dashboard is never left with a partial dataset regardless of test outcome.
+- Critical login-surface failures are classified separately from product regressions. When ParaBank responds but the login form does not render, the failure is classified as `UPSTREAM_LOGIN_SURFACE_UNAVAILABLE` and Playwright attaches `login-surface-diagnostics` JSON with URL, title, `/index.htm` status, selector counts, visible error text, stakeholder wording, and the technical cause. Cloudflare HTTP 429/Error 1015 responses are shown to stakeholders as `Blocked by third-party access`.
 - Steps 5 and 7 (E2E): each has its own flag (`regressionFailed`, `a11yFailed`). A11y always runs — nightly is an audit lane, not a fail-fast gate. Running a11y after a regression failure gives the full picture and avoids carrying stale a11y data into the stakeholder dashboard. A warning is printed when a11y runs after a regression failure so context is visible in CI output.
 - The preserve steps run in `finally` blocks so partial results are always captured.
 
@@ -412,19 +412,19 @@ The stakeholder dashboard presents four non-overlapping quality lanes:
 |------|-----------|---------------|
 | **Code Quality** | `unit-summary.json` (199 unit tests) | Pass rate for isolated logic, financial maths, and pure E2E infrastructure helpers |
 | **Financial Accuracy** | `loan-results.json` (47 loan tests) | Decision table + BVA coverage of loan approval rules (34 core scenarios, 1 coverage summary, 6 critical-path reruns, 6 negative cases) |
-| **User Journey Coverage** | `e2e-critical-results.json` + `e2e-regression-results.json` | Known defects (amber, tagged `@known-defect`), unexpected failures (red), infra skips (grey — host unreachable), browser skips (grey — intentional per-browser exclusions). Current nightly inputs are 41 chromium `@critical` tests plus 6 logical regression tests across the cross-browser matrix (18 scheduled browser executions, 13 currently executed because 5 WebKit cases are intentionally skipped) |
+| **User Journey Coverage** | `e2e-critical-results.json` + `e2e-regression-results.json` | Known defects (amber, tagged `@known-defect`), unexpected failures (red), upstream blocks (orange, third-party access or availability prevented observation), infra skips (grey — host unreachable), browser skips (grey — intentional per-browser exclusions). Current nightly inputs are 41 chromium `@critical` tests plus 6 logical regression tests across the cross-browser matrix (18 scheduled browser executions, 13 currently executed because 5 WebKit cases are intentionally skipped) |
 | **WCAG Compliance** | `a11y-results.json` | Violation count, AA/A/Non-Compliant badge, and link to the full [compliance report](https://therainmaker1001.github.io/QA-Automation-Suites/a11y-compliance-report.html) |
 
 E2E metrics distinguish between outcomes using Playwright's `test.status`, `results[0].status`, tags, and annotations:
 - **Known defect**: `@known-defect` tagged/annotated tests that fail (tracked, not alarming)
 - **Unexpected failure**: Failing tests without a known-defect marker (requires investigation)
-- **Login surface unavailable**: Critical login checks fail with `UPSTREAM_LOGIN_SURFACE_UNAVAILABLE` when the server/API is reachable but the login form is absent. This is a user-visible third-party UI/auth availability failure, not a soft latency warning.
+- **Upstream blocked**: Critical login checks fail with `UPSTREAM_LOGIN_SURFACE_UNAVAILABLE` when the server/API is reachable but the login form is absent. Cloudflare HTTP 429/Error 1015 responses are grouped here and shown in plain English as `Blocked by third-party access`. This is a user-visible third-party UI/auth availability issue, not a confirmed product defect.
 - **Skipped**: Conditionally skipped tests — includes two infrastructure-skip categories:
   - `'unreachable'` — the host could not be reached at all (DNS/connection failure); all browsers skip. This is an infrastructure outage, not an application defect.
   - `'not-found'` on Firefox — the page rendered but the form was absent; a known Firefox CI render flake. Skipped on Firefox only.
   - `'not-found'` on Chromium — fires as a hard failure with an explicit diagnostic message identifying `/register.htm`; this is a real application defect signal and must be investigated.
 
-Critical lane gating uses a verifier step to keep known defects non-blocking while still failing the lane for unexpected defects.
+Critical lane gating uses a verifier step to keep known defects non-blocking, report upstream blocks separately, and still fail the lane for unexpected defects. Upstream blocks only pass when the caller explicitly sets `ALLOW_UPSTREAM_BLOCKED=true`.
 
 ### Dashboard Features Comparison
 

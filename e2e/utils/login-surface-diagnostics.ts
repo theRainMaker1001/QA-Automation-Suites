@@ -7,11 +7,18 @@ const PASSWORD_SELECTOR = 'input[name="password"], input#password';
 const LOGIN_BUTTON_SELECTOR = 'input[value="Log In"], button:has-text("Log In")';
 const BODY_SNIPPET_LIMIT = 500;
 
+export type LoginSurfaceClassification =
+  | 'UPSTREAM_RATE_LIMITED'
+  | 'UPSTREAM_LOGIN_SURFACE_UNAVAILABLE';
+
 export interface LoginSurfaceDiagnostics {
   reason: string;
   timestamp: string;
   baseUrl: string;
   currentUrl: string;
+  classification: LoginSurfaceClassification;
+  stakeholderMessage: string;
+  technicalCause: string;
   title: string;
   indexStatus: number | null;
   indexRequestError: string | null;
@@ -39,6 +46,37 @@ function normaliseWhitespace(value: string): string {
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+function classifyLoginSurface(
+  indexStatus: number | null,
+  title: string,
+  visibleText: string,
+): {
+  classification: LoginSurfaceClassification;
+  stakeholderMessage: string;
+  technicalCause: string;
+} {
+  const normalised = `${title} ${visibleText}`.toLowerCase();
+  const isRateLimited =
+    indexStatus === 429 ||
+    normalised.includes('error 1015') ||
+    normalised.includes('rate limited') ||
+    (normalised.includes('cloudflare') && normalised.includes('access denied'));
+
+  if (isRateLimited) {
+    return {
+      classification: 'UPSTREAM_RATE_LIMITED',
+      stakeholderMessage: 'ParaBank blocked the automated browser before the login page loaded.',
+      technicalCause: 'Cloudflare HTTP 429 / Error 1015 rate limit',
+    };
+  }
+
+  return {
+    classification: 'UPSTREAM_LOGIN_SURFACE_UNAVAILABLE',
+    stakeholderMessage: 'ParaBank did not show the login page when the tests tried to start.',
+    technicalCause: 'Login form missing from ParaBank response',
+  };
 }
 
 async function safeCount(page: Page, selector: string): Promise<number> {
@@ -107,12 +145,14 @@ export async function collectLoginSurfaceDiagnostics(
 
   const [errors, body] = await Promise.all([visibleErrorText(page), bodyTextSnippet(page)]);
   const combinedText = `${errors} ${body}`.toLowerCase();
+  const classification = classifyLoginSurface(index.status, title, combinedText);
 
   return {
     reason: options.reason ?? 'login form did not render',
     timestamp: new Date().toISOString(),
     baseUrl,
     currentUrl: page.url(),
+    ...classification,
     title,
     indexStatus: index.status,
     indexRequestError: index.error,
@@ -146,12 +186,16 @@ export async function attachLoginSurfaceDiagnostics(
 
 export function formatLoginSurfaceUnavailableError(diagnostics: LoginSurfaceDiagnostics): string {
   const summary =
-    diagnostics.indexStatus === null
-      ? 'UPSTREAM_LOGIN_SURFACE_UNAVAILABLE: ParaBank login form did not render and /index.htm status was unavailable.'
-      : 'UPSTREAM_LOGIN_SURFACE_UNAVAILABLE: ParaBank responded but the login form did not render.';
+    diagnostics.classification === 'UPSTREAM_RATE_LIMITED'
+      ? 'UPSTREAM_LOGIN_SURFACE_UNAVAILABLE: ParaBank blocked the test runner before the login form rendered.'
+      : diagnostics.indexStatus === null
+        ? 'UPSTREAM_LOGIN_SURFACE_UNAVAILABLE: ParaBank login form did not render and /index.htm status was unavailable.'
+        : 'UPSTREAM_LOGIN_SURFACE_UNAVAILABLE: ParaBank responded but the login form did not render.';
 
   return [
     summary,
+    `classification=${diagnostics.classification}`,
+    `technicalCause=${diagnostics.technicalCause}`,
     `currentUrl=${diagnostics.currentUrl}`,
     `indexStatus=${diagnostics.indexStatus ?? 'unavailable'}`,
     `title=${diagnostics.title || '(empty)'}`,

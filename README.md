@@ -14,7 +14,7 @@ Real-time visibility into the current health of the system.
 
 | Dashboard | Audience | Shows | Link |
 |-----------|----------|-------|------|
-| **Stakeholder Dashboard** | **PMs & Leadership** | Confidence score, risk level, known defects, WCAG compliance | [View Executive Summary](https://therainmaker1001.github.io/QA-Automation-Suites/stakeholder/) |
+| **Stakeholder Dashboard** | **PMs & Leadership** | Confidence score, risk level, known defects, upstream blocks, WCAG compliance | [View Executive Summary](https://therainmaker1001.github.io/QA-Automation-Suites/stakeholder/) |
 | **Developer Dashboard** | **QA Staff & Developers** | Full test details, real failure trends, screenshots, traces | [View Technical Allure Report](https://therainmaker1001.github.io/QA-Automation-Suites/allure/) |
 
 Dashboard totals policy:
@@ -80,6 +80,7 @@ Rather than running every test on every change, intelligent tagging focuses exec
 *   `@regression`: Cross-browser user journeys (Nightly).
 *   `@a11y`: WCAG compliance checks (Nightly).
 *   `@known-defect`: Tracked upstream defects that remain visible in Allure and are separated in stakeholder metrics.
+*   Report-only `upstream-blocked`: Third-party access or availability blocked a check before the product journey could be observed; shown separately from product failures.
 *   Local developer gate defaults to Chromium for determinism; full browser matrix runs nightly or via `npm run test:e2e:matrix`.
 
 **Impact:** Reduces CI/CD cloud costs by up to 40% by running expensive tests only when necessary.
@@ -98,14 +99,15 @@ Login sessions are captured once and reused across tests (`storageState`).
 
 ### Critical Login-Surface Diagnostics
 
-The critical E2E lane keeps ParaBank login-surface outages visible as red results.
-When the server responds but the login form is absent, the failure is classified as
-`UPSTREAM_LOGIN_SURFACE_UNAVAILABLE` and a Playwright JSON attachment captures URL,
-title, `/index.htm` status, selector counts, visible error text, and a short page
-snippet.
+The critical E2E lane keeps ParaBank login-surface outages visible without mixing
+them into confirmed product defects. When the server responds but the login form
+is absent, the failure is classified as `UPSTREAM_LOGIN_SURFACE_UNAVAILABLE`; if
+Cloudflare rate limits the runner, the dashboard shows this as
+`Blocked by third-party access` with the technical cause
+`Cloudflare HTTP 429 / Error 1015 rate limit`.
 
-**Impact:** Separates third-party UI/auth availability from API latency or local
-selector drift without weakening the critical gate.
+**Impact:** Separates third-party UI/auth availability from API latency, local
+selector drift, and genuine product regressions.
 
 ### Containerised Nightly Audit
 

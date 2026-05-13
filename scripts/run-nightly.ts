@@ -19,9 +19,10 @@
  * Failure behaviour:
  *   - Steps 1–3 (vitest): failure is recorded in `vitestFailed` but never
  *     aborts later phases. All three suites run regardless of each other.
- *   - Step 4 (critical E2E): failure sets `criticalFailed`. The results file
- *     is always written in a finally block so the stakeholder dashboard is
- *     never left with a missing e2e-critical-results.json.
+ *   - Step 4 (critical E2E): failure sets `criticalFailed` unless all failures
+ *     are classified as third-party upstream blocks. The results file is always
+ *     written in a finally block so the stakeholder dashboard is never left with
+ *     a missing e2e-critical-results.json.
  *   - Step 5 (regression E2E): failure sets `regressionFailed` and preserves
  *     partial results, but does NOT skip a11y.
  *   - Step 7 (a11y): always runs — nightly is an audit lane, not fail-fast.
@@ -29,7 +30,8 @@
  *     failed so context is visible in CI output.
  *   - Step 8 (report generation): non-blocking warning on failure.
  *
- * Exit code: 1 if any step failed; 0 if all passed.
+ * Exit code: 1 if any step failed; 0 if all passed or critical E2E was only
+ * blocked by third-party ParaBank access.
  *
  * Usage:
  *   npm run test:nightly          Run locally (requires local browser install)
@@ -39,6 +41,7 @@
 import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
+import { buildE2eMetrics } from './generate-stakeholder-dashboard.js';
 
 const reportsDir = path.join(process.cwd(), 'reports');
 const allureE2eDir = path.join(process.cwd(), 'allure-results', 'e2e');
@@ -54,15 +57,30 @@ function run(cmd: string): void {
   execSync(cmd, { stdio: 'inherit' });
 }
 
+function isBlockedOnlyCriticalRun(reportPath: string): boolean {
+  if (!fs.existsSync(reportPath)) return false;
+
+  try {
+    const report = JSON.parse(fs.readFileSync(reportPath, 'utf-8'));
+    const metrics = buildE2eMetrics(report, true, {}, false);
+    return metrics.upstreamBlocks > 0 && metrics.unexpectedFailures === 0;
+  } catch (error) {
+    console.warn('\nCould not classify critical E2E result:', error);
+    return false;
+  }
+}
+
 // Separate flags so each phase's outcome is reported independently.
 // vitestFailed:   any of the three vitest suites failed
 // criticalFailed: the @critical E2E run failed
+// criticalBlocked: critical E2E was blocked by third-party access only
 // regressionFailed: the @regression E2E matrix failed
 // a11yFailed:     the @a11y run failed
 // None of these abort subsequent phases — nightly is an audit lane, not a
 // fail-fast gate. Full picture on bad nights matters more than early exit.
 let vitestFailed = false;
 let criticalFailed = false;
+let criticalBlocked = false;
 let regressionFailed = false;
 let a11yFailed = false;
 
@@ -101,6 +119,15 @@ try {
   if (fs.existsSync(src)) {
     fs.copyFileSync(src, dest);
     console.log('\nPreserved: e2e-results.json → e2e-critical-results.json');
+  }
+
+  if (fs.existsSync(src) && criticalFailed && isBlockedOnlyCriticalRun(dest)) {
+    criticalFailed = false;
+    criticalBlocked = true;
+    console.warn(
+      '\nCritical E2E was blocked by third-party ParaBank access only. ' +
+        'Publishing this nightly as blocked rather than a confirmed product failure.',
+    );
   }
 }
 
@@ -148,6 +175,10 @@ try {
   run('npx tsx scripts/generate-a11y-compliance-report.ts');
 } catch (e) {
   console.warn('\nA11y compliance report generation failed (non-blocking):', e);
+}
+
+if (criticalBlocked) {
+  console.warn('\nNightly classification: blocked by third-party ParaBank login access.');
 }
 
 process.exit(vitestFailed || criticalFailed || regressionFailed || a11yFailed ? 1 : 0);

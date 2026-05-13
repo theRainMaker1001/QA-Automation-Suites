@@ -15,6 +15,7 @@
  */
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -31,6 +32,7 @@ interface LaneMetrics {
 interface E2eMetrics extends LaneMetrics {
   knownDefects: number;
   unexpectedFailures: number;
+  upstreamBlocks: number;
   skipped: number;
   infrastructureSkips: number;
 }
@@ -56,6 +58,7 @@ interface DashboardData {
     totalTests: number;
     totalPassed: number;
     totalFailed: number;
+    totalBlocked: number;
   };
   completeness: {
     isPartial: boolean;
@@ -131,6 +134,51 @@ function getSkipReason(spec: any, test: any, firstResult: any): string {
     return annotations.map((a: any) => String(a?.description || '')).join(' ');
   }
   return String(firstResult?.error?.message || '');
+}
+
+function collectResultText(spec: any, test: any, firstResult: any): string {
+  const errors = firstResult?.errors || [];
+  const errorMessages = errors
+    .map((error: any) => [error?.message, error?.stack].filter(Boolean).join(' '))
+    .join(' ');
+  const annotations = [...(spec?.annotations || []), ...(test?.annotations || [])]
+    .map((annotation: any) => `${annotation?.type || ''} ${annotation?.description || ''}`)
+    .join(' ');
+
+  return [
+    spec?.title,
+    test?.title,
+    test?.status,
+    firstResult?.status,
+    firstResult?.error?.message,
+    firstResult?.error?.stack,
+    errorMessages,
+    annotations,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+}
+
+function isUpstreamBlockedResult(resultText: string): boolean {
+  return (
+    resultText.includes('upstream_login_surface_unavailable') ||
+    resultText.includes('upstream_rate_limited') ||
+    (resultText.includes('cloudflare') &&
+      (resultText.includes('429') || resultText.includes('error 1015'))) ||
+    resultText.includes('you are being rate limited')
+  );
+}
+
+function isAuthSetupCascadeResult(resultText: string): boolean {
+  return (
+    resultText.includes('beforeall could not verify login') ||
+    resultText.includes('global setup login may have failed') ||
+    resultText.includes('storage state has no cookies') ||
+    resultText.includes('auth-dependent tests will be skipped') ||
+    (resultText.includes('waiting for locator') && resultText.includes('input[name="username"]')) ||
+    (resultText.includes('expected: "guest"') && resultText.includes('received: "login_error"'))
+  );
 }
 
 function calculateConfidence(lanes: DashboardData['lanes']): number {
@@ -216,6 +264,8 @@ function countPlaywrightTests(data: any): {
     outcome: string;
     resultStatus: string | undefined;
     isKnownDefect: boolean;
+    isUpstreamBlock: boolean;
+    isAuthSetupCascade: boolean;
     isInfrastructureSkip: boolean;
   }>;
   lastRun: string;
@@ -225,6 +275,8 @@ function countPlaywrightTests(data: any): {
     outcome: string;
     resultStatus: string | undefined;
     isKnownDefect: boolean;
+    isUpstreamBlock: boolean;
+    isAuthSetupCascade: boolean;
     isInfrastructureSkip: boolean;
   }> = [];
 
@@ -265,12 +317,15 @@ function countPlaywrightTests(data: any): {
             const resultStatus = firstResult?.status; // passed | failed | timedOut | skipped
             const isKnownDefect = hasKnownDefectMarker(spec, test, firstResult);
             const skipReason = getSkipReason(spec, test, firstResult);
+            const resultText = collectResultText(spec, test, firstResult);
             const isInfrastructureSkip = isInfrastructureSkipReason(skipReason);
             observations.push({
               key: buildObservationKey(suitePath, spec, test, idx),
               outcome,
               resultStatus,
               isKnownDefect,
+              isUpstreamBlock: isUpstreamBlockedResult(resultText),
+              isAuthSetupCascade: isAuthSetupCascadeResult(resultText),
               isInfrastructureSkip,
             });
           }
@@ -290,7 +345,7 @@ function countPlaywrightTests(data: any): {
   };
 }
 
-function buildE2eMetrics(
+export function buildE2eMetrics(
   criticalData: any,
   criticalFound: boolean,
   regressionData: any,
@@ -305,17 +360,22 @@ function buildE2eMetrics(
     {
       hasUnexpected: boolean;
       hasKnownDefect: boolean;
+      hasUpstreamBlock: boolean;
       hasPassed: boolean;
       hasSkipped: boolean;
       hasInfrastructureSkip: boolean;
     }
   >();
+  const hasDirectUpstreamBlock = [...critical.observations, ...regression.observations].some(
+    (obs) => obs.outcome === 'unexpected' && obs.isUpstreamBlock,
+  );
 
   for (const obs of [...critical.observations, ...regression.observations]) {
     if (!byTest.has(obs.key)) {
       byTest.set(obs.key, {
         hasUnexpected: false,
         hasKnownDefect: false,
+        hasUpstreamBlock: false,
         hasPassed: false,
         hasSkipped: false,
         hasInfrastructureSkip: false,
@@ -325,6 +385,10 @@ function buildE2eMetrics(
     if (obs.outcome === 'unexpected') {
       if (obs.isKnownDefect && obs.resultStatus === 'failed') {
         state.hasKnownDefect = true;
+        continue;
+      }
+      if (obs.isUpstreamBlock || (hasDirectUpstreamBlock && obs.isAuthSetupCascade)) {
+        state.hasUpstreamBlock = true;
         continue;
       }
       state.hasUnexpected = true;
@@ -343,10 +407,12 @@ function buildE2eMetrics(
   let passed = 0;
   let knownDefects = 0;
   let unexpectedFailures = 0;
+  let upstreamBlocks = 0;
   let skipped = 0;
   let infrastructureSkips = 0;
   for (const state of byTest.values()) {
     if (state.hasUnexpected) unexpectedFailures++;
+    else if (state.hasUpstreamBlock) upstreamBlocks++;
     else if (state.hasKnownDefect) knownDefects++;
     else if (state.hasPassed) passed++;
     else {
@@ -360,6 +426,12 @@ function buildE2eMetrics(
   const total = byTest.size;
   const passRate = executedTotal > 0 ? ((passed + knownDefects) / executedTotal) * 100 : 0;
   const dataAvailable = (criticalFound || regressionFound) && total > 0;
+  const status =
+    dataAvailable && unexpectedFailures > 0
+      ? 'FAILING'
+      : dataAvailable && upstreamBlocks > 0
+        ? 'DEGRADED'
+        : calculateStatus(passRate, dataAvailable);
 
   const lastRun =
     criticalFound && regressionFound
@@ -377,10 +449,11 @@ function buildE2eMetrics(
     failed: unexpectedFailures,
     knownDefects,
     unexpectedFailures,
+    upstreamBlocks,
     skipped,
     infrastructureSkips,
     lastRun,
-    status: calculateStatus(passRate, dataAvailable),
+    status,
     dataAvailable,
   };
 }
@@ -434,7 +507,7 @@ function buildA11yMetrics(data: any, found: boolean): A11yMetrics {
 
 // ─── HTML Generator ──────────────────────────────────────────────────────────
 
-function generateHTML(data: DashboardData): string {
+export function generateHTML(data: DashboardData): string {
   const riskColors = { LOW: '#22c55e', MEDIUM: '#eab308', HIGH: '#f97316', CRITICAL: '#ef4444' };
   const statusColors = {
     HEALTHY: '#22c55e',
@@ -445,6 +518,14 @@ function generateHTML(data: DashboardData): string {
   const wcagColors = { AA: '#22c55e', A: '#eab308', NON_COMPLIANT: '#ef4444' };
 
   const e2e = data.lanes.e2e as E2eMetrics;
+  const upstreamBlockNotice =
+    e2e.dataAvailable && e2e.upstreamBlocks > 0
+      ? `<div class="blocked-note">
+          <strong>Blocked by third-party access:</strong>
+          ParaBank blocked the automated browser before the login page loaded. These user journey checks could not be completed in this run, so this is not a confirmed product defect.
+          <span>Technical detail: Cloudflare HTTP 429 / Error 1015 rate limit.</span>
+        </div>`
+      : '';
 
   function noDataOverlay(available: boolean): string {
     if (available) return '';
@@ -561,12 +642,28 @@ function generateHTML(data: DashboardData): string {
       padding-top: 0.75rem;
       border-top: 1px solid #30363d;
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
       gap: 0.5rem;
       text-align: center;
     }
     .defect-value { font-size: 1.1rem; font-weight: bold; }
     .defect-label { font-size: 0.7rem; color: #8b949e; }
+    .blocked-note {
+      margin-top: 1rem;
+      padding: 0.8rem;
+      border-radius: 8px;
+      border: 1px solid rgba(249, 115, 22, 0.5);
+      background: rgba(249, 115, 22, 0.12);
+      color: #fed7aa;
+      font-size: 0.82rem;
+      line-height: 1.45;
+    }
+    .blocked-note span {
+      display: block;
+      margin-top: 0.35rem;
+      color: #d0d7de;
+      font-size: 0.76rem;
+    }
 
     .wcag-badge {
       display: inline-block;
@@ -579,7 +676,7 @@ function generateHTML(data: DashboardData): string {
 
     .summary-row {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 1rem;
       margin-bottom: 2rem;
     }
@@ -624,6 +721,10 @@ function generateHTML(data: DashboardData): string {
       <div class="summary-card">
         <div class="summary-value" style="color: ${data.summary.totalFailed > 0 ? '#ef4444' : '#22c55e'}">${data.summary.totalFailed}</div>
         <div class="summary-label">Failed</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-value" style="color: ${data.summary.totalBlocked > 0 ? '#f97316' : '#22c55e'}">${data.summary.totalBlocked}</div>
+        <div class="summary-label">Blocked</div>
       </div>
     </div>
 
@@ -736,10 +837,15 @@ function generateHTML(data: DashboardData): string {
             <div class="defect-label">Infra Skips</div>
           </div>
           <div>
+            <div class="defect-value" style="color: ${e2e.upstreamBlocks > 0 ? '#f97316' : '#22c55e'}">${e2e.dataAvailable ? e2e.upstreamBlocks : '-'}</div>
+            <div class="defect-label">Third-Party Blocked</div>
+          </div>
+          <div>
             <div class="defect-value" style="color: #8b949e">${e2e.dataAvailable ? e2e.skipped - e2e.infrastructureSkips : '-'}</div>
             <div class="defect-label">Browser Skips</div>
           </div>
         </div>
+        ${upstreamBlockNotice}
         <div class="lane-meta">Last run: ${lastRunValue(e2e.lastRun, e2e.dataAvailable)}</div>
       </div>
 
@@ -785,7 +891,7 @@ function generateHTML(data: DashboardData): string {
 
 // ─── Main ────────────────────────────────────────────────────────────────────
 
-function generateDashboard(): void {
+export function generateDashboard(): void {
   console.log('Stakeholder Dashboard Generator');
   console.log('================================');
 
@@ -844,6 +950,7 @@ function generateDashboard(): void {
         lanes.a11y.totalTests,
       totalPassed: lanes.unit.passed + lanes.critical.passed + lanes.e2e.passed + lanes.a11y.passed,
       totalFailed: lanes.unit.failed + lanes.critical.failed + lanes.e2e.failed + lanes.a11y.failed,
+      totalBlocked: lanes.e2e.upstreamBlocks,
     },
     completeness: {
       isPartial: missingSources.length > 0,
@@ -884,12 +991,15 @@ function generateDashboard(): void {
     `  Financial Accuracy: ${lanes.critical.passed}/${lanes.critical.totalTests} (${lanes.critical.passRate}%)${lanes.critical.dataAvailable ? '' : ' [no data]'}`,
   );
   console.log(
-    `  User Journeys: ${lanes.e2e.passed}/${lanes.e2e.totalTests} (${lanes.e2e.passRate}%) | ${(lanes.e2e as E2eMetrics).knownDefects} known defects | ${(lanes.e2e as E2eMetrics).unexpectedFailures} unexpected${lanes.e2e.dataAvailable ? '' : ' [no data]'}`,
+    `  User Journeys: ${lanes.e2e.passed}/${lanes.e2e.totalTests} (${lanes.e2e.passRate}%) | ${(lanes.e2e as E2eMetrics).knownDefects} known defects | ${(lanes.e2e as E2eMetrics).upstreamBlocks} upstream blocked | ${(lanes.e2e as E2eMetrics).unexpectedFailures} unexpected${lanes.e2e.dataAvailable ? '' : ' [no data]'}`,
   );
   console.log(
     `  WCAG: ${lanes.a11y.wcagCompliance} compliance${lanes.a11y.dataAvailable ? '' : ' [no data]'}`,
   );
 }
 
-// Run
-generateDashboard();
+const isDirectRun = process.argv[1] === fileURLToPath(import.meta.url);
+
+if (isDirectRun) {
+  generateDashboard();
+}

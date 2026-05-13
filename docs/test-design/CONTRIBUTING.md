@@ -77,7 +77,7 @@ Notes:
 
 - `test:regression` uses `chromium-auth` storage state.
 - Authentication state-machine tests are a deliberate exception and validate guest/login/logout transitions directly.
-- Critical login-surface checks remain hard failures when ParaBank responds but the login form is absent. Inspect the `login-surface-diagnostics` Playwright attachment to separate upstream UI/auth availability from API latency or selector drift.
+- Critical login-surface checks remain visible when ParaBank responds but the login form is absent. Inspect the `login-surface-diagnostics` Playwright attachment to separate upstream UI/auth availability from API latency or selector drift. Cloudflare HTTP 429/Error 1015 blocks are reported as `upstream-blocked`, not `@known-defect`.
 - Loan decision-table tests run through `test:loans`, not `test:api`, so live loan endpoint calls are not duplicated across lanes.
 
 ---
@@ -93,6 +93,10 @@ Notes:
 | `@state-transition` | Explicit state-machine flows  | Regression or focused state run          |
 | `@known-defect`     | Upstream known issue tracking | Critical reporting and known-defect lane |
 | `@negative`         | Defensive/error-path checks   | Manual/special runs                      |
+
+`upstream-blocked` is a report classification, not a tag. It is reserved for
+third-party access or availability failures that prevent the journey from being
+observed.
 
 ---
 
@@ -169,8 +173,8 @@ commit-gate -> smoke-lane -> critical-lane
 
 Known-defect behaviour:
 
-- `verify:e2e:critical` allows expected known defects and fails only on unexpected failures.
-- `UPSTREAM_LOGIN_SURFACE_UNAVAILABLE` is intentionally not skipped. It keeps a user-visible third-party login outage red while attaching diagnostic JSON for triage.
+- `verify:e2e:critical` allows expected known defects, reports upstream blocks separately, and only lets upstream blocks pass when `ALLOW_UPSTREAM_BLOCKED=true` is set by the caller.
+- `UPSTREAM_LOGIN_SURFACE_UNAVAILABLE` is intentionally not skipped. It keeps a user-visible third-party login outage visible while attaching diagnostic JSON for triage. The stakeholder dashboard shows Cloudflare rate limiting as `Blocked by third-party access` so non-technical readers see that the user journey was not observed, rather than a confirmed product defect.
 
 ---
 
