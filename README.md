@@ -107,6 +107,10 @@ Cloudflare rate limits the runner, the dashboard shows this as
 `Blocked by third-party access` with the technical cause
 `Cloudflare HTTP 429 / Error 1015 rate limit`.
 
+Authentication state tests also prove the real ParaBank guest login surface is
+loaded before asserting `GUEST` state or typing credentials. This prevents a
+Cloudflare access-denied page from being misread as a ParaBank login error.
+
 **Impact:** Separates third-party UI/auth availability from API latency, local
 selector drift, and genuine product regressions.
 

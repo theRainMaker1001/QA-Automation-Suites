@@ -78,6 +78,7 @@ Notes:
 - `test:regression` uses `chromium-auth` storage state.
 - Authentication state-machine tests are a deliberate exception and validate guest/login/logout transitions directly.
 - Critical login-surface checks remain visible when ParaBank responds but the login form is absent. Inspect the `login-surface-diagnostics` Playwright attachment to separate upstream UI/auth availability from API latency or selector drift. Cloudflare HTTP 429/Error 1015 blocks are reported as `upstream-blocked`, not `@known-defect`.
+- Auth state-machine tests that expect `GUEST` must use the `LoginPage` guest-surface guard before asserting state or typing credentials. This proves the real ParaBank login form is present before the test reasons about app state.
 - Loan decision-table tests run through `test:loans`, not `test:api`, so live loan endpoint calls are not duplicated across lanes.
 
 ---
@@ -175,6 +176,7 @@ Known-defect behaviour:
 
 - `verify:e2e:critical` allows expected known defects, reports upstream blocks separately, and only lets upstream blocks pass when `ALLOW_UPSTREAM_BLOCKED=true` is set by the caller.
 - `UPSTREAM_LOGIN_SURFACE_UNAVAILABLE` is intentionally not skipped. It keeps a user-visible third-party login outage visible while attaching diagnostic JSON for triage. The stakeholder dashboard shows Cloudflare rate limiting as `Blocked by third-party access` so non-technical readers see that the user journey was not observed, rather than a confirmed product defect.
+- A blocked login surface must not cascade into false auth state failures. Guest-state auth tests should fail with login-surface diagnostics when ParaBank or Cloudflare prevents the login form from loading.
 
 ---
 

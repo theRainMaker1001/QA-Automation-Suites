@@ -162,8 +162,10 @@ function collectResultText(spec: any, test: any, firstResult: any): string {
   const annotations = [...(spec?.annotations || []), ...(test?.annotations || [])]
     .map((annotation: any) => `${annotation?.type || ''} ${annotation?.description || ''}`)
     .join(' ');
+  const location = spec?.location || test?.location || {};
+  const file = [spec?.file, location?.file].filter(Boolean).join(' ');
 
-  return [spec?.title, test?.title, test?.status, resultMessages, annotations]
+  return [file, spec?.title, test?.title, test?.status, resultMessages, annotations]
     .filter(Boolean)
     .join(' ')
     .toLowerCase();
@@ -180,13 +182,22 @@ function isUpstreamBlockedResult(resultText: string): boolean {
 }
 
 function isAuthSetupCascadeResult(resultText: string): boolean {
+  const isAuthStateGuestMismatch =
+    (resultText.includes('state-transition.auth.spec') ||
+      resultText.includes('invalid credentials transition to error state') ||
+      resultText.includes('empty credentials show error')) &&
+    resultText.includes('expected') &&
+    resultText.includes('guest') &&
+    resultText.includes('received') &&
+    resultText.includes('login_error');
+
   return (
     resultText.includes('beforeall could not verify login') ||
     resultText.includes('global setup login may have failed') ||
     resultText.includes('storage state has no cookies') ||
     resultText.includes('auth-dependent tests will be skipped') ||
     (resultText.includes('waiting for locator') && resultText.includes('input[name="username"]')) ||
-    (resultText.includes('expected: "guest"') && resultText.includes('received: "login_error"'))
+    isAuthStateGuestMismatch
   );
 }
 

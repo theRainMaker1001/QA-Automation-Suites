@@ -82,7 +82,7 @@
  * - S3 + E4: Cannot logout from error state
  */
 
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page, type TestInfo } from '@playwright/test';
 import { LoginPage, type AuthState } from '../../pages/login.page.js';
 import { RegisterPage } from '../../pages/register.page.js';
 
@@ -107,6 +107,17 @@ function markKnownDefect(description: string): void {
   test.info().annotations.push({
     type: 'known-defect',
     description,
+  });
+}
+
+async function expectGuestSurface(
+  loginPage: LoginPage,
+  testInfo: TestInfo,
+  diagnosticsReason: string,
+): Promise<void> {
+  await loginPage.expectGuestLoginSurface({
+    testInfo,
+    diagnosticsReason,
   });
 }
 
@@ -188,15 +199,18 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
 
   // ── T1: S1 + E1 → S2 ────────────────────────────────────────────────────────
   test.describe('Transition: GUEST → LOGGED_IN (T1)', () => {
-    test('valid credentials transition to logged in state', async ({ page }) => {
+    test('valid credentials transition to logged in state', async ({ page }, testInfo) => {
       test.skip(!authVerified, 'credentials not verified in setup — skipping to avoid false pass');
 
       const loginPage = new LoginPage(page);
       await loginPage.goto();
 
       // Verify initial state: GUEST
-      await loginPage.expectLoginFormVisible();
-      expect(await loginPage.getCurrentState()).toBe('GUEST');
+      await expectGuestSurface(
+        loginPage,
+        testInfo,
+        'auth valid-login transition expected guest login form before submitting credentials',
+      );
 
       // Trigger transition: valid login
       await loginPage.login(testUser.username, testUser.password);
@@ -209,12 +223,16 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
 
   // ── T2, T3: S1 + E2/E3 → S3 ─────────────────────────────────────────────────
   test.describe('Transition: GUEST → LOGIN_ERROR (T2, T3)', () => {
-    test('invalid credentials transition to error state', async ({ page }) => {
+    test('invalid credentials transition to error state', async ({ page }, testInfo) => {
       const loginPage = new LoginPage(page);
       await loginPage.goto();
 
       // Verify initial state: GUEST (S1)
-      expect(await loginPage.getCurrentState()).toBe('GUEST');
+      await expectGuestSurface(
+        loginPage,
+        testInfo,
+        'auth invalid-credentials transition expected guest login form before submitting credentials',
+      );
 
       // Trigger transition E2: invalid login
       const invalidUser = uniqueInvalidCredentials();
@@ -235,12 +253,16 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
       expect(stateAfterInvalidLogin).toBe('LOGIN_ERROR');
     });
 
-    test('empty credentials show error', async ({ page }) => {
+    test('empty credentials show error', async ({ page }, testInfo) => {
       const loginPage = new LoginPage(page);
       await loginPage.goto();
 
       // Verify initial state: GUEST (S1)
-      expect(await loginPage.getCurrentState()).toBe('GUEST');
+      await expectGuestSurface(
+        loginPage,
+        testInfo,
+        'auth empty-credentials transition expected guest login form before submitting credentials',
+      );
 
       // Trigger transition E3: empty submit
       await loginPage.login('', '');
@@ -253,7 +275,7 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
 
   // ── T4: S3 + E5 → S3* (known defect) ────────────────────────────────────────
   test.describe('Transition: LOGIN_ERROR + Refresh (T4)', () => {
-    test('@known-defect refresh after error returns to guest state', async ({ page }) => {
+    test('@known-defect refresh after error returns to guest state', async ({ page }, testInfo) => {
       test.fail(true, 'Known upstream behaviour: refresh re-submits login POST state');
       markKnownDefect(
         'ParaBank uses POST for login — browser refresh re-submits credentials and reproduces the error',
@@ -261,6 +283,11 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
 
       const loginPage = new LoginPage(page);
       await loginPage.goto();
+      await expectGuestSurface(
+        loginPage,
+        testInfo,
+        'auth refresh-after-error transition expected guest login form before creating error state',
+      );
 
       // Trigger error state (S3)
       await loginPage.login('baduser', 'badpass');
@@ -274,36 +301,49 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
       await page.waitForLoadState('domcontentloaded');
 
       // Verify: back to GUEST state (S1)
-      await loginPage.expectLoginFormVisible();
-      expect(await loginPage.getCurrentState()).toBe('GUEST');
+      await expectGuestSurface(
+        loginPage,
+        testInfo,
+        'auth refresh-after-error transition expected guest login form after refresh',
+      );
     });
   });
 
   // ── T5, T6: S1 + E5/E6 → S1 ─────────────────────────────────────────────────
   test.describe('Transition: GUEST → GUEST (T5, T6)', () => {
-    test('page refresh maintains guest state', async ({ page }) => {
+    test('page refresh maintains guest state', async ({ page }, testInfo) => {
       const loginPage = new LoginPage(page);
       await loginPage.goto();
 
       // Verify initial state: GUEST (S1)
-      await loginPage.expectLoginFormVisible();
-      expect(await loginPage.getCurrentState()).toBe('GUEST');
+      await expectGuestSurface(
+        loginPage,
+        testInfo,
+        'auth guest-refresh transition expected guest login form before refresh',
+      );
 
       // Trigger event E5: page refresh
       await page.reload();
       await page.waitForLoadState('domcontentloaded');
 
       // Verify: still GUEST
-      await loginPage.expectLoginFormVisible();
-      expect(await loginPage.getCurrentState()).toBe('GUEST');
+      await expectGuestSurface(
+        loginPage,
+        testInfo,
+        'auth guest-refresh transition expected guest login form after refresh',
+      );
     });
 
-    test('login form persists across navigation', async ({ page }) => {
+    test('login form persists across navigation', async ({ page }, testInfo) => {
       const loginPage = new LoginPage(page);
       await loginPage.goto();
 
       // Verify initial state: GUEST (S1)
-      expect(await loginPage.getCurrentState()).toBe('GUEST');
+      await expectGuestSurface(
+        loginPage,
+        testInfo,
+        'auth guest-navigation transition expected guest login form before navigation',
+      );
 
       // Trigger event E6: navigate to a different page, then return.
       // Uses full goto() calls rather than browser history to test the app's
@@ -312,18 +352,26 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
       await loginPage.goto();
 
       // Verify end state: still GUEST (S1)
-      await loginPage.expectLoginFormVisible();
-      expect(await loginPage.getCurrentState()).toBe('GUEST');
+      await expectGuestSurface(
+        loginPage,
+        testInfo,
+        'auth guest-navigation transition expected guest login form after navigation',
+      );
     });
   });
 
   // ── T7: S2 + E4 → S1 ────────────────────────────────────────────────────────
   test.describe('Transition: LOGGED_IN → GUEST (T7)', () => {
-    test('logout clears session and returns to guest state', async ({ page }) => {
+    test('logout clears session and returns to guest state', async ({ page }, testInfo) => {
       test.skip(!authVerified, 'Login not verified in setup — cannot test logout');
 
       const loginPage = new LoginPage(page);
       await loginPage.goto();
+      await expectGuestSurface(
+        loginPage,
+        testInfo,
+        'auth logout transition expected guest login form before login',
+      );
       await loginPage.login(testUser.username, testUser.password);
       await page.waitForLoadState('networkidle');
 
@@ -335,15 +383,23 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
       await loginPage.logout();
 
       // Verify state
-      await loginPage.expectLoginFormVisible();
-      expect(await loginPage.getCurrentState()).toBe('GUEST');
+      await expectGuestSurface(
+        loginPage,
+        testInfo,
+        'auth logout transition expected guest login form after logout',
+      );
     });
 
-    test('logout button is visible only when logged in', async ({ page }) => {
+    test('logout button is visible only when logged in', async ({ page }, testInfo) => {
       test.skip(!authVerified, 'Login not verified in setup — cannot test logout');
 
       const loginPage = new LoginPage(page);
       await loginPage.goto();
+      await expectGuestSurface(
+        loginPage,
+        testInfo,
+        'auth logout-button invariant expected guest login form before login',
+      );
       await loginPage.login(testUser.username, testUser.password);
       await page.waitForLoadState('networkidle');
       await loginPage.expectLoggedIn();
@@ -351,7 +407,7 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
 
     test('@known-defect browser back button after logout does not restore session', async ({
       page,
-    }) => {
+    }, testInfo) => {
       test.skip(!authVerified, 'Login not verified in setup — cannot test logout');
       test.fail(true, 'Known upstream behaviour: cached authenticated page can be revisited');
 
@@ -360,6 +416,11 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
       );
       const loginPage = new LoginPage(page);
       await loginPage.goto();
+      await expectGuestSurface(
+        loginPage,
+        testInfo,
+        'auth browser-back known-defect expected guest login form before login',
+      );
       await loginPage.login(testUser.username, testUser.password);
       await page.waitForLoadState('networkidle');
       await loginPage.expectLoggedIn();
@@ -372,12 +433,15 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
       // Should not be logged in (ParaBank redirects to error or login)
       const state = await loginPage.getCurrentState();
       expect(state).not.toBe('LOGGED_IN');
-      await loginPage.expectLoginFormVisible();
+      await loginPage.expectLoginFormVisible({
+        testInfo,
+        diagnosticsReason: 'auth browser-back known-defect expected login form after logout',
+      });
     });
 
     test('@known-defect direct navigation to protected page after logout redirects to login', async ({
       page,
-    }) => {
+    }, testInfo) => {
       test.skip(!authVerified, 'Login not verified in setup — cannot test logout');
       test.fail(true, 'Known upstream behaviour: logout does not fully invalidate server session');
 
@@ -386,6 +450,11 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
       );
       const loginPage = new LoginPage(page);
       await loginPage.goto();
+      await expectGuestSurface(
+        loginPage,
+        testInfo,
+        'auth protected-navigation known-defect expected guest login form before login',
+      );
       await loginPage.login(testUser.username, testUser.password);
       await page.waitForLoadState('networkidle');
       await loginPage.expectLoggedIn();
@@ -397,7 +466,11 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
 
       // Should be redirected or show error
       expect(page.url()).not.toContain('overview.htm');
-      await loginPage.expectLoginFormVisible();
+      await loginPage.expectLoginFormVisible({
+        testInfo,
+        diagnosticsReason:
+          'auth protected-navigation known-defect expected login form after logout',
+      });
     });
   });
 
@@ -507,7 +580,7 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
     ];
 
     for (const { id, title, requiresAuth, setup, act, expectedState } of transitions) {
-      test(`${id}: ${title}`, async ({ page }) => {
+      test(`${id}: ${title}`, async ({ page }, testInfo) => {
         test.skip(
           requiresAuth && !authVerified,
           'credentials not verified in setup — skipping to avoid false pass',
@@ -515,6 +588,11 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
 
         const loginPage = new LoginPage(page);
         await loginPage.goto();
+        await expectGuestSurface(
+          loginPage,
+          testInfo,
+          `auth ${id} transition expected guest login form before setup`,
+        );
 
         const preconditionMet = await setup(page, loginPage);
         if (!preconditionMet) {
@@ -524,24 +602,40 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
         }
         await act(page, loginPage);
 
-        expect(await loginPage.getCurrentState()).toBe(expectedState);
+        if (expectedState === 'GUEST') {
+          await expectGuestSurface(
+            loginPage,
+            testInfo,
+            `auth ${id} transition expected guest login form after action`,
+          );
+        } else {
+          expect(await loginPage.getCurrentState()).toBe(expectedState);
+        }
       });
     }
   });
 
   // ── State Invariants ─────────────────────────────────────────────────────────
   test.describe('State Invariants', () => {
-    test('GUEST state has username and password fields', async ({ page }) => {
+    test('GUEST state has username and password fields', async ({ page }, testInfo) => {
       const loginPage = new LoginPage(page);
       await loginPage.goto();
 
-      await loginPage.expectLoginFormVisible();
+      await expectGuestSurface(
+        loginPage,
+        testInfo,
+        'auth guest invariant expected guest login form before checking fields',
+      );
     });
 
-    test('login button is enabled for guest', async ({ page }) => {
+    test('login button is enabled for guest', async ({ page }, testInfo) => {
       const loginPage = new LoginPage(page);
       await loginPage.goto();
 
+      await loginPage.expectLoginFormVisible({
+        testInfo,
+        diagnosticsReason: 'auth guest invariant expected login form before checking button',
+      });
       await loginPage.expectLoginButtonEnabled();
     });
   });

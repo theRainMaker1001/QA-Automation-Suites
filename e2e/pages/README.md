@@ -16,6 +16,11 @@ Current pages:
 pass it so missing login UI produces a `login-surface-diagnostics` JSON attachment
 and an `UPSTREAM_LOGIN_SURFACE_UNAVAILABLE` error.
 
+`expectGuestLoginSurface()` wraps that diagnostic assertion and then confirms the
+page is in `GUEST` state. Auth state-machine specs use this before typing into
+the login form so third-party block pages cannot be mistaken for ParaBank login
+errors.
+
 The assertion still lives in the page object so specs do not duplicate selectors.
 The extra evidence is only collected on failure, keeping passing runs quiet while
 making ParaBank login-surface outages and third-party access blocks easier to

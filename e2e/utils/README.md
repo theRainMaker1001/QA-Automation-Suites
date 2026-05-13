@@ -33,3 +33,7 @@ This helper deliberately does not turn the failure into a skip or pass. Missing
 login UI remains visible; the diagnostic data explains whether the failure looks
 like upstream ParaBank UI/auth instability, Cloudflare rate limiting, API latency,
 or selector drift.
+
+Auth state tests reach this helper through the `LoginPage` guest-surface guard.
+That guard makes sure a blocked third-party page is reported as a login-surface
+block before the test tries to classify ParaBank auth state.

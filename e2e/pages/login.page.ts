@@ -43,9 +43,11 @@ export class LoginPage extends BasePage {
     this.loginButton = this.loginPanel.getByRole('button', { name: /log\s*in/i });
 
     // Error message
-    // ParaBank keeps hidden ".error" elements in authenticated views.
-    // Scope to visible errors to avoid false LOGIN_ERROR detection.
-    this.errorMessage = page.locator('.error:visible, [class*="error"]:visible');
+    // ParaBank keeps hidden ".error" elements in authenticated views, while
+    // Cloudflare access-denied pages can also contain generic error markup.
+    this.errorMessage = page.locator(
+      '#rightPanel .error:visible, #rightPanel [class*="error"]:visible, #leftPanel .error:visible',
+    );
 
     // Logged in state indicators
     this.logoutLink = page.getByRole('link', { name: /log\s*out/i });
@@ -108,6 +110,9 @@ export class LoginPage extends BasePage {
 
   async hasLoginError(): Promise<boolean> {
     try {
+      if (!(await this.isLoginFormVisible())) {
+        return false;
+      }
       await this.errorMessage.waitFor({ state: 'visible', timeout: 2000 });
       return true;
     } catch {
@@ -149,6 +154,11 @@ export class LoginPage extends BasePage {
 
       throw new Error(formatLoginSurfaceUnavailableError(diagnostics));
     }
+  }
+
+  async expectGuestLoginSurface(options: LoginFormAssertionOptions = {}): Promise<void> {
+    await this.expectLoginFormVisible(options);
+    expect(await this.getCurrentState()).toBe('GUEST');
   }
 
   async expectLoggedIn(): Promise<void> {

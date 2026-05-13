@@ -132,10 +132,17 @@ describe('stakeholder dashboard E2E classification', () => {
     expect(metrics.unexpectedFailures).toBe(0);
   });
 
-  it('groups auth setup fallout with the direct upstream block', () => {
+  it('groups the latest blocked auth-state fallout with the direct upstream block', () => {
     const report = playwrightReport([
       {
         title: '@critical homepage renders login UI',
+        status: 'unexpected',
+        resultStatus: 'failed',
+        message:
+          'UPSTREAM_LOGIN_SURFACE_UNAVAILABLE: classification=UPSTREAM_RATE_LIMITED technicalCause=Cloudflare HTTP 429 / Error 1015 rate limit',
+      },
+      {
+        title: '@critical login form is reachable and interactive',
         status: 'unexpected',
         resultStatus: 'failed',
         message:
@@ -152,14 +159,47 @@ describe('stakeholder dashboard E2E classification', () => {
         title: 'invalid credentials transition to error state',
         status: 'unexpected',
         resultStatus: 'failed',
-        message: 'Expected: "GUEST" Received: "LOGIN_ERROR"',
+        message: 'expect(received).toBe(expected) Expected: "GUEST" Received: "LOGIN_ERROR"',
+      },
+      {
+        title: 'empty credentials show error',
+        status: 'unexpected',
+        resultStatus: 'failed',
+        message:
+          'expect(received).toBe(expected) Expected value to be GUEST Received value LOGIN_ERROR',
+      },
+      {
+        title: '@known-defect refresh after error returns to guest state',
+        status: 'unexpected',
+        resultStatus: 'failed',
+        tags: ['@known-defect'],
+        message: 'Known upstream behaviour reproduced',
       },
     ]);
 
     const metrics = buildE2eMetrics(report, true, {}, false);
 
-    expect(metrics.upstreamBlocks).toBe(3);
+    expect(metrics.upstreamBlocks).toBe(5);
     expect(metrics.unexpectedFailures).toBe(0);
+    expect(metrics.knownDefects).toBe(1);
+  });
+
+  it('keeps auth guest mismatches actionable when there is no direct upstream block', () => {
+    const report = playwrightReport([
+      {
+        title: 'invalid credentials transition to error state',
+        status: 'unexpected',
+        resultStatus: 'failed',
+        message:
+          'expect(received).toBe(expected) Expected value to be GUEST Received value LOGIN_ERROR',
+      },
+    ]);
+
+    const metrics = buildE2eMetrics(report, true, {}, false);
+
+    expect(metrics.upstreamBlocks).toBe(0);
+    expect(metrics.unexpectedFailures).toBe(1);
+    expect(metrics.status).toBe('FAILING');
   });
 
   it('uses retry errors when the selected Playwright result is a generic timeout', () => {
