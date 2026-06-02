@@ -152,7 +152,7 @@ afterAll(() => {
 
   const lines: string[] = [];
 
-  lines.push('# Daily Heartbeat — Parabank Product Summary');
+  lines.push('# Daily Heartbeat - Parabank Product Summary');
   lines.push('');
   lines.push(`**Status:** ${statusLine}`);
   lines.push(brief);

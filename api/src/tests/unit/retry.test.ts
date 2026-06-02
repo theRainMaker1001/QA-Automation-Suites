@@ -1,6 +1,6 @@
 /**
  * Unit tests for retry helper
- * Tests logic in isolation — no network calls
+ * Tests logic in isolation - no network calls
  */
 
 import { describe, it, expect, vi } from 'vitest';

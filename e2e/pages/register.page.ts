@@ -56,7 +56,7 @@ export class RegisterPage extends BasePage {
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
         await this.goto();
-        // Navigation succeeded — not a network-level failure.
+        // Navigation succeeded - not a network-level failure.
         allAttemptsWereNetworkErrors = false;
 
         if (await this.isFormVisible(5000)) {

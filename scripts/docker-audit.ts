@@ -87,10 +87,10 @@ const versionMatch = imageTagVersion !== 'unknown' && installedVersion === image
 
 md('| Item | Value | Status |');
 md('|---|---|---|');
-md(`| Dockerfile image tag | \`v${imageTagVersion}\` | — |`);
-md(`| npm-installed @playwright/test | \`${installedVersion}\` | — |`);
+md(`| Dockerfile image tag | \`v${imageTagVersion}\` | N/A |`);
+md(`| npm-installed @playwright/test | \`${installedVersion}\` | N/A |`);
 md(
-  `| Versions match | — | ${versionMatch ? '✅ PASS' : `❌ FAIL — update Dockerfile \`FROM\` tag to \`v${installedVersion}-noble\``} |`,
+  `| Versions match | N/A | ${versionMatch ? '✅ PASS' : `❌ FAIL - update Dockerfile \`FROM\` tag to \`v${installedVersion}-noble\``} |`,
 );
 md();
 
@@ -198,7 +198,7 @@ md();
 
 if (!nightlyOutputsPresent) {
   md(
-    '> ⬜ Nightly output files are not yet present — run `npm run docker:run` then re-run `npm run docker:audit` to verify them.',
+    '> ⬜ Nightly output files are not yet present - run `npm run docker:run` then re-run `npm run docker:audit` to verify them.',
   );
   md();
 }
@@ -221,7 +221,7 @@ md(
   `**Overall:** ${
     allOk
       ? '✅ Image is healthy and ready for nightly runs.'
-      : '⚠️ One or more checks failed — resolve before pushing.'
+      : '⚠️ One or more checks failed - resolve before pushing.'
   }`,
 );
 md();

@@ -1,6 +1,6 @@
 /**
  * Unit tests for test reporter helper
- * Tests report generation logic with mock data — no file I/O
+ * Tests report generation logic with mock data - no file I/O
  */
 
 import { describe, it, expect } from 'vitest';

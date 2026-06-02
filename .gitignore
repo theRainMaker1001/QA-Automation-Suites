@@ -36,7 +36,7 @@ reports/
 allure-results/
 allure-report/
 
-# Claude / AI assistant settings
+# Local assistant tooling settings
 .claude/
 CLAUDE.md
 AGENTS.md
@@ -49,7 +49,7 @@ claude.json
 # QA philosophy / playbook (private working documents)
 PHILOSOPHY.md
 
-# Codex files and config
+# Additional local assistant tooling settings
 .codex/
 .codex
 .codexrc
@@ -57,7 +57,7 @@ PHILOSOPHY.md
 codex.json
 codex.*.json
 
-# Docker audit output (local only — regenerate with: npm run docker:audit)
+# Docker audit output (local only - regenerate with: npm run docker:audit)
 dockerAudit.md
 
 # Document audit

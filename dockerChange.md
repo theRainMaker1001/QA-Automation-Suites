@@ -1,8 +1,8 @@
 # Docker Change Audit Plan
 
 Last updated: 2026-02-26  
-Owner: Final auditor (Codex)  
-Scope: Audit Claude's delivery for containerised nightly E2E regression execution and related reporting/docs updates.
+Owner: Maintainer audit record
+Scope: Audit the containerised nightly E2E regression execution and related reporting/docs updates.
 
 ## Audit Goal
 Confirm the repo now supports stable, repeatable Docker-based nightly regression E2E runs using Playwright's maintained image, with correct report output paths, local verification commands, and documentation updates aligned to project style and `PHILOSOPHY.md`.
@@ -99,7 +99,7 @@ Pass criteria:
 
 ## Auditor Verdict Template
 
-Use this after Claude completes implementation:
+Use this after implementation completes:
 
 ```md
 # Docker Change Audit Verdict

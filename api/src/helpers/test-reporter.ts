@@ -157,7 +157,7 @@ function generateStakeholderSummary(summary: TestRunSummary): string {
   lines.push('# API Integration Summary');
   lines.push('');
   lines.push(`**Date:** ${formatDate(summary.runDate)}`);
-  lines.push('**System:** ParaBank API — Accounts Service');
+  lines.push('**System:** ParaBank API - Accounts Service');
   lines.push(`**Result:** ${statusEmoji} ${statusText}`);
   lines.push('');
   lines.push('---');
@@ -167,13 +167,13 @@ function generateStakeholderSummary(summary: TestRunSummary): string {
   lines.push('We verified that the banking system correctly handles account lookups:');
   lines.push('');
   lines.push(
-    `- ${expectedCount > 0 ? '✅' : '❌'} **Valid requests** — Can customers retrieve their account information?`,
+    `- ${expectedCount > 0 ? '✅' : '❌'} **Valid requests** - Can customers retrieve their account information?`,
   );
   lines.push(
-    `- ${summary.expected.some((r) => r.polarity === 'negative') ? '✅' : '❌'} **Invalid requests** — Does the system reject bad or malformed data?`,
+    `- ${summary.expected.some((r) => r.polarity === 'negative') ? '✅' : '❌'} **Invalid requests** - Does the system reject bad or malformed data?`,
   );
   lines.push(
-    `- ${summary.expected.some((r) => r.equivalenceClass.startsWith('boundary')) ? '✅' : '❌'} **Edge cases** — Are unusual inputs handled safely?`,
+    `- ${summary.expected.some((r) => r.equivalenceClass.startsWith('boundary')) ? '✅' : '❌'} **Edge cases** - Are unusual inputs handled safely?`,
   );
   lines.push('');
   lines.push('---');

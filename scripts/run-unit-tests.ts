@@ -176,7 +176,7 @@ function generateReport(jsonPath: string): { markdown: string; summary: object }
   // Failed tests section with error codes
   const failedTests = allTests.filter((t) => t.status === 'failed');
   if (failedTests.length > 0) {
-    md += `## ❌ Failed Tests — Debug Reference
+    md += `## ❌ Failed Tests - Debug Reference
 
 | Test | Error Code | Message |
 |------|:----------:|---------|

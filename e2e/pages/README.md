@@ -26,7 +26,7 @@ The extra evidence is only collected on failure, keeping passing runs quiet whil
 making ParaBank login-surface outages and third-party access blocks easier to
 separate from selector drift.
 
-## RegisterPage — `gotoAndWaitForForm` return contract
+## RegisterPage - `gotoAndWaitForForm` return contract
 
 `gotoAndWaitForForm` returns a `FormLoadStatus` string literal describing what happened
 during navigation.
@@ -39,8 +39,8 @@ caller falls back to its default behaviour.
 | Status          | Meaning                                                                              | Correct caller action                                                                                            |
 | :-------------- | :----------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------- |
 | `'loaded'`      | Page rendered and all form inputs are visible                                        | Proceed with the test                                                                                            |
-| `'unreachable'` | Every navigation attempt threw a network-level error — the host could not be reached | `test.skip()` — infrastructure outage, not an application defect                                                 |
-| `'not-found'`   | Navigation succeeded but form inputs were absent after all retries                   | Skip on Firefox (known render flake); hard failure on Chromium — investigate `/register.htm` route or DOM change |
+| `'unreachable'` | Every navigation attempt threw a network-level error - the host could not be reached | `test.skip()` - infrastructure outage, not an application defect                                                 |
+| `'not-found'`   | Navigation succeeded but form inputs were absent after all retries                   | Skip on Firefox (known render flake); hard failure on Chromium - investigate `/register.htm` route or DOM change |
 
 A `'not-found'` failure on Chromium fires with an explicit diagnostic message identifying
 the route so the cause is immediately actionable in CI output.

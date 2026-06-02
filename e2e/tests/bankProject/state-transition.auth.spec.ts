@@ -67,7 +67,7 @@
  * - T1:  S1 + E1 → S2  (GUEST + Valid Login → LOGGED_IN)
  * - T2:  S1 + E2 → S3  (GUEST + Invalid Login → LOGIN_ERROR)
  * - T3:  S1 + E3 → S3  (GUEST + Empty Submit → LOGIN_ERROR)
- * - T4:  S3 + E5 → S3* (LOGIN_ERROR + Refresh → LOGIN_ERROR — POST re-submit keeps error)
+ * - T4:  S3 + E5 → S3* (LOGIN_ERROR + Refresh → LOGIN_ERROR - POST re-submit keeps error)
  * - T5:  S1 + E5 → S1  (GUEST + Refresh → GUEST)
  * - T6:  S1 + E6 → S1  (GUEST + Navigate → GUEST)
  * - T7:  S2 + E4 → S1  (LOGGED_IN + Logout → GUEST)
@@ -190,17 +190,17 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
   // This test has no authVerified guard intentionally: if setup failed this
   // must fail loudly so the degraded state is visible in the report rather than
   // silently absorbed by skips on every downstream test.
-  test('setup health check — credentials verified before state machine tests', () => {
+  test('setup health check - credentials verified before state machine tests', () => {
     expect(
       authVerified,
-      'beforeAll could not verify login — upstream registration or site may be unavailable',
+      'beforeAll could not verify login - upstream registration or site may be unavailable',
     ).toBe(true);
   });
 
   // ── T1: S1 + E1 → S2 ────────────────────────────────────────────────────────
   test.describe('Transition: GUEST → LOGGED_IN (T1)', () => {
     test('valid credentials transition to logged in state', async ({ page }, testInfo) => {
-      test.skip(!authVerified, 'credentials not verified in setup — skipping to avoid false pass');
+      test.skip(!authVerified, 'credentials not verified in setup - skipping to avoid false pass');
 
       const loginPage = new LoginPage(page);
       await loginPage.goto();
@@ -278,7 +278,7 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
     test('@known-defect refresh after error returns to guest state', async ({ page }, testInfo) => {
       test.fail(true, 'Known upstream behaviour: refresh re-submits login POST state');
       markKnownDefect(
-        'ParaBank uses POST for login — browser refresh re-submits credentials and reproduces the error',
+        'ParaBank uses POST for login - browser refresh re-submits credentials and reproduces the error',
       );
 
       const loginPage = new LoginPage(page);
@@ -363,7 +363,7 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
   // ── T7: S2 + E4 → S1 ────────────────────────────────────────────────────────
   test.describe('Transition: LOGGED_IN → GUEST (T7)', () => {
     test('logout clears session and returns to guest state', async ({ page }, testInfo) => {
-      test.skip(!authVerified, 'Login not verified in setup — cannot test logout');
+      test.skip(!authVerified, 'Login not verified in setup - cannot test logout');
 
       const loginPage = new LoginPage(page);
       await loginPage.goto();
@@ -391,7 +391,7 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
     });
 
     test('logout button is visible only when logged in', async ({ page }, testInfo) => {
-      test.skip(!authVerified, 'Login not verified in setup — cannot test logout');
+      test.skip(!authVerified, 'Login not verified in setup - cannot test logout');
 
       const loginPage = new LoginPage(page);
       await loginPage.goto();
@@ -408,7 +408,7 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
     test('@known-defect browser back button after logout does not restore session', async ({
       page,
     }, testInfo) => {
-      test.skip(!authVerified, 'Login not verified in setup — cannot test logout');
+      test.skip(!authVerified, 'Login not verified in setup - cannot test logout');
       test.fail(true, 'Known upstream behaviour: cached authenticated page can be revisited');
 
       markKnownDefect(
@@ -442,7 +442,7 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
     test('@known-defect direct navigation to protected page after logout redirects to login', async ({
       page,
     }, testInfo) => {
-      test.skip(!authVerified, 'Login not verified in setup — cannot test logout');
+      test.skip(!authVerified, 'Login not verified in setup - cannot test logout');
       test.fail(true, 'Known upstream behaviour: logout does not fully invalidate server session');
 
       markKnownDefect(
@@ -476,7 +476,7 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
 
   // ── T8–T11: Previously untested transitions (data-driven) ───────────────────
   // These four transitions are defined in the state table above but had no test.
-  // Specifying them as a typed array makes gaps in the table structurally visible —
+  // Specifying them as a typed array makes gaps in the table structurally visible -
   // a missing entry is an obvious hole in the data, not a buried missing test function.
   test.describe('Previously untested transitions (T8–T11)', () => {
     type Transition = {
@@ -538,7 +538,7 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
           return true;
         },
         act: async (page, loginPage) => {
-          // Full navigation away and back — tests the app's session handling,
+          // Full navigation away and back - tests the app's session handling,
           // not browser history or cache behaviour.
           await page.goto(`${BASE_URL}/contact.htm`);
           await loginPage.goto();
@@ -583,7 +583,7 @@ test.describe('@critical @state-transition Authentication State Machine', () => 
       test(`${id}: ${title}`, async ({ page }, testInfo) => {
         test.skip(
           requiresAuth && !authVerified,
-          'credentials not verified in setup — skipping to avoid false pass',
+          'credentials not verified in setup - skipping to avoid false pass',
         );
 
         const loginPage = new LoginPage(page);

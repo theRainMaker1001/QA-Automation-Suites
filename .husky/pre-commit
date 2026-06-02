@@ -12,11 +12,14 @@ if git grep -I -n --cached "$CR" -- . >/dev/null; then
   exit 1
 fi
 
-# Run unit tests — blocks commit on failure (pure logic, no external deps)
+# Block disallowed punctuation and inaccurate ownership wording
+npm run validate:text --silent -- --cached
+
+# Run unit tests - blocks commit on failure (pure logic, no external deps)
 STAGED_TS=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.ts$' | head -5)
 if [ -n "$STAGED_TS" ]; then
   echo "Running unit tests for staged files..."
   npm run test:unit --silent
 fi
 
-echo "Zero Gate passed (format, lint, line endings)."
+echo "Zero Gate passed (format, lint, text hygiene, line endings)."

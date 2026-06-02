@@ -10,6 +10,10 @@
 
 This document details the test design for ParaBank's loan approval functionality using **Decision Table Testing** combined with **3-Value Boundary Value Analysis (BVA)**. The loan approval process is critical to any banking system - incorrect approvals risk financial loss whereas incorrect denials damage customer relationships.
 
+### Design Provenance
+
+The ISTQB technique selection, business-rule analysis, boundary model, and acceptance criteria in this document were defined by Tom Cunningham. AI tools were used selectively to scale implementation and drafting. Final review and acceptance remained engineer-owned.
+
 **Coverage achieved**: 34 test cases providing complete combinatorial coverage of business rules plus 3-Value BVA testing (-2, -1, 0, +1, +2) at every decision point.
 
 ---
@@ -421,6 +425,7 @@ The loan approval tests are part of the **financial accuracy lane** and are invo
 ├─────────────────┤     ├─────────────────┤     ├─────────────────┤
 │ • Type check    │     │ • API @smoke    │     │ • API @critical │
 │ • Lint + Format │     │ • E2E @smoke    │     │ • E2E @critical │
+│ • Text hygiene  │     │                 │     │                 │
 │ • Unit tests    │     │                 │     │ • API heartbeat │
 │ • Loan report   │     │                 │     │ • Loan report   │
 └─────────────────┘     └─────────────────┘     └─────────────────┘

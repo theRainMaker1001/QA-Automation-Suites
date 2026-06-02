@@ -33,6 +33,7 @@ Commits are blocked if any of these fail:
 
 - `lint-staged` checks (ESLint and Prettier on staged files)
 - CRLF line-ending check on staged files
+- Text hygiene validation (`npm run validate:text`)
 - Unit tests for staged TypeScript changes (`npm run test:unit --silent`)
 
 ### Pre-push (`.husky/pre-push`)
@@ -103,7 +104,7 @@ observed.
 
 ## Docker (Nightly Lane)
 
-The nightly regression and a11y lanes can be run locally inside the same Playwright Docker image used in CI, reducing browser version and OS differences between environments. Environment consistency requires the Dockerfile image tag to match the installed `@playwright/test` version — run `npm run docker:audit` to verify this before pushing.
+The nightly regression and a11y lanes can be run locally inside the same Playwright Docker image used in CI, reducing browser version and OS differences between environments. Environment consistency requires the Dockerfile image tag to match the installed `@playwright/test` version - run `npm run docker:audit` to verify this before pushing.
 
 ### Prerequisites
 
@@ -112,7 +113,7 @@ Docker Desktop (or Docker Engine) must be installed and running.
 ### Commands
 
 ```bash
-# Build the image (once — cached on subsequent runs unless Dockerfile or
+# Build the image (once - cached on subsequent runs unless Dockerfile or
 # package-lock.json changes)
 npm run docker:build
 
@@ -162,7 +163,7 @@ Pipeline order:
 commit-gate -> smoke-lane -> critical-lane
 ```
 
-- `commit-gate`: typecheck, lint, prettier check, tag validation, unit tests
+- `commit-gate`: typecheck, lint, prettier check, text hygiene validation, tag validation, unit tests
 - `smoke-lane`: `@smoke` API and E2E checks
 - `critical-lane`: `@critical` API checks, the dedicated loan report, E2E checks, then `verify:e2e:critical`
 

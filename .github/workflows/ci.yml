@@ -37,6 +37,9 @@ jobs:
       - name: Prettier format check
         run: npx prettier --check .
 
+      - name: Validate text hygiene
+        run: npm run validate:text
+
       - name: Validate E2E test tags
         run: npm run validate:tags
 

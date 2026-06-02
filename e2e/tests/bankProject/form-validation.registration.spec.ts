@@ -24,10 +24,10 @@ test.describe('@regression Form Validation: Registration', () => {
       browserName === 'firefox' ? 3 : 2,
     );
 
-    // Site was unreachable at the network level — infrastructure failure, not an
+    // Site was unreachable at the network level - infrastructure failure, not an
     // application defect. Skip rather than record a misleading red result.
     if (status === 'unreachable') {
-      test.skip(true, 'ParaBank site unreachable in CI — infrastructure issue');
+      test.skip(true, 'ParaBank site unreachable in CI - infrastructure issue');
     }
 
     // Firefox intermittently fails to render register.htm even when the site is up.
@@ -38,7 +38,7 @@ test.describe('@regression Form Validation: Registration', () => {
 
     expect(
       status,
-      'Registration page rendered but form inputs were absent — investigate the /register.htm route or a DOM change before raising a defect',
+      'Registration page rendered but form inputs were absent - investigate the /register.htm route or a DOM change before raising a defect',
     ).toBe('loaded');
   });
 

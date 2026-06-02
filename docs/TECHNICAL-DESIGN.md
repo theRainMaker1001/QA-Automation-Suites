@@ -2,6 +2,9 @@
 
 This document provides a deep-dive into the architectural patterns, ISTQB methodologies, and engineering logic implemented in the **QA-Automation-Suites** framework.
 
+## Design Provenance
+
+The test strategy, risk model, and ISTQB technique selection in this repository were defined by me (Tom Cunningham). AI tools were used selectively to scale implementation, document drafting and review. Technical direction, acceptance criteria, and final decisions remained engineer-owned.
 ---
 
 ## Architecture & Test Pyramid
@@ -23,7 +26,7 @@ To prevent the 'Ice Cream Cone' anti-pattern, this suite is weighted toward fast
 
 * **E2E (48 Tests):** High-fidelity user simulation covering smoke, critical, regression, state-transition, and accessibility scenarios. Two additional `@negative` artifact-demo tests exist in the repo but are excluded from this architectural count because they only run in the dedicated demo lane.
 * **Integration + Critical (84 Tests):** API contract validation via Equivalence Partitioning (20 accounts), schema integrity (14), loan Decision Table + BVA (47), and heartbeat monitoring (3).
-* **Unit (199 Tests):** Sub-millisecond validation of financial utilities, isolated business logic, and pure E2E infrastructure helpers. The 10 additional tests cover `isNetworkError` — a pure string-matching utility used by `RegisterPage` to classify navigation failures as infrastructure outages vs application defects.
+* **Unit (199 Tests):** Sub-millisecond validation of financial utilities, isolated business logic, and pure E2E infrastructure helpers. The 10 additional tests cover `isNetworkError` - a pure string-matching utility used by `RegisterPage` to classify navigation failures as infrastructure outages vs application defects.
 
 ---
 
@@ -141,14 +144,14 @@ The pipeline uses **GitHub Actions** with strict quality gates. This multi-lane 
 
 ```mermaid
 graph LR
-    Local(💻 Local Dev) -->|Husky pre-commit| Gate1{Lint & Format}
+    Local(💻 Local Dev) -->|Husky pre-commit| Gate1{Lint, Format & Text Hygiene}
     Gate1 -->|Pass| Gate2{Typecheck & Smoke}
     Gate2 -->|Husky pre-push| Push[🚀 Push Remote]
     Push -->|Trigger| CI[GitHub Actions]
 
     subgraph "CI Pipeline (ci.yml)"
     direction TB
-    CI --> CommitGate["Commit Gate<br/>(Lint + Unit + Loans)"]
+    CI --> CommitGate["Commit Gate<br/>(Lint + Text Hygiene + Unit + Loans)"]
     CommitGate -->|Pass| Smoke[Running @smoke]
     Smoke -->|Pass| Critical["Running @critical E2E<br/>(PR + Dispatch Only)"]
     end
@@ -195,7 +198,7 @@ The `mcr.microsoft.com/playwright` image bundles Chromium, Firefox, and WebKit w
 
 | Concern | `playwright install` on bare Node | Playwright Docker image |
 |---|---|---|
-| Browser download per CI run | ~300–600 MB every cache miss | Zero — browsers are baked in |
+| Browser download per CI run | ~300–600 MB every cache miss | Zero - browsers are baked in |
 | Environment parity | Depends on OS, distro, and apt version | Consistent image locally and in CI (requires Dockerfile tag = npm version) |
 | Setup complexity in CI | Node + npm ci + browser install (3 steps) | Docker build (cached) + docker run |
 | First-run speed | Fast (if apt cache hits) | Slower initial pull (~2.3 GB), fast thereafter |
@@ -209,7 +212,7 @@ The image is cached after the first pull. Subsequent runs only rebuild the npm d
 │  Dockerfile (mcr.microsoft.com/playwright:v1.58.0-noble)    │
 │                                                             │
 │  + Node 24 (NodeSource apt layer)                           │
-│  + npm ci (dependency layer — cached on package-lock.json)  │
+│  + npm ci (dependency layer - cached on package-lock.json)  │
 │  + Source copy                                              │
 │  + Output dirs: reports/  allure-results/{e2e,unit,         │
 │                           integration}/                     │
@@ -235,15 +238,15 @@ Output directories are bind-mounted from the host so report artefacts land on th
 `run-nightly.ts` is the single source of truth for the nightly audit sequence, used by both the Docker CMD and the CI `nightly-audit` job. The CI job runs this same script inside the same image, so the execution steps are consistent:
 
 ```text
-1. Unit tests (vitest)               — soft-fail: continues regardless of outcome
-2. API integration tests (vitest)    — soft-fail: continues regardless of outcome
-3. Loan decision table tests         — soft-fail: continues regardless of outcome
-4. @critical E2E (chromium)          — produces e2e-critical-results.json;
+1. Unit tests (vitest)               - soft-fail: continues regardless of outcome
+2. API integration tests (vitest)    - soft-fail: continues regardless of outcome
+3. Loan decision table tests         - soft-fail: continues regardless of outcome
+4. @critical E2E (chromium)          - produces e2e-critical-results.json;
    always written in a finally block so the dashboard never sees a missing file
 5. @regression cross-browser matrix (chromium + firefox + webkit)
 6. Preserve e2e-results.json → e2e-regression-results.json
    (prevents a11y run from overwriting the regression JSON)
-7. @a11y audit (chromium)            — always runs, even after regression failure
+7. @a11y audit (chromium)            - always runs, even after regression failure
 8. Generate a11y compliance markdown report
 ```
 
@@ -252,7 +255,7 @@ Failure behaviour:
 - Step 4 (critical E2E): failure sets `criticalFailed` unless all failures are classified as third-party upstream blocks. The `e2e-critical-results.json` file is always written in a `finally` block, so the stakeholder dashboard is never left with a partial dataset regardless of test outcome.
 - Critical login-surface failures are classified separately from product regressions. When ParaBank responds but the login form does not render, the failure is classified as `UPSTREAM_LOGIN_SURFACE_UNAVAILABLE` and Playwright attaches `login-surface-diagnostics` JSON with URL, title, `/index.htm` status, selector counts, visible error text, stakeholder wording, and the technical cause. Cloudflare HTTP 429/Error 1015 responses are shown to stakeholders as `Blocked by third-party access`.
 - Authentication state-machine tests must prove the ParaBank guest login surface is present before asserting `GUEST` state or entering credentials. The POM guard keeps Cloudflare/access-denied pages from being interpreted as ParaBank `LOGIN_ERROR` state while preserving real guest-state mismatches as unexpected failures.
-- Steps 5 and 7 (E2E): each has its own flag (`regressionFailed`, `a11yFailed`). A11y always runs — nightly is an audit lane, not a fail-fast gate. Running a11y after a regression failure gives the full picture and avoids carrying stale a11y data into the stakeholder dashboard. A warning is printed when a11y runs after a regression failure so context is visible in CI output.
+- Steps 5 and 7 (E2E): each has its own flag (`regressionFailed`, `a11yFailed`). A11y always runs - nightly is an audit lane, not a fail-fast gate. Running a11y after a regression failure gives the full picture and avoids carrying stale a11y data into the stakeholder dashboard. A warning is printed when a11y runs after a regression failure so context is visible in CI output.
 - The preserve steps run in `finally` blocks so partial results are always captured.
 
 ### Local Commands
@@ -413,7 +416,7 @@ The stakeholder dashboard presents four non-overlapping quality lanes:
 |------|-----------|---------------|
 | **Code Quality** | `unit-summary.json` (199 unit tests) | Pass rate for isolated logic, financial maths, and pure E2E infrastructure helpers |
 | **Financial Accuracy** | `loan-results.json` (47 loan tests) | Decision table + BVA coverage of loan approval rules (34 core scenarios, 1 coverage summary, 6 critical-path reruns, 6 negative cases) |
-| **User Journey Coverage** | `e2e-critical-results.json` + `e2e-regression-results.json` | Known defects (amber, tagged `@known-defect`), unexpected failures (red), upstream blocks (orange, third-party access or availability prevented observation), infra skips (grey — host unreachable), browser skips (grey — intentional per-browser exclusions). Current nightly inputs are 41 chromium `@critical` tests plus 6 logical regression tests across the cross-browser matrix (18 scheduled browser executions, 13 currently executed because 5 WebKit cases are intentionally skipped) |
+| **User Journey Coverage** | `e2e-critical-results.json` + `e2e-regression-results.json` | Known defects (amber, tagged `@known-defect`), unexpected failures (red), upstream blocks (orange, third-party access or availability prevented observation), infra skips (grey - host unreachable), browser skips (grey - intentional per-browser exclusions). Current nightly inputs are 41 chromium `@critical` tests plus 6 logical regression tests across the cross-browser matrix (18 scheduled browser executions, 13 currently executed because 5 WebKit cases are intentionally skipped) |
 | **WCAG Compliance** | `a11y-results.json` | Violation count, AA/A/Non-Compliant badge, and link to the full [compliance report](https://therainmaker1001.github.io/QA-Automation-Suites/a11y-compliance-report.html) |
 
 E2E metrics distinguish between outcomes using Playwright's `test.status`, `results[0].status`, tags, and annotations:
@@ -421,10 +424,10 @@ E2E metrics distinguish between outcomes using Playwright's `test.status`, `resu
 - **Unexpected failure**: Failing tests without a known-defect marker (requires investigation)
 - **Upstream blocked**: Critical login checks fail with `UPSTREAM_LOGIN_SURFACE_UNAVAILABLE` when the server/API is reachable but the login form is absent. Cloudflare HTTP 429/Error 1015 responses are grouped here and shown in plain English as `Blocked by third-party access`. This is a user-visible third-party UI/auth availability issue, not a confirmed product defect.
 - **Auth precondition blocked**: Auth state-machine checks that require `GUEST` must call the login-surface POM guard first. If the third-party block prevents the guest surface from loading, the run remains blocked rather than becoming a misleading product state failure.
-- **Skipped**: Conditionally skipped tests — includes two infrastructure-skip categories:
-  - `'unreachable'` — the host could not be reached at all (DNS/connection failure); all browsers skip. This is an infrastructure outage, not an application defect.
-  - `'not-found'` on Firefox — the page rendered but the form was absent; a known Firefox CI render flake. Skipped on Firefox only.
-  - `'not-found'` on Chromium — fires as a hard failure with an explicit diagnostic message identifying `/register.htm`; this is a real application defect signal and must be investigated.
+- **Skipped**: Conditionally skipped tests - includes two infrastructure-skip categories:
+  - `'unreachable'` - the host could not be reached at all (DNS/connection failure); all browsers skip. This is an infrastructure outage, not an application defect.
+  - `'not-found'` on Firefox - the page rendered but the form was absent; a known Firefox CI render flake. Skipped on Firefox only.
+  - `'not-found'` on Chromium - fires as a hard failure with an explicit diagnostic message identifying `/register.htm`; this is a real application defect signal and must be investigated.
 
 Critical lane gating uses a verifier step to keep known defects non-blocking, report upstream blocks separately, and still fail the lane for unexpected defects. Upstream blocks only pass when the caller explicitly sets `ALLOW_UPSTREAM_BLOCKED=true`.
 

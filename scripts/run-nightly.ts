@@ -9,11 +9,11 @@
  *   1. Unit tests (vitest)
  *   2. API integration tests (vitest)
  *   3. Loan decision table tests
- *   4. @critical E2E — chromium only (produces e2e-critical-results.json)
- *   5. @regression cross-browser matrix — chromium + firefox + webkit
+ *   4. @critical E2E - chromium only (produces e2e-critical-results.json)
+ *   5. @regression cross-browser matrix - chromium + firefox + webkit
  *   6. Preserve e2e-results.json → e2e-regression-results.json before
  *      the a11y run overwrites the shared output file
- *   7. @a11y audit — chromium only
+ *   7. @a11y audit - chromium only
  *   8. Generate a11y compliance markdown report
  *
  * Failure behaviour:
@@ -25,7 +25,7 @@
  *     a missing e2e-critical-results.json.
  *   - Step 5 (regression E2E): failure sets `regressionFailed` and preserves
  *     partial results, but does NOT skip a11y.
- *   - Step 7 (a11y): always runs — nightly is an audit lane, not fail-fast.
+ *   - Step 7 (a11y): always runs - nightly is an audit lane, not fail-fast.
  *     Failure sets `a11yFailed`. A warning is printed if regression also
  *     failed so context is visible in CI output.
  *   - Step 8 (report generation): non-blocking warning on failure.
@@ -82,7 +82,7 @@ function isBlockedOnlyCriticalRun(reportPath: string): boolean {
 // criticalBlocked: critical E2E was blocked by third-party access only
 // regressionFailed: the @regression E2E matrix failed
 // a11yFailed:     the @a11y run failed
-// None of these abort subsequent phases — nightly is an audit lane, not a
+// None of these abort subsequent phases - nightly is an audit lane, not a
 // fail-fast gate. Full picture on bad nights matters more than early exit.
 let vitestFailed = false;
 let criticalFailed = false;
@@ -102,21 +102,21 @@ for (const [label, cmd] of [
     run(cmd);
   } catch {
     vitestFailed = true;
-    console.error(`\n${label} failed — continuing to next phase.`);
+    console.error(`\n${label} failed - continuing to next phase.`);
   }
 }
 
-// ── 4. @critical E2E (chromium — produces e2e-critical-results.json) ─────────
+// ── 4. @critical E2E (chromium - produces e2e-critical-results.json) ─────────
 // Runs on every nightly so the stakeholder dashboard always has a fresh
 // e2e-critical-results.json, independent of PR cadence. Uses chromium
-// (not chromium-auth) to match the ci.yml critical-lane exactly — availability
+// (not chromium-auth) to match the ci.yml critical-lane exactly - availability
 // and login specs require an unauthenticated session. Authenticated specs load
 // their own storage state via test.use({ storageState }) and work on any project.
 try {
   run('npx playwright test -c e2e/playwright.config.ts --grep @critical --project=chromium');
 } catch {
   criticalFailed = true;
-  console.error('\nCritical E2E tests failed — writing partial results and continuing.');
+  console.error('\nCritical E2E tests failed - writing partial results and continuing.');
 } finally {
   // Always write the critical results file so the dashboard never shows
   // "Partial dataset: missing e2e-critical-results.json".
@@ -145,7 +145,7 @@ try {
   );
 } catch {
   regressionFailed = true;
-  console.error('\nRegression tests failed — preserving partial results and continuing to a11y.');
+  console.error('\nRegression tests failed - preserving partial results and continuing to a11y.');
 } finally {
   // Always preserve regression results before the a11y run may overwrite the
   // shared e2e-results.json output file.
@@ -157,10 +157,10 @@ try {
   }
 }
 
-// ── 6–7. A11y audit (always runs — nightly is an audit lane, not fail-fast) ──
+// ── 6–7. A11y audit (always runs - nightly is an audit lane, not fail-fast) ──
 // Running a11y even after regression failure gives the full picture on bad nights
 // and avoids carrying stale a11y data forward into the stakeholder dashboard.
-// Some a11y failures may be secondary fallout from broken UI — the label below
+// Some a11y failures may be secondary fallout from broken UI - the label below
 // makes that context visible in CI output.
 if (regressionFailed) {
   console.warn(
@@ -175,7 +175,7 @@ try {
   a11yFailed = true;
 }
 
-// Generate compliance report even on partial a11y failure — partial data is
+// Generate compliance report even on partial a11y failure - partial data is
 // better than no report for the stakeholder dashboard.
 try {
   run('npx tsx scripts/generate-a11y-compliance-report.ts');

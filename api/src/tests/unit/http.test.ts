@@ -1,6 +1,6 @@
 /**
  * Unit tests for HTTP client helper
- * Tests logic in isolation using mocked fetch — no network calls
+ * Tests logic in isolation using mocked fetch - no network calls
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';

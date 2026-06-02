@@ -3,7 +3,7 @@
  *
  * Covers every engine-specific error string the function classifies, plus a
  * negative case to confirm non-network errors are not misclassified.
- * Runs under the Vitest unit runner (node environment — no browser required).
+ * Runs under the Vitest unit runner (node environment - no browser required).
  */
 
 import { describe, it, expect } from 'vitest';

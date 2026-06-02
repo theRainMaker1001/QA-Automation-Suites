@@ -1,6 +1,6 @@
 /**
  * @file state-transition.transactions.authenticated.spec.ts
- * @description ISTQB State Transition Testing — Transaction Search (authenticated)
+ * @description ISTQB State Transition Testing - Transaction Search (authenticated)
  *
  * State Machine:
  *   SEARCH_IDLE → (submit search) → RESULTS | NO_RESULTS | ERROR
@@ -8,7 +8,7 @@
  * This spec exercises the full state machine and requires an authenticated
  * session. It loads the chromium-auth storage state directly via test.use()
  * so that the session is available regardless of which browser project runs
- * the file. The SEARCHING intermediate state is not asserted — the POM waits
+ * the file. The SEARCHING intermediate state is not asserted - the POM waits
  * for networkidle after submit, making that window too narrow to catch reliably.
  *
  * Account discovery happens in beforeAll by reading the accounts overview.
@@ -43,7 +43,7 @@ test.describe('@critical @state-transition Transaction Search State Machine', ()
       const raw = fs.readFileSync(STORAGE_STATE_PATH, 'utf-8');
       const state = JSON.parse(raw) as { cookies?: unknown[] };
       if (!Array.isArray(state.cookies) || state.cookies.length === 0) {
-        console.warn('[Setup] Storage state has no cookies — global setup login may have failed');
+        console.warn('[Setup] Storage state has no cookies - global setup login may have failed');
         return;
       }
     } catch {
@@ -61,7 +61,7 @@ test.describe('@critical @state-transition Transaction Search State Machine', ()
       await accountsPage.goto();
 
       // waitForPageLoad() fires at domcontentloaded, which is too early for
-      // ParaBank's accounts table — the table body renders after the initial
+      // ParaBank's accounts table - the table body renders after the initial
       // DOM paint. Wait explicitly for at least one account activity link before
       // reading IDs; if the table never appears, tests skip with a clear reason.
       await page
@@ -77,7 +77,7 @@ test.describe('@critical @state-transition Transaction Search State Machine', ()
         discoveredAccountId = ids[0];
         console.log(`[Setup] Using account ID: ${discoveredAccountId}`);
       } else {
-        console.warn('[Setup] No accounts found on overview page — all tests will be skipped');
+        console.warn('[Setup] No accounts found on overview page - all tests will be skipped');
       }
     } finally {
       await context.close().catch(() => {});
@@ -85,11 +85,11 @@ test.describe('@critical @state-transition Transaction Search State Machine', ()
   });
 
   test.beforeEach(async ({ page }) => {
-    // Skip the whole test if account discovery failed — one skip reason is clearer
+    // Skip the whole test if account discovery failed - one skip reason is clearer
     // than multiple failures on missing DOM elements.
     test.skip(
       discoveredAccountId === null,
-      'No account available — global setup or auth may have failed',
+      'No account available - global setup or auth may have failed',
     );
 
     const transactionsPage = new TransactionsPage(page);
@@ -101,7 +101,7 @@ test.describe('@critical @state-transition Transaction Search State Machine', ()
 
   // ── State invariant ──────────────────────────────────────────────────────────
 
-  test('ST-TXN-01: SEARCH_IDLE — form is visible and no results are shown after account selection', async ({
+  test('ST-TXN-01: SEARCH_IDLE - form is visible and no results are shown after account selection', async ({
     page,
   }) => {
     const transactionsPage = new TransactionsPage(page);
@@ -113,7 +113,7 @@ test.describe('@critical @state-transition Transaction Search State Machine', ()
 
   // ── Transitions to terminal states ──────────────────────────────────────────
 
-  test('ST-TXN-02: SEARCH_IDLE → RESULTS — wide date range exits idle state with transactions', async ({
+  test('ST-TXN-02: SEARCH_IDLE → RESULTS - wide date range exits idle state with transactions', async ({
     page,
   }) => {
     const transactionsPage = new TransactionsPage(page);
@@ -122,7 +122,7 @@ test.describe('@critical @state-transition Transaction Search State Machine', ()
     await transactionsPage.searchByDateRange('01-01-2015', '12-31-2030');
 
     // Primary assertion: RESULTS state (transaction rows present).
-    // ERROR is also accepted as a terminal state — ParaBank occasionally returns a
+    // ERROR is also accepted as a terminal state - ParaBank occasionally returns a
     // server error on this route regardless of credentials. When that happens this
     // test still confirms the state machine left SEARCH_IDLE; it cannot confirm
     // the RESULTS state specifically.
@@ -134,7 +134,7 @@ test.describe('@critical @state-transition Transaction Search State Machine', ()
     }
   });
 
-  test('ST-TXN-03: SEARCH_IDLE → NO_RESULTS — non-existent transaction ID leaves results empty', async ({
+  test('ST-TXN-03: SEARCH_IDLE → NO_RESULTS - non-existent transaction ID leaves results empty', async ({
     page,
   }) => {
     const transactionsPage = new TransactionsPage(page);
@@ -142,7 +142,7 @@ test.describe('@critical @state-transition Transaction Search State Machine', ()
     await transactionsPage.searchByTransactionId('999999999999');
 
     // Primary assertion: no result rows (RESULTS state must not be reached).
-    // NO_RESULTS is the target terminal state. ERROR is also accepted — ParaBank
+    // NO_RESULTS is the target terminal state. ERROR is also accepted - ParaBank
     // is inconsistent about whether it returns a no-results message or a server
     // error for unknown IDs. Either way, RESULTS must be absent.
     expect(await transactionsPage.hasResults()).toBe(false);
@@ -151,7 +151,7 @@ test.describe('@critical @state-transition Transaction Search State Machine', ()
     );
   });
 
-  test('ST-TXN-04: SEARCH_IDLE → terminal state — amount search path reaches a result state', async ({
+  test('ST-TXN-04: SEARCH_IDLE → terminal state - amount search path reaches a result state', async ({
     page,
   }) => {
     const transactionsPage = new TransactionsPage(page);
@@ -166,7 +166,7 @@ test.describe('@critical @state-transition Transaction Search State Machine', ()
     expect(hasResults || hasNoResults || hasError).toBe(true);
   });
 
-  test('ST-TXN-05: SEARCH_IDLE persists — form input retained before submission', async ({
+  test('ST-TXN-05: SEARCH_IDLE persists - form input retained before submission', async ({
     page,
   }) => {
     const transactionsPage = new TransactionsPage(page);

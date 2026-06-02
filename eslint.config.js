@@ -31,7 +31,7 @@ export default [
 
   js.configs.recommended,
 
-  // TypeScript (typed) — single pass, same locally and in CI
+  // TypeScript (typed) - single pass, same locally and in CI
   {
     files: ['**/*.{ts,tsx}'],
     languageOptions: {

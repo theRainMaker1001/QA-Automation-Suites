@@ -31,6 +31,10 @@ Full engineering decisions and test design artefacts are documented on the pages
 🧱 [**Technical Design & Architecture**](./docs/TECHNICAL-DESIGN.md)
 🧰 [**Loan Approval Decision Tables / 3-Value BVA**](./docs/test-design/loan-approval-decision-table.md)
 
+### Engineering Provenance
+
+The test strategy, risk model, and ISTQB technique selection in this repository were defined by Tom Cunningham. AI tools were used selectively to scale implementation, documentation drafting, and review. Technical direction, acceptance criteria, and final decisions remained engineer-owned.
+
 ---
 
 ## What This Suite Delivers
@@ -88,7 +92,7 @@ Rather than running every test on every change, intelligent tagging focuses exec
 
 ### Shift-Left Quality Gates
 
-Using **Husky** and **Prettier**, quality is enforced at the developer's desk.
+Using **Husky**, **Prettier**, and tracked-file text hygiene validation, quality is enforced at the developer's desk.
 
 **Impact:** Prevents malformed code from reaching build servers, reducing time lost to failed builds and debugging cycles.
 
@@ -116,11 +120,11 @@ selector drift, and genuine product regressions.
 
 ### Containerised Nightly Audit
 
-The nightly regression and a11y lanes run inside the [official Playwright Docker image](https://playwright.dev/docs/docker), both locally and in CI, using `mcr.microsoft.com/playwright`. Chromium, Firefox, and WebKit are baked into the image — no browser download occurs at run time. Docker layer caching in CI means the image is only rebuilt when the `Dockerfile` or `package-lock.json` changes.
+The nightly regression and a11y lanes run inside the [official Playwright Docker image](https://playwright.dev/docs/docker), both locally and in CI, using `mcr.microsoft.com/playwright`. Chromium, Firefox, and WebKit are baked into the image - no browser download occurs at run time. Docker layer caching in CI means the image is only rebuilt when the `Dockerfile` or `package-lock.json` changes.
 
-*   `npm run docker:build` — build once, then cache.
-*   `npm run docker:run` — run the full nightly sequence with outputs on the host.
-*   `npm run docker:audit` — verify the image and write a local health summary.
+*   `npm run docker:build` - build once, then cache.
+*   `npm run docker:run` - run the full nightly sequence with outputs on the host.
+*   `npm run docker:audit` - verify the image and write a local health summary.
 
 **Impact:** Reduces browser version drift between developer machines and the build server. When the Dockerfile image tag is kept in sync with the installed `@playwright/test` version, the nightly environment is consistent between local and CI runs. Run `npm run docker:audit` to verify parity before pushing.
 

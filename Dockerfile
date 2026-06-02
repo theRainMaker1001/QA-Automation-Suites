@@ -35,7 +35,7 @@ WORKDIR /app
 
 # ── Dependency layer ──────────────────────────────────────────────────────────
 # Copy package manifests before source so this layer is only invalidated when
-# dependencies change — not on every source file change.
+# dependencies change - not on every source file change.
 COPY package.json package-lock.json ./
 COPY e2e/package.json ./e2e/package.json
 

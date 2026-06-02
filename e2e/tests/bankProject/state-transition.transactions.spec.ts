@@ -1,6 +1,6 @@
 /**
  * @file state-transition.transactions.spec.ts
- * @description Access control check — /findtrans.htm is a protected route.
+ * @description Access control check - /findtrans.htm is a protected route.
  *
  * Unauthenticated visits must not expose the transaction search form.
  * Runs cross-browser as part of @regression to catch any accidental
@@ -15,7 +15,7 @@
 
 import { test, expect } from '@playwright/test';
 
-test.describe('@regression Transaction Search — Access Control', () => {
+test.describe('@regression Transaction Search - Access Control', () => {
   test('unauthenticated visit to /findtrans.htm does not expose the search form', async ({
     page,
   }) => {
@@ -24,7 +24,7 @@ test.describe('@regression Transaction Search — Access Control', () => {
     await page.goto(`${baseUrl}/findtrans.htm`);
     await page.waitForLoadState('domcontentloaded');
 
-    // The search form requires authentication — it must not be rendered for a guest.
+    // The search form requires authentication - it must not be rendered for a guest.
     const searchFormVisible = await page
       .locator('input#transactionId, input[id="criteria.transactionId"]')
       .isVisible()

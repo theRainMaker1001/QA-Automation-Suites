@@ -23,6 +23,7 @@
     "clean": "rimraf dist api/dist",
     "typecheck": "tsc --noEmit -p . && tsc --noEmit -p e2e",
     "validate:tags": "tsx scripts/validate-test-tags.ts",
+    "validate:text": "tsx scripts/validate-text-hygiene.ts",
     "lint": "eslint --format stylish --cache --ext .ts --ext .tsx ./api/src ./e2e ./config ./*.ts",
     "fmt": "prettier --write .",
     "prepare": "husky",
