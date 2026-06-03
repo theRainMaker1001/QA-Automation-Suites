@@ -146,14 +146,15 @@ We avoid the 'Ice Cream Cone' anti-pattern. This suite is built on a stable foun
 ```text
                   / \
                  /   \
-                /  E2E  \             👉 Playwright (48 Tests)
-               /---------\               User Journeys & A11y
-              /           \
-             / Integration \          👉 Vitest + Fetch (84 Tests)
-            /---------------\            API & Business Rules
-           /                 \
-          /       Unit        \       👉 Vitest (199 Tests)
-         /---------------------\         Isolated Maths & Logic
+                / E2E \                 👉 Playwright (48 Tests)
+               /-------\                   User Journeys & A11y
+              /         \
+             /           \
+            / Integration \             👉 Vitest + Fetch (84 Tests)
+           /---------------\               API & Business Rules
+          /                 \
+         /       Unit        \          👉 Vitest (199 Tests)
+        /---------------------\            Isolated Maths & Logic
 ```
 *(Counts as of 2026-04-10. E2E excludes the 2 `@negative` artifact-demo tests that only run in the demo lane.)*
 

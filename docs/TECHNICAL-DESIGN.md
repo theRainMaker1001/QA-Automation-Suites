@@ -14,14 +14,15 @@ To prevent the 'Ice Cream Cone' anti-pattern, this suite is weighted toward fast
 ```text
                   / \
                  /   \
-                /  E2E  \             👉 Playwright (48 Tests)
-               /---------\               User Journeys & A11y
-              /           \
-             / Integration \          👉 Vitest + Fetch (84 Tests)
-            /---------------\            API & Business Rules
-           /                 \
-          /       Unit        \       👉 Vitest (199 Tests)
-         /---------------------\         Isolated Maths & Logic
+                / E2E \                 👉 Playwright (48 Tests)
+               /-------\                   User Journeys & A11y
+              /         \
+             /           \
+            / Integration \             👉 Vitest + Fetch (84 Tests)
+           /---------------\               API & Business Rules
+          /                 \
+         /       Unit        \          👉 Vitest (199 Tests)
+        /---------------------\            Isolated Maths & Logic
 ```
 *(Counts as of 2026-04-10. E2E excludes the 2 `@negative` artifact-demo tests that only run in the demo lane.)*
 
@@ -48,20 +49,20 @@ This document details the test design for ParaBank's loan approval functionality
 The decision table below represents all logical combinations of the two conditions:
 
 ```text
-┌─────────────────────────────────────────┬───────┬───────┬───────┬───────┐
-│                                         │  R1   │  R2   │  R3   │  R4   │
-├─────────────────────────────────────────┼───────┼───────┼───────┼───────┤
-│ CONDITIONS                              │       │       │       │       │
-├─────────────────────────────────────────┼───────┼───────┼───────┼───────┤
-│ C1: availableFunds >= downPayment       │   T   │   T   │   F   │   F   │
-│ C2: downPayment / loanAmount >= 0.1     │   T   │   F   │   T   │   F   │
-├─────────────────────────────────────────┼───────┼───────┼───────┼───────┤
-│ ACTIONS                                 │       │       │       │       │
-├─────────────────────────────────────────┼───────┼───────┼───────┼───────┤
-│ A1: Approve loan                        │   ✓   │       │       │       │
-│ A2: Deny - insufficient down payment    │       │   ✓   │       │       │
-│ A3: Deny - insufficient funds           │       │       │   ✓   │   ✓   │
-└─────────────────────────────────────────┴───────┴───────┴───────┴───────┘
++-----------------------------------------+-------+-------+-------+-------+
+|                                         |  R1   |  R2   |  R3   |  R4   |
++-----------------------------------------+-------+-------+-------+-------+
+| CONDITIONS                              |       |       |       |       |
++-----------------------------------------+-------+-------+-------+-------+
+| C1: availableFunds >= downPayment       |   T   |   T   |   F   |   F   |
+| C2: downPayment / loanAmount >= 0.1     |   T   |   F   |   T   |   F   |
++-----------------------------------------+-------+-------+-------+-------+
+| ACTIONS                                 |       |       |       |       |
++-----------------------------------------+-------+-------+-------+-------+
+| A1: Approve loan                        |   ✓   |       |       |       |
+| A2: Deny - insufficient down payment    |       |   ✓   |       |       |
+| A3: Deny - insufficient funds           |       |       |   ✓   |   ✓   |
++-----------------------------------------+-------+-------+-------+-------+
 ```
 
 **Rule Explanations:**
@@ -385,51 +386,51 @@ npm run report:stakeholder
 The reporting system provides two audience-specific views. Each test lane feeds JSON data into both dashboards via CI artefacts, with zero overlap between lanes.
 
 ```text
-┌─────────────────────────────────────────────────────────────────┐
-│                     TEST EXECUTION                               │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐        │
-│  │  Vitest  │  │  Vitest  │  │Playwright│  │Playwright│        │
-│  │   Unit   │  │   Loans  │  │   E2E    │  │   A11y   │        │
-│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘        │
-│       │             │             │             │               │
-│       ▼             ▼             ▼             ▼               │
-│  unit-summary  loan-results  e2e-critical   a11y-results       │
-│    .json         .json       -results.json    .json            │
-│                              e2e-regression                    │
-│                              -results.json                     │
-│       │             │             │             │               │
-│       └──────┬──────┴──────┬──────┴──────┬──────┘               │
-│              │             │             │                      │
-│              ▼             ▼             ▼                      │
-│      ┌───────────────────────────────────────────┐              │
-│      │        CI ARTEFACTS (per workflow)         │              │
-│      │   unit-reports / reports-critical /        │              │
-│      │   reports-nightly / allure-results-*       │              │
-│      └───────────────────┬───────────────────────┘              │
-└──────────────────────────┼──────────────────────────────────────┘
-                           │
-           ┌───────────────┴───────────────┐
-           │                               │
-           ▼                               ▼
-┌─────────────────────┐        ┌─────────────────────┐
-│  ALLURE GENERATOR   │        │ STAKEHOLDER SCRIPT  │
-│   (allure-cli)      │        │ (TypeScript)        │
-│                     │        │                     │
-│ + categories.json   │        │ Reads all 4 JSON    │
-│ + environment.props │        │ files, merges E2E   │
-└──────────┬──────────┘        └──────────┬──────────┘
-           │                               │
-           ▼                               ▼
-┌─────────────────────┐        ┌─────────────────────┐
-│ DEVELOPER DASHBOARD │        │STAKEHOLDER DASHBOARD│
-│  /allure/           │        │  /stakeholder/      │
-│                     │        │                     │
-│ • Full test details │        │ • Confidence score  │
-│ • History & trends  │        │ • Risk level badge  │
-│ • Video/screenshots │        │ • Known defects     │
-│ • Failure categories│        │ • Lane summaries    │
-│ • Environment info  │        │ • WCAG compliance   │
-└─────────────────────┘        └─────────────────────┘
++------------------+   +------------------+   +------------------+   +------------------+
+| Vitest Unit      |   | Vitest Loans     |   | Playwright E2E   |   | Playwright A11y  |
++--------+---------+   +--------+---------+   +--------+---------+   +--------+---------+
+         |                      |                      |                      |
+         v                      v                      v                      v
++------------------+   +------------------+   +------------------+   +------------------+
+| unit-summary     |   | loan-results     |   | e2e-critical     |   | a11y-results     |
+| .json            |   | .json            |   | -results.json    |   | .json            |
+|                  |   |                  |   | e2e-regression   |   |                  |
+|                  |   |                  |   | -results.json    |   |                  |
++--------+---------+   +--------+---------+   +--------+---------+   +--------+---------+
+         |                      |                      |                      |
+         +----------------------+----------+-----------+----------------------+
+                                           |
+                                           v
+                             +---------------------------+
+                             | CI ARTEFACTS              |
+                             | unit-reports              |
+                             | reports-critical          |
+                             | reports-nightly           |
+                             | allure-results-*          |
+                             +-------------+-------------+
+                                           |
+                    +----------------------+----------------------+
+                    |                                             |
+                    v                                             v
+          +-----------------------+                     +-----------------------+
+          | ALLURE GENERATOR      |                     | STAKEHOLDER SCRIPT    |
+          | (allure-cli)          |                     | (TypeScript)          |
+          |                       |                     |                       |
+          | + categories.json     |                     | Reads all 4 JSON      |
+          | + environment.props   |                     | files, merges E2E     |
+          +-----------+-----------+                     +-----------+-----------+
+                      |                                             |
+                      v                                             v
+          +-----------------------+                     +-----------------------+
+          | DEVELOPER DASHBOARD   |                     | STAKEHOLDER DASHBOARD |
+          | /allure/              |                     | /stakeholder/         |
+          |                       |                     |                       |
+          | - Full test details   |                     | - Confidence score    |
+          | - History & trends    |                     | - Risk level badge    |
+          | - Video/screenshots   |                     | - Known defects       |
+          | - Failure categories  |                     | - Lane summaries      |
+          | - Environment info    |                     | - WCAG compliance     |
+          +-----------------------+                     +-----------------------+
 ```
 
 ### Stakeholder Dashboard Lanes
