@@ -5,6 +5,7 @@ This document provides a deep-dive into the architectural patterns, ISTQB method
 ## Design Provenance
 
 The test strategy, risk model, and ISTQB technique selection in this repository were defined by me (Tom Cunningham). AI tools were used selectively to scale implementation, document drafting and review. Technical direction, acceptance criteria, and final decisions remained engineer-owned.
+
 ---
 
 ## Architecture & Test Pyramid
