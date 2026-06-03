@@ -14,7 +14,9 @@ This document details the test design for ParaBank's loan approval functionality
 
 The ISTQB technique selection, business-rule analysis, boundary model, and acceptance criteria in this document were defined by Tom Cunningham. AI tools were used selectively to scale implementation and drafting. Final review and acceptance remained engineer-owned.
 
-**Coverage achieved**: 34 test cases providing complete combinatorial coverage of business rules plus 3-Value BVA testing (-2, -1, 0, +1, +2) at every decision point.
+**Core coverage achieved**: 34 decision-table and BVA cases provide complete combinatorial coverage of the loan approval rules plus 3-Value BVA testing (-2, -1, 0, +1, +2) at every decision point.
+
+**Executable report scope**: `npm run test:loans` currently reports 47 results: 34 core cases, 1 coverage summary, 6 critical-path reruns, and 6 negative/API shape checks.
 
 ---
 
@@ -378,7 +380,7 @@ allure-results/                             # Test results (per lane)
 ### 6.3 Running the Tests
 
 ```bash
-# Run all loan decision table tests (47 tests)
+# Run the executable loan suite directly (47 results)
 npm run test:loans:only
 
 # Run with markdown report generation
@@ -475,7 +477,7 @@ Test results are published to Allure for trend tracking:
 
 ```text
 allure-results/
-├── integration/          # Loan tests land here (via moveAllureResults)
+├── unit/                 # Loan Allure files are moved here by moveAllureResults()
 └── ...
 
 # Generated report

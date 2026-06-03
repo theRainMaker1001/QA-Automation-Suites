@@ -39,7 +39,9 @@ To prevent the 'Ice Cream Cone' anti-pattern, this suite is weighted toward fast
 ### 1. Executive Summary
 This document details the test design for ParaBank's loan approval functionality using **Decision Table Testing** combined with **3-Value Boundary Value Analysis (BVA)**. The loan approval process is critical to any banking system - incorrect approvals risk financial loss; incorrect denials damage customer relationships.
 
-**Coverage achieved**: 34 test cases providing complete combinatorial coverage of business rules plus 3-Value BVA testing (-2, -1, 0, +1, +2) at every decision point.
+**Core coverage achieved**: 34 decision-table and BVA cases provide complete combinatorial coverage of the loan approval rules plus 3-Value BVA testing (-2, -1, 0, +1, +2) at every decision point.
+
+**Executable report scope**: `npm run test:loans` currently reports 47 results: 34 core cases, 1 coverage summary, 6 critical-path reruns, and 6 negative/API shape checks.
 
 ### 2. Decision Table Oracle
 The decision table below represents all logical combinations of the two conditions:
@@ -123,18 +125,15 @@ stateDiagram-v2
     [*] --> Guest
 
     Guest --> LoggedIn : E1 Valid Login
-    Guest --> LoginError : E2 Invalid Login
-    Guest --> LoginError : E3 Empty Submit
-    Guest --> Guest : E5 Refresh
-    Guest --> Guest : E6 Navigate
+    Guest --> LoginError : E2 Invalid Login or E3 Empty Submit
+    Guest --> Guest : E5 Refresh or E6 Navigate
 
     LoginError --> LoggedIn : E1 Valid Login
-    LoginError --> LoginError : E5 Refresh
+    LoginError --> LoginError : E2 Invalid Login, E3 Empty Submit, or E5 Refresh
     LoginError --> Guest : E6 Navigate
 
     LoggedIn --> Guest : E4 Logout
-    LoggedIn --> LoggedIn : E5 Refresh
-    LoggedIn --> LoggedIn : E6 Navigate
+    LoggedIn --> LoggedIn : E5 Refresh or E6 Navigate
 ```
 
 ---
@@ -143,47 +142,71 @@ stateDiagram-v2
 The pipeline uses **GitHub Actions** with strict quality gates. This multi-lane approach provides rapid feedback for developers while maintaining full regression confidence.
 
 ```mermaid
-graph LR
-    Local(💻 Local Dev) -->|Husky pre-commit| Gate1{Lint, Format & Text Hygiene}
-    Gate1 -->|Pass| Gate2{Typecheck & Smoke}
-    Gate2 -->|Husky pre-push| Push[🚀 Push Remote]
-    Push -->|Trigger| CI[GitHub Actions]
+flowchart TB
+    Local[Local developer workstation] --> PreCommit{Husky pre-commit}
+    PreCommit --> PrePush{Husky pre-push}
+    PrePush --> Push[Push to remote]
+    Push --> CI[GitHub Actions]
 
-    subgraph "CI Pipeline (ci.yml)"
-    direction TB
-    CI --> CommitGate["Commit Gate<br/>(Lint + Text Hygiene + Unit + Loans)"]
-    CommitGate -->|Pass| Smoke[Running @smoke]
-    Smoke -->|Pass| Critical["Running @critical E2E<br/>(PR + Dispatch Only)"]
+    subgraph CommitWorkflow["ci.yml"]
+        direction TB
+        CommitGate["Commit gate<br/>typecheck, lint, text hygiene, tags, unit, loans"]
+        SmokeLane["Smoke lane<br/>API @smoke and E2E @smoke"]
+        CriticalLane["Critical lane<br/>API @critical, loan report, E2E @critical"]
+        CommitGate --> SmokeLane
+        SmokeLane --> CriticalLane
     end
 
-    subgraph "Nightly Audit (playwright.yml)"
-    direction TB
-    Nightly[🕐 2 AM UTC] --> Regression[Running @regression]
-    Regression --> A11y[Running @a11y]
-    A11y --> A11yReport[Generate A11y<br/>Compliance Report]
+    subgraph NightlyWorkflow["playwright.yml"]
+        direction TB
+        NightlyStart["Scheduled or manual nightly audit"]
+        NightlyScript["scripts/run-nightly.ts"]
+        RegressionLane["Regression matrix<br/>chromium, firefox, webkit"]
+        A11yLane["A11y audit and compliance report"]
+        NightlyStart --> NightlyScript
+        NightlyScript --> RegressionLane
+        NightlyScript --> A11yLane
     end
 
-    subgraph "Deploy Reports (deploy-reports.yml)"
-    direction TB
-    Merge[Merge Allure Results] --> Generate[Generate Reports]
-    Generate --> Stakeholder[Stakeholder Dashboard]
-    Generate --> Allure[Developer Dashboard]
-    Generate --> A11yHTML[A11y Compliance<br/>Report HTML]
+    subgraph ReportInputs["Report artefacts"]
+        direction TB
+        UnitReports["unit-summary.json"]
+        LoanReports["loan-results.json"]
+        CriticalReports["e2e-critical-results.json"]
+        NightlyReports["e2e-regression-results.json and a11y-results.json"]
+        AllureResults["Allure result files"]
     end
 
-    CommitGate -->|Artifacts| Merge
-    Smoke -->|Artifacts| Merge
-    Critical -->|Artifacts| Merge
-    Regression -->|Artifacts| Merge
-    A11yReport -->|Artifacts| Merge
-    Stakeholder -->|Deploy| Pages[GitHub Pages]
-    Allure -->|Deploy| Pages
-    A11yHTML -->|Deploy| Pages
+    subgraph DeployWorkflow["deploy-reports.yml"]
+        direction TB
+        RestoreHistory["Restore Allure history"]
+        MergeAllure["Merge Allure results"]
+        GenerateStakeholder["Generate stakeholder dashboard"]
+        GenerateA11yHtml["Convert a11y report to HTML"]
+        Pages["GitHub Pages"]
+        RestoreHistory --> MergeAllure
+        MergeAllure --> Pages
+        GenerateStakeholder --> Pages
+        GenerateA11yHtml --> Pages
+    end
 
-    style Local fill:#f9f9f9,stroke:#333,stroke-width:2px,color:black
-    style Critical fill:#ffcccc,stroke:#ff0000,stroke-width:2px,color:black
-    style Stakeholder fill:#ccffcc,stroke:#00aa00,stroke-width:2px,color:black
-    style Allure fill:#ccffcc,stroke:#00aa00,stroke-width:2px,color:black
+    CI --> CommitGate
+    CI --> NightlyStart
+    CommitGate --> UnitReports
+    CommitGate --> LoanReports
+    CriticalLane --> CriticalReports
+    NightlyScript --> NightlyReports
+    CommitGate --> AllureResults
+    SmokeLane --> AllureResults
+    CriticalLane --> AllureResults
+    NightlyScript --> AllureResults
+
+    UnitReports --> GenerateStakeholder
+    LoanReports --> GenerateStakeholder
+    CriticalReports --> GenerateStakeholder
+    NightlyReports --> GenerateStakeholder
+    AllureResults --> MergeAllure
+    NightlyReports --> GenerateA11yHtml
 ```
 
 ---
@@ -331,7 +354,7 @@ npm run test:regression:matrix # Full cross-browser parity (Nightly)
 npm run test:a11y       # Accessibility Audit (Nightly)
 npm run test:heartbeat  # API Health Monitor
 npm run test:audit      # Run Regression + A11y (Full Audit)
-npm run test:loans      # Run Loan Decision Table scenarios (47 tests)
+npm run test:loans      # Run Loan Decision Table scenarios (47 results)
 npm run test:e2e:known-defects # Known-defect tracking lane
 
 # Running by Architectural Layer
